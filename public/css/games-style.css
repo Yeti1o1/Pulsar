@@ -1,4 +1,3 @@
-/* --- Base Styles --- */
 * {
     margin: 0;
     padding: 0;
@@ -6,146 +5,58 @@
     font-family: 'Lato', sans-serif;
 }
 
-html, body {
-     scroll-behavior: smooth; /* For page jumps like #links */
-     height: 100%; /* Ensure height for fixed background */
-     overflow-x: hidden; /* Prevent horizontal scroll on body */
-}
-
 body {
     background: url('../free-photo/abstract-luxury-blur-dark-grey-black-gradient-used-as-background-studio-wall-display-your-products_1258-63996_semt-ais_hybrid.jpg') no-repeat center center fixed;
     background-size: cover;
-    position: relative; /* Needed for ::before */
-    min-height: 100vh; /* Ensure body takes full height */
-    overflow-y: auto; /* Allow vertical scrolling */
-    color: #eee; /* Default text color */
+    position: relative; 
+    min-height: 100vh; 
+    overflow-y: auto; 
+    color: #eee; 
+    overflow-x: hidden; 
+     scroll-behavior: smooth; 
 }
 
 body::before {
     content: '';
-    position: fixed; /* Fixed overlay */
+    position: fixed; 
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.897); /* Overlay opacity */
-    z-index: -11; /* Behind content */
-    pointer-events: none; /* Allow clicks to pass through overlay */
+    background: rgba(0, 0, 0, 0.897); 
+    z-index: -11; 
+    pointer-events: none; 
 }
 
-    #particles-js {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -10;
-}
-
- /* Header */
- header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 40px; /* Consistent padding */
-    backdrop-filter: blur(12px); /* Consistent blur */
-    -webkit-backdrop-filter: blur(12px);
+#particles-js {
     position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    z-index: 100;
-    background: rgba(105, 91, 91, 0.7); /* Consistent background */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Consistent border */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Consistent shadow */
-
-    /* Initial state for animation */
-    opacity: 0;
-    transform: translateY(-50px);
-    animation: headerEntrance 0.5s ease-out forwards; /* Faster Animation, starts immediately */
-  }
-
-.header-logo {
-    height: 45px;
-    width: auto;
-    display: block;
+    height: 100%;
+    z-index: -10;
 }
 
-nav ul {
-    display: flex;
-    list-style: none;
-    gap: 20px;
-    align-items: center;
-    margin: 0; /* Ensure no default margin */
-    padding: 0; /* Ensure no default padding */
-}
-
-nav ul li {
-    margin: 0; /* Ensure no default margin on list items */
-    padding: 0; /* Ensure no default padding on list items */
-}
-
-nav ul li a.nav-link {
-    text-decoration: none;
-    font-size: 1.1rem;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    display: inline-block; /* Needed for transform to work correctly */
-}
-nav ul li a.nav-link:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.05); /* Adjusted scale */
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-}
-
-nav ul li a.nav-link.active {
-    color: #ffffff;
-    text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.discord-btn {
-    display: inline-block;
-    background: linear-gradient(90deg, #7289da, #5a70d2);
-    color: white;
-    text-decoration: none;
-    padding: 12px 25px;
-    border-radius: 8px;
-    font-weight: bold;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-}
-.discord-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
-    text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 25px rgba(255, 255, 255, 0.8);
-    background: linear-gradient(90deg, #6a7fcc, #566cc0);
-}
-
-/* --- Main Hub Container --- */
 main.hub-container {
     width: 100%;
     max-width: 1600px;
     margin: 0 auto;
-    /* Add padding-top to account for FIXED header */
-    padding: 100px 40px 20px 40px;
+    padding: 0px 0px 0px 0px;
     position: relative;
     z-index: 10;
 }
 
-/* --- Hub Controls (Search, Toggle) --- */
 .hub-controls {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
-    padding: 8px;
+    padding: 20px;
     background: rgba(30, 30, 30, 0.5);
-    border-radius: 8px;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
     gap: 20px;
     flex-wrap: wrap;
+    width: 100%;
 }
 .search-wrapper {
     display: flex;
@@ -226,28 +137,14 @@ main.hub-container {
     color: #fff;
 }
 
-/* --- Game Categories --- */
-.game-category {
-    margin-bottom: 40px;
-}
-
-.category-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
 .category-header h6 {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     background: linear-gradient(45deg, #ffffff, #cccccc);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
     -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 15px rgba(255, 255, 255, 0.6), 0 0 25px rgba(255, 255, 255, 0.5);
+    text-shadow: 0 0 12px rgba(255, 255, 255, 0.6), 0 0 25px rgba(255, 255, 255, 0.5);
     display: inline-flex;
     align-items: center;
     gap: 10px;
@@ -264,18 +161,19 @@ main.hub-container {
 }
 
 .scroll-arrows button {
-    /* Ensure they are initially styled to appear, JS hides/shows them based on scroll */
-    display: flex; /* Use flex or block for initial display */
+
+    display: flex; 
     align-items: center;
     justify-content: center;
-    /* Add padding, border, background, cursor, etc. */
-    background: rgba(0, 0, 0, 0.5); /* Example background */
-    color: white;
+
+    background: rgba(30, 30, 30, 0.5);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);    color: white;
     border: none;
     cursor: pointer;
     padding: 10px;
-    z-index: 1; /* Ensure they are above the content */
-    position: relative; /* For z-index to work relative to siblings */
+    z-index: 1; 
+    position: relative; 
 }
 
 .scroll-arrows {
@@ -285,7 +183,7 @@ main.hub-container {
     align-items: center;
 }
     .scroll-arrows button[style*="display: none"] {
-        display: none !important; /* Use !important if necessary, but try to avoid it */
+        display: none !important; 
     }
 .scroll-arrow {
     background: rgba(255, 255, 255, 0.1);
@@ -302,7 +200,7 @@ main.hub-container {
     transition: all 0.3s ease;
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
-    /* Hidden by default, JS will show/hide based on scroll position */
+
     display: none;
 }
 .scroll-arrow:hover {
@@ -312,8 +210,6 @@ main.hub-container {
     box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
 }
 
-
-/* --- Game Button Containers --- */
 .btn-container,
 .favorite-container {
     display: flex;
@@ -325,7 +221,7 @@ main.hub-container {
     scrollbar-width: none;
     -ms-overflow-style: none;
     scroll-behavior: smooth;
-    flex-wrap: nowrap; /* Prevent wrapping to new lines */
+    flex-wrap: nowrap; 
 
 }
 .btn-container::-webkit-scrollbar,
@@ -333,7 +229,6 @@ main.hub-container {
     display: none;
 }
 
-/* Grid container for the "All Games" section */
 .btn-container-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -341,29 +236,27 @@ main.hub-container {
     padding: 10px 0;
 }
 
-/* --- Game Button Styling --- */
 .btn {
     display: flex;
-    flex-direction: column; /* Stack image and info bar vertically */
+    flex-direction: column; 
     align-items: center;
-    justify-content: flex-start; /* Start layout from the top */
+    justify-content: flex-start; 
     width: 180px;
-    height: 150px; /* Define a fixed height for consistency */
+    height: 150px; 
     background: linear-gradient(135deg, rgba(45, 45, 45, 0.65), rgba(60, 60, 60, 0.75));
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 20px;
     padding: 0;
-    overflow: hidden; /* Crucial to hide the info bar when it's translated down */
+    overflow: hidden; 
     color: #ddd;
     text-decoration: none;
     cursor: pointer;
-    position: relative; /* Needed for positioning the info bar and heart */
+    position: relative; 
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     vertical-align: top;
     flex-shrink: 0;
 
-    /* --- Animation Properties --- */
     opacity: 1;
     transform: scale(1);
     transition: opacity 0.3s ease-out,
@@ -374,13 +267,11 @@ main.hub-container {
     will-change: opacity, transform;
 }
 
-/* Ensure grid buttons have auto width */
 .btn-container-grid .btn {
     width: auto;
-    height: 150px; /* Keep consistent height */
+    height: 150px; 
 }
 
-/* Hover state for the button */
 .btn:hover {
     transform: translateY(-3px) scale(1.02);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
@@ -388,69 +279,61 @@ main.hub-container {
     background: linear-gradient(135deg, rgba(55, 55, 55, 0.75), rgba(70, 70, 70, 0.85));
 }
 
-/* Functional hidden class for search results */
 .btn.hidden {
-    display: none !important; /* Hide buttons not matching search */
+    display: none !important; 
 }
 
-/* Style for the image - should always be visible */
 .btn .imgg {
     display: block;
     width: 100%;
-    /* Image should take up most of the height */
-    flex-grow: 1; /* Allow image to take available space */
+
+    flex-grow: 1; 
     object-fit: cover;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     background-color: #222;
-    /* No opacity transition needed if it stays visible */
+
 }
 
-/* Style for the game info bar container */
 .game-info-bar {
-    position: absolute; /* Position relative to the button */
+    position: absolute; 
     bottom: 0;
     left: 0;
     width: 100%;
-    /* Define the height of the info bar */
-    height: 40px; /* Example height, adjust as needed */
-    background-color: rgba(0, 0, 0, 0.7); /* Dark background for the bar */
-    color: #ddd; /* Text color */
-    display: flex; /* Use flexbox to center text inside */
+
+    height: 40px; 
+    background-color: rgba(0, 0, 0, 0.7); 
+    color: #ddd; 
+    display: flex; 
     align-items: center;
     justify-content: center;
-    padding: 0 10px; /* Padding inside the bar */
+    padding: 0 10px; 
     box-sizing: border-box;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 
-    /* --- Hide by default using transform --- */
-    transform: translateY(100%); /* Move the bar down by its own height */
-    transition: transform 0.3s ease-out; /* Smooth slide-up transition */
-    z-index: 2; /* Ensure it's above the image but below the heart */
+    transform: translateY(100%); 
+    transition: transform 0.3s ease-out; 
+    z-index: 2; 
 }
 
-/* Style for the game name text inside the bar */
 .game-info-bar .game-name {
-    /* Span itself might not need specific display: block/none */
-    /* Its visibility is controlled by the parent .game-info-bar */
-    display: block; /* Ensure span behaves as a block */
+
+    display: block; 
     font-size: 0.95rem;
     font-weight: bold;
-    white-space: nowrap; /* Prevent text wrapping inside the bar */
+    white-space: nowrap; 
     overflow: hidden;
-    text-overflow: ellipsis; /* Add ellipsis if text is too long */
-    width: 100%; /* Take full width of the bar */
-    text-align: center; /* Center the text */
-    /* No opacity transition needed here, let the parent handle it */
+    text-overflow: ellipsis; 
+    width: 100%; 
+    text-align: center; 
+
 }
 
-/* On button hover, show the game info bar */
 .btn:hover .game-info-bar {
-    transform: translateY(0); /* Slide the bar up into view */
+    transform: translateY(0); 
 }
 
-/* Style for the heart icon */
 .btn .heart-icon {
     position: absolute;
     top: 8px;
@@ -461,7 +344,7 @@ main.hub-container {
     padding: 4px 5px;
     border-radius: 4px;
     transition: all 0.3s ease;
-    z-index: 5; /* Ensure it's above everything else */
+    z-index: 5; 
     cursor: pointer;
     pointer-events: auto;
 }
@@ -477,7 +360,6 @@ main.hub-container {
      color: #9e0000a1;
 }
 
-/* Keep Favorites Section Styling */
 .favorites-section {
     background: rgba(0, 0, 0, 0.456);
     padding: 20px;
@@ -489,7 +371,6 @@ main.hub-container {
     -webkit-backdrop-filter: blur(5px);
 }
 
-/* Message for no search results */
 #noResultsMessage {
     text-align: center;
     margin-top: 30px;
@@ -497,13 +378,12 @@ main.hub-container {
     color: #ccc;
 }
 
-/* --- Responsive Adjustments --- */
 @media (max-width: 1200px) {
     main.hub-container { padding: 90px 30px 20px 30px; }
     .btn-container-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
-    .btn { width: 160px; height: 140px; } /* Adjusted height */
-    .btn .imgg { /* flex-grow will adjust height */ }
-    .game-info-bar { height: 35px; font-size: 0.9em; } /* Adjusted bar height */
+    .btn { width: 160px; height: 140px; } 
+    .btn .imgg {  }
+    .game-info-bar { height: 35px; font-size: 0.9em; } 
     .game-info-bar .game-name { font-size: 0.9em; }
 }
 
@@ -514,7 +394,7 @@ main.hub-container {
     nav ul li a.nav-link { font-size: 0.9rem; padding: 8px 12px; }
     .discord-btn { padding: 8px 16px; font-size: 0.9rem; }
 
-    main.hub-container { padding-top: 140px; } /* Increased padding-top */
+    main.hub-container { padding-top: 140px; } 
 
     .hub-controls { flex-direction: column; align-items: stretch; padding: 10px; gap: 10px; }
     .search-wrapper { max-width: none; padding: 0px 5px 0px 10px; }
@@ -526,8 +406,8 @@ main.hub-container {
     .btn-container, .favorite-container { gap: 15px; padding: 8px 5px 15px 5px; }
     .btn-container-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
 
-    .btn { width: 140px; height: 130px; } /* Adjusted size */
-    .game-info-bar { height: 30px; font-size: 0.85em; } /* Adjusted bar height */
+    .btn { width: 140px; height: 130px; } 
+    .game-info-bar { height: 30px; font-size: 0.85em; } 
     .game-info-bar .game-name { font-size: 0.85em; }
     .btn .heart-icon { font-size: 1rem; top: 6px; right: 6px; padding: 3px 4px; }
 }
@@ -537,20 +417,19 @@ main.hub-container {
      nav ul { gap: 6px; }
      nav ul li a.nav-link, .discord-btn { font-size: 0.8rem; padding: 5px 8px; }
 
-     main.hub-container { padding-top: 120px; } /* Adjust padding-top */
+     main.hub-container { padding-top: 120px; } 
 
     .category-header h6 { font-size: 1.4rem; gap: 6px; }
     .scroll-arrow { width: 28px; height: 28px; font-size: 0.8rem; }
     .btn-container, .favorite-container { gap: 10px; padding: 6px 4px 12px 4px; }
     .btn-container-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
 
-    .btn { width: 110px; height: 120px; } /* Adjusted size */
-    .game-info-bar { height: 25px; font-size: 0.75em; } /* Adjusted bar height */
+    .btn { width: 110px; height: 120px; } 
+    .game-info-bar { height: 25px; font-size: 0.75em; } 
     .game-info-bar .game-name { font-size: 0.75em; }
     .btn .heart-icon { font-size: 0.9rem; top: 5px; right: 5px; padding: 3px; }
 }
 
-/* Style for the message when no results are found */
 #noResultsMessage {
     text-align: center;
     margin-top: 30px;
@@ -558,12 +437,12 @@ main.hub-container {
     color: #ccc;
 }
 ::-webkit-scrollbar {
-    width: 11px; 
+    width: 25px; 
 }
 
 ::-webkit-scrollbar-track {
     background: #000000; 
-    border-radius: 10px; 
+    border-radius: 20px; 
 }
 
 ::-webkit-scrollbar-thumb {

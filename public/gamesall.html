@@ -355,7 +355,7 @@ body::before {
                    <i class="fa fa-search"></i>
                 </button>
             </div>
-            <a href="games.html" style="text-decoration: none;"class="toggle-categories-btn">View All Games</a>
+            <a href="index.html" style="text-decoration: none;"class="toggle-categories-btn">View All Games</a>
         </section>
 
         <!-- Container for Categories -->
@@ -390,7 +390,7 @@ body::before {
     
       categoryTitle.innerHTML = `<i class="fas fa-star"></i> ${categoryNameFormatted}`;
     
-      fetch('games.html').then(res => res.text()).then(htmlText => {
+      fetch('index.html').then(res => res.text()).then(htmlText => {
         const parser = new DOMParser();
         const doc = parser.parseFromString(htmlText, 'text/html');
     
@@ -498,7 +498,7 @@ body::before {
                 return;
             }
         
-            fetch('games.html').then(res => res.text()).then(htmlText => {
+            fetch('index.html').then(res => res.text()).then(htmlText => {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(htmlText, 'text/html');
         
