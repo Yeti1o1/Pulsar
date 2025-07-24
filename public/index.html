@@ -342,10 +342,9 @@ background: linear-gradient(135deg, #0c1254, #1f2f7a, #3a5588);
 @import url(https://fonts.googleapis.com/css?family=Titillium+Web:300);
 
 .main-menu {
-  background: rgba(40, 48, 72, 0.2);
+  background: #111;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(120, 140, 180, 0.3);
   border-right: 1px solid #e5e5e5;
   position: fixed;
   top: 0;
@@ -355,6 +354,7 @@ background: linear-gradient(135deg, #0c1254, #1f2f7a, #3a5588);
   overflow: hidden;
   transition: width 0.2s ease;
   z-index: 1000;
+  margin-top: 75px;
 }
 
 .main-menu:hover {
@@ -439,11 +439,6 @@ background: linear-gradient(135deg, #0c1254, #1f2f7a, #3a5588);
         </nav>
 
 
-
-    
-    <!-- Main Game Hub Content Area -->
-    <main class="hub-container">
-
         <!-- Search and Controls -->
         <section class="hub-controls">
             <div class="search-wrapper" id="searchWrapper">
@@ -461,6 +456,11 @@ background: linear-gradient(135deg, #0c1254, #1f2f7a, #3a5588);
                  
         
         </section>
+    
+    <!-- Main Game Hub Content Area -->
+    <main class="hub-container">
+
+
 
         <!-- Container for Categories -->
         <div class="categories-wrapper" id="categoriesWrapper">
