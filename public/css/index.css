@@ -32,7 +32,6 @@ body {
     /* Last body background overrides the previous one */
     overflow-x: hidden;
     position: relative;
-    background: linear-gradient(135deg, #0f0063, #3c0081, #500072);
     min-height: 100vh;
     overflow-y: auto;
     color: #eee;
@@ -62,8 +61,8 @@ body::before {
     justify-content: flex-start;
     width: 135px;
     height: 113px;
-    background: linear-gradient(135deg, rgba(45, 45, 45, 0.65), rgba(60, 60, 60, 0.75));
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(60, 60, 60, 0.185);
+    border: 2px solid rgba(255, 255, 255, 0.062);
     border-radius: 20px;
     padding: 0;
     overflow: hidden;
@@ -115,15 +114,16 @@ body::before {
     width: 100%;
     flex-grow: 1;
     object-fit: cover;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    background-color: #222;
+    border-bottom: 1px solid rgba(60, 60, 60, 0.185);
+    background-color: rgba(60, 60, 60, 0.185);
+    transition: transform 0.3s ease-in-out;
+    transform-origin: center center;
 }
 
 .btn-container,
 .favorite-container {
     display: flex;
-    overflow-x: auto;
-    overflow-y: hidden;
+    overflow: auto;
     gap: 10px;
     white-space: nowrap;
     scrollbar-width: none;
@@ -161,10 +161,12 @@ body::before {
 }
 
 .btn:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
-    border-color: rgba(255, 255, 255, 0.25);
+    border-color: rgb(255, 255, 255);
     background: linear-gradient(135deg, rgba(55, 55, 55, 0.75), rgba(70, 70, 70, 0.85));
+}
+
+.btn:hover .imgg {
+    transform: scale(1.4);
 }
 
 .btn:hover .game-info-bar {
@@ -284,7 +286,6 @@ body::before {
 main.hub-container,
 .hub-container {
     width: 100%;
-    max-width: 1250px;
     margin: 0 auto;
     padding: 5vh 3vw 2vh 3vw;
     position: relative;
@@ -311,7 +312,6 @@ nav ul li a {
     font-size: 1rem;
     color: rgba(255, 255, 255, 0.8);
     padding: 8px 15px;
-    border-radius: 5px;
     transition: all 0.3s ease;
     position: relative;
 }
@@ -436,6 +436,14 @@ nav ul li .discord-btn {
     display: none !important;
 }
 
+.right-side {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-left: auto; 
+}
+
 .toggle-all-btn {
     background: rgba(87, 87, 87, 0);
     border: 1px solid rgba(141, 141, 141, 0.5);
@@ -515,10 +523,11 @@ header h1 {
 }
 
 .main-menu {
-    background: #111;
+    background: #111111;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(18px);
     border-right: 1px solid #e5e5e5;
+    border-top: 1px solid #e5e5e5;
     margin-top: 60px;
     overflow: hidden;
     position: fixed;
@@ -665,6 +674,6 @@ nav ul li:nth-child(6) { animation-delay: 0.65s !important; }
     border-radius: 20px;
     display: flex;
     flex-grow: 1;
-    max-width: 25vw;
+    width: clamp(100px, 25vw, 325px);
     padding: 0px 5px 0px 15px;
 }

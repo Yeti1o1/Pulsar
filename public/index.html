@@ -14,18 +14,29 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron&family=Audiowide&family=Press+Start+2P&family=Russo+One&family=Bungee&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/index.css">
+    <script src="index.js"></script>
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4207227785539100" crossorigin="anonymous"></script>
 
 </head>
 <body>
-
-    <!-- Particles.js Background -->
-    <div id="particles-js"></div>
+<div id="particles-js"></div>
 
 <div class="area"></div><nav class="main-menu">
+            <ul>
+                <li>
+                    <a href="#"
+                      style="display: block;"
+                      onmouseover="this.style.background='rgba(0,0,0,0.0)';"
+                      onmouseout="this.style.background='';">
+                        <span class="nav-text"></span>
+                    </a>
+                </li>
+            </ul>
+
             <ul>
                 <li>
                     <a href="index.html">
@@ -39,59 +50,87 @@
             </ul>
             <ul>
                 <li>
-                    <a href="https://apps.html">
+                    <a href="apps.html" style="border-bottom: 1px solid #e5e5e5;">
                         <i class="fa fa-cubes fa-2x"></i>
                         <span class="nav-text">
                            Apps
                         </span>
                     </a>
-
+                </li>
+            </ul>
+            <ul>
+                <li>
+                    <a href="gamesall.html?category=recommended">
+                        <i class="fa fa-cubes fa-2x"></i>
+                        <span class="nav-text">
+                           Apps
+                        </span>
+                    </a>
                 </li>
             </ul>
         </nav>
 
-        <!-- Search and Controls -->
         <section class="hub-controls">
+
+        <h1 style="
+          font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif !important;
+          font-size: 32px;
+          font-weight: bold;
+          position: absolute;
+          top: 50%;
+          left: 1.5px;
+          transform: translateY(-50%);
+          height: 64px;
+          line-height: 64px;
+          margin: 0;
+          white-space: nowrap;
+        ">
+          <img src="Imgs/Logo.png" alt="Logo" style="
+            width: 60px;
+            height: auto;
+            vertical-align: middle;
+          ">
+<span style="font-family: 'Russo One', sans-serif !important; letter-spacing: 2px;">Pulsar</span>
+        </h1>
+
+          <div class="right-side">
+
+
             <div class="search-wrapper" id="searchWrapper">
                 <input type="text" id="myInput" placeholder="Search for games...">
                 <button class="search-icon-btn" aria-label="Search">
                    <i class="fa fa-search"></i>
                 </button>
             </div>
-
-            <script type="text/javascript" src="//www.highperformanceformat.com/1118f7a5d44f23dbfc48da2338d22502/invoke.js"></script>
-
             <a href="index.html" style="text-decoration: none;" class="toggle-categories-btn" hidden>View All Games</a>
 
             <a href="gamesall.html?category=all" style="text-decoration: none;" class="toggle-categories-btn">Hide Categories</a>
-
+          
+            </div>
         </section>
 
-    <!-- Main Game Hub Content Area -->
     <main class="hub-container">
 
-        <!-- Container for Categories -->
         <div class="categories-wrapper" id="categoriesWrapper">
 
-            <!-- Favorited Games Section (Correctly Placed) -->
             <section class="game-category favorites-section" id="favoritesSection" style="display: none;">
-                 <div class="category-header">
+                <div class="category-header">
                     <h6><i class="fas fa-heart"></i> Favorited Games <a href="#" style="text-decoration: none;" class="toggle-all-btn" onclick="showFavoritedGames(event)">View All</a></h6>
-                                          <div class="scroll-arrows">
-                        <button class="scroll-arrow left-arrow" aria-label="Scroll Left"><i class="fas fa-angle-left"></i></button>
-                        <button class="scroll-arrow right-arrow" aria-label="Scroll Right"><i class="fas fa-angle-right"></i></button>
-                    </div>
+                        <div class="scroll-arrows">
+                    <button class="scroll-arrow left-arrow" aria-label="Scroll Left"><i class="fas fa-angle-left"></i></button>
+                    <button class="scroll-arrow right-arrow" aria-label="Scroll Right"><i class="fas fa-angle-right"></i></button>
                 </div>
-                <!-- Standard btn-container for horizontal scroll -->
+        </div>
+
                 <div id="favorited-category">
                 <div class="btn-container favorite-container">
-                    <!-- Favorite buttons added dynamically by JS -->
                 </div>
                 </div>
+
             </section>
 
 <div id="bigDivToHide">
- <!-- All Games Section -->
+
  <section class="game-category all-games-section">
     <div class="category-header">
      <h6><i class="fas fa-star"></i> All Games <a href="gamesall.html?category=all" style="text-decoration: none;"class="toggle-all-btn">View All</a></h6>
@@ -99,9 +138,9 @@
       <button class="scroll-arrow left-arrow" aria-label="Scroll Left"><i class="fas fa-angle-left"></i></button>
       <button class="scroll-arrow right-arrow" aria-label="Scroll Right"><i class="fas fa-angle-right"></i></button>
       </div>
-    </div> <!-- Moved closing div here -->
+    </div> 
     <div id="all-category">
-    <div class="btn-container"> <!-- btn-container is now sibling to category-header -->
+    <div class="btn-container"> 
         <button class="btn" data-path="Games/10 Minutes Till Dawn/index.html" data-game-id="fav-Games-Ten-Minutes-Till-Dawn-index-html"><img class="imgg" src="Imgs/10 Minutes Till Dawn.png" alt="10 Minutes Till Dawn"><div class="game-info-bar"><span class="game-name">10 Minutes Till Dawn</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/1v1.LOL/index.html" data-game-id="fav-Games-1v1-LOL-index-html"><img class="imgg" src="Imgs/1v1.LOL.png" alt="1v1.LOL"><div class="game-info-bar"><span class="game-name">1v1.LOL</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/1v1 Soccer/index.html" data-game-id="fav-Games-1v1-Soccer-index-html"><img class="imgg" src="Imgs/1v1 Soccer.png" alt="1v1 Soccer"><div class="game-info-bar"><span class="game-name">1v1 Soccer</span></div><i class="fa fa-heart heart-icon"></i></button>
@@ -379,7 +418,6 @@
       </div>
     </section>
 
-    <!-- ADDED SPAN.game-name to all buttons in this section -->
      <section class="game-category">
      <div class="category-header">
      <h6><i class="fas fa-star"></i> Recommended <a href="gamesall.html?category=recommended" style="text-decoration: none;"class="toggle-all-btn">View All</a></h6>
@@ -387,9 +425,9 @@
       <button class="scroll-arrow left-arrow" aria-label="Scroll Left"><i class="fas fa-angle-left"></i></button>
       <button class="scroll-arrow right-arrow" aria-label="Scroll Right"><i class="fas fa-angle-right"></i></button>
       </div>
-    </div> <!-- Moved closing div here -->
+    </div> 
     <div id="recommended-category">
-      <div class="btn-container"> <!-- btn-container is now sibling to category-header -->
+      <div class="btn-container"> 
         <button class="btn" data-path="Games/Crazy Cattle 3D/index.html" data-game-id="fav-Games-Crazy-Cattle-3D-index-html"><img class="imgg" src="Imgs/Crazy Cattle 3D.png" alt="Crazy Cattle 3D"><div class="game-info-bar"><span class="game-name">Crazy Cattle 3D</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Bit Planes/index.html" data-game-id="fav-Games-Bit-Planes-index-html"><img class="imgg" src="Imgs/Bit Planes.png" alt="Bit Planes"><div class="game-info-bar"><span class="game-name">Bit Planes</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Tag/index.html" data-game-id="fav-Games-Tag-index-html"><img class="imgg" src="Imgs/Tag.png" alt="Tag"><div class="game-info-bar"><span class="game-name">Tag</span></div><i class="fa fa-heart heart-icon"></i></button>
@@ -439,7 +477,6 @@
      </div>
 </section>
 
-<!-- Shooter Games Section (Now Separate) -->
 <section class="game-category">
     <div class="category-header">
        <h6><i class="fas fa-crosshairs"></i> Shooter Games <a href="gamesall.html?category=shooter" style="text-decoration: none;"class="toggle-all-btn">View All</a></h6>
@@ -447,9 +484,9 @@
            <button class="scroll-arrow left-arrow" aria-label="Scroll Left"><i class="fas fa-angle-left"></i></button>
            <button class="scroll-arrow right-arrow" aria-label="Scroll Right"><i class="fas fa-angle-right"></i></button>
        </div>
-   </div> <!-- Moved closing div here -->
+   </div> 
    <div id="shooter-category">
-   <div class="btn-container"> <!-- btn-container is now sibling to category-header -->
+   <div class="btn-container"> 
         <button class="btn" data-path="Games/1v1.LOL/index.html" data-game-id="fav-Games-1v1-LOL-index-html"><img class="imgg" src="Imgs/1v1.LOL.png" alt="1v1.LOL"><div class="game-info-bar"><span class="game-name">1v1.LOL</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Asteroids/index.html" data-game-id="fav-Games-Asteroids-index-html"><img class="imgg" src="Imgs/Asteroids.png" alt="Asteroids"><div class="game-info-bar"><span class="game-name">Asteroids</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Ascii Space.html" data-game-id="fav-Games-Ascii-Space-html"><img class="imgg" src="Imgs/Ascii Space.png" alt="Ascii Space"><div class="game-info-bar"><span class="game-name">Ascii Space</span></div><i class="fa fa-heart heart-icon"></i></button>
@@ -490,7 +527,6 @@
    </div>
 </section>
 
-<!-- Combat Games Section -->
 <section class="game-category">
      <div class="category-header">
         <h6><i class="fas fa-fist-raised"></i> Combat Games <a href="gamesall.html?category=combat" style="text-decoration: none;"class="toggle-all-btn">View All</a></h6>
@@ -498,9 +534,9 @@
             <button class="scroll-arrow left-arrow" aria-label="Scroll Left"><i class="fas fa-angle-left"></i></button>
             <button class="scroll-arrow right-arrow" aria-label="Scroll Right"><i class="fas fa-angle-right"></i></button>
         </div>
-    </div> <!-- Moved closing div here -->
+    </div> 
     <div id="combat-category">
-    <div class="btn-container"> <!-- btn-container is now sibling to category-header -->
+    <div class="btn-container"> 
       <button class="btn" data-path="Games/Crazy Cattle 3D/index.html" data-game-id="fav-Games-Crazy-Cattle-3D-index-html"><img class="imgg" src="Imgs/Crazy Cattle 3D.png" alt="Crazy Cattle 3D"><div class="game-info-bar"><span class="game-name">Crazy Cattle 3D</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Boxing Physics 2/index.html" data-game-id="fav-Games-Boxing-Physics-2-index-html"><img class="imgg" src="Imgs/Boxing Physics 2.png" alt="Boxing Physics 2"><div class="game-info-bar"><span class="game-name">Boxing Physics 2</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/1v1.LOL/index.html" data-game-id="fav-Games-1v1-LOL-index-html"><img class="imgg" src="Imgs/1v1.LOL.png" alt="1v1.LOL"><div class="game-info-bar"><span class="game-name">1v1.LOL</span></div><i class="fa fa-heart heart-icon"></i></button>
@@ -544,7 +580,6 @@
     </div>
 </section>
 
-<!-- Puzzle Games Section -->
  <section class="game-category">
      <div class="category-header">
         <h6><i class="fas fa-puzzle-piece"></i> Puzzle Games <a href="gamesall.html?category=puzzle" style="text-decoration: none;"class="toggle-all-btn">View All</a></h6>
@@ -552,9 +587,9 @@
             <button class="scroll-arrow left-arrow" aria-label="Scroll Left"><i class="fas fa-angle-left"></i></button>
             <button class="scroll-arrow right-arrow" aria-label="Scroll Right"><i class="fas fa-angle-right"></i></button>
         </div>
-    </div> <!-- Moved closing div here -->
+    </div> 
     <div id="puzzle-category">
-    <div class="btn-container"> <!-- btn-container is now sibling to category-header -->
+    <div class="btn-container"> 
         <button class="btn" data-path="Games/Mine Sweeper/index.html" data-game-id="fav-Games-Mine-Sweeper-index-html"><img class="imgg" src="Imgs/Mine Sweeper.png" alt="Mine Sweeper"><div class="game-info-bar"><span class="game-name">Mine Sweeper</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/2048/index.html" data-game-id="fav-Games-2048-index-html"><img class="imgg" src="Imgs/2048.png" alt="2048"><div class="game-info-bar"><span class="game-name">2048</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/2048 9007199254740992/index.html" data-game-id="fav-Games-2048-9007199254740992-index-html"><img class="imgg" src="Imgs/2048 9007199254740992.png" alt="2048 9007199254740992"><div class="game-info-bar"><span class="game-name">2048 9007199254740992</span></div><i class="fa fa-heart heart-icon"></i></button>
@@ -609,7 +644,6 @@
     </div>
 </section>
 
-<!-- Multiplayer Games Section -->
 <section class="game-category">
     <div class="category-header">
         <h6><i class="fas fa-users"></i> Multiplayer Games <a href="gamesall.html?category=multiplayer"  style="text-decoration: none;"class="toggle-all-btn">View All</a></h6>
@@ -617,9 +651,9 @@
             <button class="scroll-arrow left-arrow" aria-label="Scroll Left"><i class="fas fa-angle-left"></i></button>
             <button class="scroll-arrow right-arrow" aria-label="Scroll Right"><i class="fas fa-angle-right"></i></button>
         </div>
-    </div> <!-- Moved closing div here -->
+    </div> 
     <div id="multiplayer-category">
-    <div class="btn-container"> <!-- btn-container is now sibling to category-header -->
+    <div class="btn-container"> 
          <button class="btn" data-path="Games/1v1.LOL/index.html" data-game-id="fav-Games-1v1-LOL-index-html"><img class="imgg" src="Imgs/1v1.LOL.png" alt="1v1.LOL"><div class="game-info-bar"><span class="game-name">1v1.LOL</span></div><i class="fa fa-heart heart-icon"></i></button>
          <button class="btn" data-path="Games/Basket Random/index.html" data-game-id="fav-Games-Basket-Random-index-html"><img class="imgg" src="Imgs/Basket Random.png" alt="Basket Random"><div class="game-info-bar"><span class="game-name">Basket Random</span></div><i class="fa fa-heart heart-icon"></i></button>
          <button class="btn" data-path="Games/Boxing Physics 2/index.html" data-game-id="fav-Games-Boxing-Physics-2-index-html"><img class="imgg" src="Imgs/Boxing Physics 2.png" alt="Boxing Physics 2"><div class="game-info-bar"><span class="game-name">Boxing Physics 2</span></div><i class="fa fa-heart heart-icon"></i></button>
@@ -651,7 +685,6 @@
     </div>
 </section>
 
-<!-- IO Games Section -->
 <section class="game-category">
      <div class="category-header">
         <h6><i class="fas fa-dot-circle"></i> IO Games <a href="gamesall.html?category=io" style="text-decoration: none;"class="toggle-all-btn">View All</a></h6>
@@ -659,9 +692,9 @@
             <button class="scroll-arrow left-arrow" aria-label="Scroll Left"><i class="fas fa-angle-left"></i></button>
             <button class="scroll-arrow right-arrow" aria-label="Scroll Right"><i class="fas fa-angle-right"></i></button>
         </div>
-    </div> <!-- Moved closing div here -->
+    </div> 
     <div id="io-category">
-    <div class="btn-container"> <!-- btn-container is now sibling to category-header -->
+    <div class="btn-container"> 
          <button class="btn" data-path="Games/Paper.io 2.html" data-game-id="fav-Games-Paper-io-2-html"><img class="imgg" src="Imgs/Paper.io 2.png" alt="Paper.io 2"><div class="game-info-bar"><span class="game-name">Paper.io 2</span></div><i class="fa fa-heart heart-icon"></i></button>
          <button class="btn" data-path="Games/Paper.io 3D.html" data-game-id="fav-Games-Paper-io-3D-html"><img class="imgg" src="Imgs/Paper.io 3D.png" alt="Paper.io 3D"><div class="game-info-bar"><span class="game-name">Paper.io 3D</span></div><i class="fa fa-heart heart-icon"></i></button>
          <button class="btn" data-path="Games/Hole.io/index.html" data-game-id="fav-Games-Hole-io-index-html"><img class="imgg" src="Imgs/Hole.io.png" alt="Hole.io"><div class="game-info-bar"><span class="game-name">Hole.io</span></div><i class="fa fa-heart heart-icon"></i></button>
@@ -671,7 +704,6 @@
     </div>
 </section>
 
- <!-- Adventure Games Section -->
 <section class="game-category">
     <div class="category-header">
        <h6><i class="fas fa-compass"></i> Adventure Games <a href="gamesall.html?category=adventure" style="text-decoration: none;"class="toggle-all-btn">View All</a></h6>
@@ -679,9 +711,9 @@
            <button class="scroll-arrow left-arrow" aria-label="Scroll Left"><i class="fas fa-angle-left"></i></button>
            <button class="scroll-arrow right-arrow" aria-label="Scroll Right"><i class="fas fa-angle-right"></i></button>
        </div>
-   </div> <!-- Moved closing div here -->
+   </div> 
    <div id="adventure-category">
-   <div class="btn-container"> <!-- btn-container is now sibling to category-header -->
+   <div class="btn-container"> 
         <button class="btn" data-path="Games/Bee Swarm Simulator.html" data-game-id="fav-Games-Bee-Swarm-Simulator-html"><img class="imgg" src="Imgs/Bee Swarm Simulator.png" alt="Bee Swarm Simulator"><div class="game-info-bar"><span class="game-name">Bee Swarm Simulator</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Bitlife/index.html" data-game-id="fav-Games-Bitlife-index-html"><img class="imgg" src="Imgs/Bitlife.png" alt="Bitlife"><div class="game-info-bar"><span class="game-name">Bitlife</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Bob The Robber.html" data-game-id="fav-Games-Bob-The-Robber-html"><img class="imgg" src="Imgs/Bob The Robber.png" alt="Bob The Robber"><div class="game-info-bar"><span class="game-name">Bob The Robber</span></div><i class="fa fa-heart heart-icon"></i></button>
@@ -738,7 +770,6 @@
    </div>
 </section>
 
-<!-- Clicker Games Section -->
 <section class="game-category">
     <div class="category-header">
         <h6><i class="fas fa-mouse-pointer"></i> Clicker Games <a href="gamesall.html?category=clicker" style="text-decoration: none;"class="toggle-all-btn">View All</a></h6>
@@ -746,9 +777,9 @@
             <button class="scroll-arrow left-arrow" aria-label="Scroll Left"><i class="fas fa-angle-left"></i></button>
             <button class="scroll-arrow right-arrow" aria-label="Scroll Right"><i class="fas fa-angle-right"></i></button>
         </div>
-    </div> <!-- Moved closing div here -->
+    </div> 
     <div id="clicker-category">
-    <div class="btn-container"> <!-- btn-container is now sibling to category-header -->
+    <div class="btn-container"> 
         <button class="btn" data-path="Games/A Dark Room/index.html" data-game-id="fav-Games-A-Dark-Room-index-html"><img class="imgg" src="Imgs/A Dark Room.png" alt="A Dark Room"><div class="game-info-bar"><span class="game-name">A Dark Room</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Bitcoin Clicker/index.html" data-game-id="fav-Games-Bitcoin-Clicker-index-html"><img class="imgg" src="Imgs/Bitcoin Clicker.png" alt="Bitcoin Clicker"><div class="game-info-bar"><span class="game-name">Bitcoin Clicker</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Cookie Clicker/index.html" data-game-id="fav-Games-Cookie-Clicker-index-html"><img class="imgg" src="Imgs/Cookie Clicker.png" alt="Cookie Clicker"><div class="game-info-bar"><span class="game-name">Cookie Clicker</span></div><i class="fa fa-heart heart-icon"></i></button>
@@ -769,7 +800,6 @@
     </div>
 </section>
 
-<!-- Survival Games Section -->
  <section class="game-category">
      <div class="category-header">
         <h6><i class="fas fa-shield-alt"></i> Survival Games <a href="gamesall.html?category=survival" style="text-decoration: none;"class="toggle-all-btn">View All</a></h6>
@@ -777,9 +807,9 @@
             <button class="scroll-arrow left-arrow" aria-label="Scroll Left"><i class="fas fa-angle-left"></i></button>
             <button class="scroll-arrow right-arrow" aria-label="Scroll Right"><i class="fas fa-angle-right"></i></button>
         </div>
-    </div> <!-- Moved closing div here -->
+    </div> 
     <div id="survival-category">
-    <div class="btn-container"> <!-- btn-container is now sibling to category-header -->
+    <div class="btn-container"> 
       <button class="btn" data-path="Games/Crazy Cattle 3D/index.html" data-game-id="fav-Games-Crazy-Cattle-3D-index-html"><img class="imgg" src="Imgs/Crazy Cattle 3D.png" alt="Crazy Cattle 3D"><div class="game-info-bar"><span class="game-name">Crazy Cattle 3D</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Missiles/index.html" data-game-id="fav-Games-Missiles-index-html"><img class="imgg" src="Imgs/Missiles.png" alt="Missiles"><div class="game-info-bar"><span class="game-name">Missiles</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/1v1.LOL/index.html" data-game-id="fav-Games-1v1-LOL-index-html"><img class="imgg" src="Imgs/1v1.LOL.png" alt="1v1.LOL"><div class="game-info-bar"><span class="game-name">1v1.LOL</span></div><i class="fa fa-heart heart-icon"></i></button>
@@ -848,7 +878,6 @@
     </div>
 </section>
 
- <!-- Racing Games Section -->
 <section class="game-category">
     <div class="category-header">
        <h6><i class="fas fa-flag-checkered"></i> Racing Games <a href="gamesall.html?category=racing" style="text-decoration: none;"class="toggle-all-btn">View All</a></h6>
@@ -856,9 +885,9 @@
            <button class="scroll-arrow left-arrow" aria-label="Scroll Left"><i class="fas fa-angle-left"></i></button>
            <button class="scroll-arrow right-arrow" aria-label="Scroll Right"><i class="fas fa-angle-right"></i></button>
        </div>
-   </div> <!-- Moved closing div here -->
+   </div> 
    <div id="racing-category">
-   <div class="btn-container"> <!-- btn-container is now sibling to category-header -->
+   <div class="btn-container"> 
        <button class="btn" data-path="Games/Cluster Rush/index.html" data-game-id="fav-Games-Cluster-Rush-index-html"><img class="imgg" src="Imgs/Cluster Rush.png" alt="Cluster Rush"><div class="game-info-bar"><span class="game-name">Cluster Rush</span></div><i class="fa fa-heart heart-icon"></i></button>
        <button class="btn" data-path="Games/Drift Mania/index.html" data-game-id="fav-Games-Drift-Mania-index-html"><img class="imgg" src="Imgs/Drift Mania.png" alt="Drift Mania"><div class="game-info-bar"><span class="game-name">Drift Mania</span></div><i class="fa fa-heart heart-icon"></i></button>
        <button class="btn" data-path="Games/Getting Over It.html" data-game-id="fav-Games-Getting-Over-It-html"><img class="imgg" src="Imgs/Getting Over It.png" alt="Getting Over It"><div class="game-info-bar"><span class="game-name">Getting Over It</span></div><i class="fa fa-heart heart-icon"></i></button>
@@ -887,7 +916,6 @@
    </div>
 </section>
 
-<!-- Minigames Section -->
 <section class="game-category">
     <div class="category-header">
        <h6><i class="fas fa-gamepad"></i> Minigames <a href="gamesall.html?category=mini" style="text-decoration: none;"class="toggle-all-btn">View All</a></h6>
@@ -895,9 +923,9 @@
            <button class="scroll-arrow left-arrow" aria-label="Scroll Left"><i class="fas fa-angle-left"></i></button>
            <button class="scroll-arrow right-arrow" aria-label="Scroll Right"><i class="fas fa-angle-right"></i></button>
        </div>
-   </div> <!-- Moved closing div here -->
+   </div> 
    <div id="mini-category">
-   <div class="btn-container"> <!-- btn-container is now sibling to category-header -->
+   <div class="btn-container"> 
         <button class="btn" data-path="Games/4 Player Arcade.html" data-game-id="fav-Games-4-Player-Arcade-html"><img class="imgg" src="Imgs/4 Player Arcade.png" alt="4 Player Arcade"><div class="game-info-bar"><span class="game-name">4 Player Arcade</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Arrow.html" data-game-id="fav-Games-Arrow-html"><img class="imgg" src="Imgs/Arrow.png" alt="Arrow"><div class="game-info-bar"><span class="game-name">Arrow</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Asteroids/index.html" data-game-id="fav-Games-Asteroids-index-html"><img class="imgg" src="Imgs/Asteroids.png" alt="Asteroids"><div class="game-info-bar"><span class="game-name">Asteroids</span></div><i class="fa fa-heart heart-icon"></i></button>
@@ -953,7 +981,6 @@
    </div>
 </section>
 
-<!-- Simulator Games Section -->
  <section class="game-category">
     <div class="category-header">
         <h6><i class="fas fa-cog"></i> Simulator Games <a href="gamesall.html?category=simulator" style="text-decoration: none;"class="toggle-all-btn">View All</a></h6>
@@ -961,9 +988,9 @@
             <button class="scroll-arrow left-arrow" aria-label="Scroll Left"><i class="fas fa-angle-left"></i></button>
             <button class="scroll-arrow right-arrow" aria-label="Scroll Right"><i class="fas fa-angle-right"></i></button>
         </div>
-    </div> <!-- Moved closing div here -->
+    </div> 
     <div id="simulator-category">
-    <div class="btn-container"> <!-- btn-container is now sibling to category-header -->
+    <div class="btn-container"> 
          <button class="btn" data-path="Games/Bee Swarm Simulator.html" data-game-id="fav-Games-Bee-Swarm-Simulator-html"><img class="imgg" src="Imgs/Bee Swarm Simulator.png" alt="Bee Swarm Simulator"><div class="game-info-bar"><span class="game-name">Bee Swarm Simulator</span></div><i class="fa fa-heart heart-icon"></i></button>
          <button class="btn" data-path="Games/Bitlife/index.html" data-game-id="fav-Games-Bitlife-index-html"><img class="imgg" src="Imgs/Bitlife.png" alt="Bitlife"><div class="game-info-bar"><span class="game-name">Bitlife</span></div><i class="fa fa-heart heart-icon"></i></button>
          <button class="btn" data-path="Games/Fluidism/index.html" data-game-id="fav-Games-Fluidism-index-html"><img class="imgg" src="Imgs/Fluidism.png" alt="Fluidism"><div class="game-info-bar"><span class="game-name">Fluidism</span></div><i class="fa fa-heart heart-icon"></i></button>
@@ -983,7 +1010,6 @@
     </div>
 </section>
 
-<!-- Platformer Games Section -->
 <section class="game-category">
     <div class="category-header">
        <h6><i class="fas fa-shoe-prints"></i> Platformer Games <a href="gamesall.html?category=platformer" style="text-decoration: none;"class="toggle-all-btn">View All</a></h6>
@@ -991,9 +1017,9 @@
            <button class="scroll-arrow left-arrow" aria-label="Scroll Left"><i class="fas fa-angle-left"></i></button>
            <button class="scroll-arrow right-arrow" aria-label="Scroll Right"><i class="fas fa-angle-right"></i></button>
        </div>
-   </div> <!-- Moved closing div here -->
+   </div> 
    <div id="platformer-category">
-   <div class="btn-container"> <!-- btn-container is now sibling to category-header -->
+   <div class="btn-container"> 
         <button class="btn" data-path="Games/Appel.html" data-game-id="fav-Games-Appel-html"><img class="imgg" src="Imgs/Appel.png" alt="Appel"><div class="game-info-bar"><span class="game-name">Appel</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Blob.html" data-game-id="fav-Games-Blob-html"><img class="imgg" src="Imgs/Blob.png" alt="Blob"><div class="game-info-bar"><span class="game-name">Blob</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Circle O.html" data-game-id="fav-Games-Circle-O-html"><img class="imgg" src="Imgs/Circle O.png" alt="Circle O"><div class="game-info-bar"><span class="game-name">Circle O</span></div><i class="fa fa-heart heart-icon"></i></button>
@@ -1035,7 +1061,6 @@
    </div>
 </section>
 
-<!-- Sports Games Section -->
  <section class="game-category">
     <div class="category-header">
         <h6><i class="fas fa-futbol"></i> Sports Games <a href="gamesall.html?category=sports" style="text-decoration: none;"class="toggle-all-btn">View All</a></h6>
@@ -1043,9 +1068,9 @@
             <button class="scroll-arrow left-arrow" aria-label="Scroll Left"><i class="fas fa-angle-left"></i></button>
             <button class="scroll-arrow right-arrow" aria-label="Scroll Right"><i class="fas fa-angle-right"></i></button>
         </div>
-    </div> <!-- Moved closing div here -->
+    </div> 
     <div id="sports-category">
-    <div class="btn-container"> <!-- btn-container is now sibling to category-header -->
+    <div class="btn-container"> 
          <button class="btn" data-path="Games/Drift Mania/index.html" data-game-id="fav-Games-Drift-Mania-index-html"><img class="imgg" src="Imgs/Drift Mania.png" alt="Drift Mania"><div class="game-info-bar"><span class="game-name">Drift Mania</span></div><i class="fa fa-heart heart-icon"></i></button>
          <button class="btn" data-path="Games/Neon Foosball.html" data-game-id="fav-Games-Neon-Foosball-html"><img class="imgg" src="Imgs/Neon Foosball.png" alt="Neon Foosball"><div class="game-info-bar"><span class="game-name">Neon Foosball</span></div><i class="fa fa-heart heart-icon"></i></button>
          <button class="btn" data-path="Games/Nitro Clash.html" data-game-id="fav-Games-Nitro-Clash-html"><img class="imgg" src="Imgs/Nitro Clash.png" alt="Nitro Clash"><div class="game-info-bar"><span class="game-name">Nitro Clash</span></div><i class="fa fa-heart heart-icon"></i></button>
@@ -1069,777 +1094,140 @@
 </section>
 </div>
 
-        </div> <!-- Close categories-wrapper -->
+</div>
 
-        <!-- Message for no search results -->
-        <p id="noResultsMessage" style="display: none; text-align: center; margin-top: 30px; font-size: 1.3em; color: #ccc;">
-            No games found matching your search.
-        </p>
+    <p id="noResultsMessage" style="display: none; text-align: center; margin-top: 30px; font-size: 1.3em; color: #ccc;">
+        No games found matching your search.
+    </p>
 
-    </main> <!-- Close main.hub-container -->
+</main> 
 
-     <!-- --- Scripts --- -->
-
-    <!-- Utility: Debounce Function (Needs to be defined before used) -->
-    <script>
-
-        function debounce(func, wait, immediate) {
-          var timeout;
-          return function() {
-            var context = this, args = arguments;
-            var later = function() {
-              timeout = null;
-              if (!immediate) func.apply(context, args);
-            };
-            var callNow = immediate && !timeout;
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-            if (callNow) func.apply(context, args);
-          };
-        }
-      </script>
-
-      <!-- Utility: Get Button Name -->
-      <script>
-        function getButtonName(button) {
-
-           const spanText = button.querySelector('.game-info-bar .game-name')?.textContent.trim();
-           if (spanText) return spanText;
-
-           const imgAlt = button.querySelector('.imgg')?.alt;
-           if (imgAlt) return imgAlt;
-
-           let name = "";
-           button.childNodes.forEach(node => {
-             if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== "") {
-               name = node.textContent.trim();
-             }
-           });
-           if (name) return name;
-
-           const path = button.getAttribute('data-path');
-           if (path) {
-               let pathName = path.split('/').pop().split('.')[0].replace(/[-_]/g, ' ');
-
-               return pathName.replace(/\b\w/g, l => l.toUpperCase());
-           }
-
-           return 'Unknown Game';
-        }
-      </script>
-
-      <!-- Core Logic Function Definitions -->
-      <script>
-
-        function setupScrollArrows(category) {
-    const btnContainer = category.querySelector('.btn-container, .favorite-container, .btn-container-grid');
-    const leftArrow = category.querySelector('.scroll-arrow.left-arrow');
-    const rightArrow = category.querySelector('.scroll-arrow.right-arrow');
-
-    if (!btnContainer || !leftArrow || !rightArrow) {
-        return;
-    }
-
-    let scrollAmount;
-    const updateScrollAmount = () => {
-
-        const visibleButtons = Array.from(btnContainer.querySelectorAll('.btn'))
-            .filter(btn => window.getComputedStyle(btn).display !== 'none');
-        if (visibleButtons.length > 0) {
-            const buttonWidth = visibleButtons[0].offsetWidth; 
-            scrollAmount = Math.max(buttonWidth * 3, 150); 
-        } else {
-            scrollAmount = btnContainer.clientWidth / 2; 
-        }
-    };
-
-    updateScrollAmount();
-
-    function updateArrowVisibility() {
-        if (!category.offsetParent || !btnContainer.offsetParent || 
-            window.getComputedStyle(btnContainer).display === 'none' || 
-            window.getComputedStyle(category).display === 'none') {
-            leftArrow.classList.add('hidden');
-            rightArrow.classList.add('hidden');
-            return;
-        }
-
-        const visibleButtons = Array.from(btnContainer.querySelectorAll('.btn'))
-            .filter(btn => window.getComputedStyle(btn).display !== 'none');
-        if (visibleButtons.length === 0) {
-            leftArrow.classList.add('hidden');
-            rightArrow.classList.add('hidden');
-            return;
-        }
-
-        const tolerance = 5;
-        const maxScrollLeft = btnContainer.scrollWidth - btnContainer.clientWidth;
-        const canScroll = btnContainer.scrollWidth > btnContainer.clientWidth + tolerance;
-
-        if (canScroll && btnContainer.scrollLeft > tolerance) {
-            leftArrow.classList.remove('hidden');
-            if (!leftArrow._wasVisible) {
-                leftArrow.classList.add('show-pulse');
-                setTimeout(() => leftArrow.classList.remove('show-pulse'), 400);
-            }
-            leftArrow._wasVisible = true;
-        } else {
-            leftArrow.classList.add('hidden');
-            leftArrow._wasVisible = false;
-        }
-
-        if (canScroll && btnContainer.scrollLeft < maxScrollLeft - tolerance) {
-            rightArrow.classList.remove('hidden');
-            if (!rightArrow._wasVisible) {
-                rightArrow.classList.add('show-pulse');
-                setTimeout(() => rightArrow.classList.remove('show-pulse'), 400);
-            }
-            rightArrow._wasVisible = true;
-        } else {
-            rightArrow.classList.add('hidden');
-            rightArrow._wasVisible = false;
-        }
-    }
-
-    const debouncedUpdateArrows = debounce(updateArrowVisibility, 50);
-    category._updateArrowVisibility = debouncedUpdateArrows;
-
-    btnContainer.addEventListener('scroll', debouncedUpdateArrows);
-
-    const mutationObserver = new MutationObserver(debouncedUpdateArrows);
-    mutationObserver.observe(btnContainer, { childList: true, attributes: true, subtree: true });
-
-    const resizeObserver = new ResizeObserver(() => {
-        updateScrollAmount();
-        debouncedUpdateArrows();
-    });
-    resizeObserver.observe(btnContainer);
-    resizeObserver.observe(category);
-
-    const easeInOutQuad = t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-
-    let isAnimating = false;
-    const animateScroll = (direction, duration = 400) => {
-        if (isAnimating) return;
-        isAnimating = true;
-
-        const start = btnContainer.scrollLeft;
-        const target = start + direction * scrollAmount;
-        const startTime = performance.now();
-
-        const animate = (currentTime) => {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1); 
-            const easedProgress = easeInOutQuad(progress);
-            btnContainer.scrollLeft = start + (target - start) * easedProgress;
-
-            if (progress < 1) {
-                requestAnimationFrame(animate);
-            } else {
-                isAnimating = false;
-            }
-        };
-
-        requestAnimationFrame(animate);
-    };
-
-    const scrollStep = (direction) => {
-        if (isNaN(scrollAmount) || scrollAmount <= 0) return;
-        animateScroll(direction, 400); 
-    };
-
-    if (category._scrollStepListeners) {
-        leftArrow.removeEventListener('click', category._scrollStepListeners.left);
-        rightArrow.removeEventListener('click', category._scrollStepListeners.right);
-        leftArrow.removeEventListener('mousedown', category._scrollStepListeners.leftHoldStart);
-        leftArrow.removeEventListener('mouseup', category._scrollStepListeners.leftHoldStop);
-        leftArrow.removeEventListener('mouseleave', category._scrollStepListeners.leftHoldStop);
-        leftArrow.removeEventListener('touchstart', category._scrollStepListeners.leftHoldStartTouch);
-        leftArrow.removeEventListener('touchend', category._scrollStepListeners.leftHoldStop);
-        leftArrow.removeEventListener('touchcancel', category._scrollStepListeners.leftHoldStop);
-
-        rightArrow.removeEventListener('mousedown', category._scrollStepListeners.rightHoldStart);
-        rightArrow.removeEventListener('mouseup', category._scrollStepListeners.rightHoldStop);
-        rightArrow.removeEventListener('mouseleave', category._scrollStepListeners.rightHoldStop);
-        rightArrow.removeEventListener('touchstart', category._scrollStepListeners.rightHoldStartTouch);
-        rightArrow.removeEventListener('touchend', category._scrollStepListeners.rightHoldStop);
-        rightArrow.removeEventListener('touchcancel', category._scrollStepListeners.rightHoldStop);
-    }
-
-    const leftClickListener = () => scrollStep(-1);
-    const rightClickListener = () => scrollStep(1);
-
-    leftArrow.addEventListener('click', leftClickListener);
-    rightArrow.addEventListener('click', rightClickListener);
-
-    let scrollHoldInterval = null;
-    const startHoldScrolling = (direction) => {
-        stopHoldScrolling();
-        if (!isAnimating) {
-            scrollStep(direction); 
-            scrollHoldInterval = setInterval(() => {
-                if (!isAnimating) scrollStep(direction);
-            }, 450); 
-        }
-    };
-    const stopHoldScrolling = () => {
-        clearInterval(scrollHoldInterval);
-        scrollHoldInterval = null;
-    };
-
-    const leftHoldStart = () => startHoldScrolling(-1);
-    const leftHoldStop = stopHoldScrolling;
-    const leftHoldStartTouch = (e) => { e.preventDefault(); startHoldScrolling(-1); };
-
-    const rightHoldStart = () => startHoldScrolling(1);
-    const rightHoldStop = stopHoldScrolling;
-    const rightHoldStartTouch = (e) => { e.preventDefault(); startHoldScrolling(1); };
-
-    leftArrow.addEventListener('mousedown', leftHoldStart);
-    leftArrow.addEventListener('mouseup', leftHoldStop);
-    leftArrow.addEventListener('mouseleave', leftHoldStop);
-    leftArrow.addEventListener('touchstart', leftHoldStartTouch, { passive: false });
-    leftArrow.addEventListener('touchend', leftHoldStop);
-    leftArrow.addEventListener('touchcancel', leftHoldStop);
-
-    rightArrow.addEventListener('mousedown', rightHoldStart);
-    rightArrow.addEventListener('mouseup', rightHoldStop);
-    rightArrow.addEventListener('mouseleave', rightHoldStop);
-    rightArrow.addEventListener('touchstart', rightHoldStartTouch, { passive: false });
-    rightArrow.addEventListener('touchend', rightHoldStop);
-    rightArrow.addEventListener('touchcancel', rightHoldStop);
-
-    category._scrollStepListeners = {
-        left: leftClickListener, right: rightClickListener,
-        leftHoldStart: leftHoldStart, leftHoldStop: leftHoldStop, leftHoldStartTouch: leftHoldStartTouch,
-        rightHoldStart: rightHoldStart, rightHoldStop: rightHoldStop, rightHoldStartTouch: rightHoldStartTouch
-    };
-
-    updateArrowVisibility();
-}
-
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-        function filterGames() {
-          const input = document.getElementById('myInput');
-          const filter = input.value.toUpperCase().trim();
-          const categoriesWrapper = document.getElementById('categoriesWrapper');
-
-          const categories = categoriesWrapper?.querySelectorAll('.game-category');
-          const noResultsMessage = document.getElementById('noResultsMessage');
-          let hasVisibleGames = false; 
-
-          categories?.forEach(category => {
-            const buttons = category.querySelectorAll('.btn');
-            let categoryHasVisibleButton = false; 
-
-            buttons.forEach(button => {
-              const gameName = getButtonName(button); 
-              const buttonMatches = gameName.toUpperCase().includes(filter);
-
-              if (buttonMatches) {
-                if (button.classList.contains('hidden')) {
-
-                    button.classList.remove('hidden');
-                }
-                hasVisibleGames = true; 
-                categoryHasVisibleButton = true; 
-              } else {
-                 if (!button.classList.contains('hidden')) {
-
-                    button.classList.add('hidden');
-                 }
-              }
-            });
-
-            if (filter === '') {
-                category.style.display = ''; 
-            } else {
-
-                 category.style.display = categoryHasVisibleButton ? '' : 'none';
-            }
-
-             const updateFunc = category._updateArrowVisibility;
-             if (typeof updateFunc === 'function') {
-
-                setTimeout(updateFunc, 10);
-             }
-          });
-
-          if (noResultsMessage) {
-
-            noResultsMessage.style.display = (filter !== '' && !hasVisibleGames) ? 'block' : 'none';
-          }
-
-        }
-
-        function addGameLaunchListener(button) {
-
-        }
-
-      </script>
-
-      <!-- Favoriting Logic (Self-contained in IIFE) -->
-      <script>
-
-          (() => { 
-              let favoriteContainer = null;
-              let favoritesSection = null;
-
-              function updateFavoritesSectionVisibility() {
-                   if (!favoriteContainer || !favoritesSection) return;
-
-                   const hasAnyFavorites = favoriteContainer.children.length > 0;
-                   favoritesSection.style.display = hasAnyFavorites ? '' : 'none';
-
-                   if (hasAnyFavorites) {
-                       const updateFunc = favoritesSection._updateArrowVisibility; 
-                       if (typeof updateFunc === 'function') setTimeout(updateFunc, 10); 
-                   }
-              }
-
-              function handleHeartIconClick(event) {
-                  event.stopPropagation(); 
-
-                  const heartIcon = event.currentTarget;
-                  const button = heartIcon.closest(".btn");
-                  if (!button) return;
-
-                  toggleFavoriteState(button); 
-              }
-
-               function toggleFavoriteState(button) {
-                   const heartIcon = button.querySelector('.heart-icon');
-                   if (!heartIcon) return;
-
-                   let gameId = button.dataset.gameId;
-
-                   if (!gameId) {
-                       const gamePath = button.getAttribute("data-path");
-                       gameId = gamePath ? `fav-${gamePath.replace(/[^a-zA-Z0-9]+/g, '-')}` : `fav-unknown-${Math.random().toString(16).slice(2)}`;
-                       button.dataset.gameId = gameId; 
-                       console.warn(`Generated gameId for button on click: ${gameId}`); 
-                   }
-
-                   const isCurrentlyHearted = heartIcon.classList.contains("hearted");
-                   const allMatchingButtons = document.querySelectorAll(`.btn[data-game-id="${gameId}"]`); 
-
-                   if (isCurrentlyHearted) {
-
-                       allMatchingButtons.forEach(btn => btn.querySelector('.heart-icon')?.classList.remove("hearted"));
-                       localStorage.setItem(`heartState-${gameId}`, "false");
-                       removeFromFavorites(gameId); 
-                   } else {
-
-                       allMatchingButtons.forEach(btn => btn.querySelector('.heart-icon')?.classList.add("hearted"));
-                       localStorage.setItem(`heartState-${gameId}`, "true");
-
-                       const originalButton = document.querySelector(`.categories-wrapper .game-category:not(#favoritesSection) .btn[data-game-id="${gameId}"]`);
-                       if (originalButton) {
-                           addToFavorites(originalButton); 
-                       } else {
-
-                           updateFavoritesSectionVisibility(); 
-                       }
-                   }
-               }
-
-               function addToFavorites(originalButton) {
-                   if (!favoriteContainer) return;
-                   const gameId = originalButton.dataset.gameId;
-
-                   const existingFavorite = favoriteContainer.querySelector(`.btn[data-game-id="${gameId}"]`);
-
-                   if (!existingFavorite) {
-
-                       const clonedButton = originalButton.cloneNode(true);
-
-                       const clonedHeartIcon = clonedButton.querySelector('.heart-icon');
-                       if (clonedHeartIcon) {
-                           clonedHeartIcon.classList.add('hearted'); 
-
-                           clonedHeartIcon.removeEventListener('click', handleHeartIconClick); 
-                           clonedHeartIcon.addEventListener('click', handleHeartIconClick); 
-                       }
-
-                       favoriteContainer.appendChild(clonedButton);
-                   } else {
-
-                       existingFavorite.querySelector('.heart-icon')?.classList.add('hearted');
-
-                       const existingHeartIcon = existingFavorite.querySelector('.heart-icon');
-                       if (existingHeartIcon && !existingHeartIcon._hasHeartListener) { 
-                            existingHeartIcon.addEventListener('click', handleHeartIconClick);
-                            existingHeartIcon._hasHeartListener = true; 
-                       }
-                   }
-
-                   updateFavoritesSectionVisibility(); 
-               }
-
-               function removeFromFavorites(gameId) {
-                   const favoritedItem = favoriteContainer?.querySelector(`.btn[data-game-id="${gameId}"]`);
-                   if (favoritedItem) {
-
-                       favoriteContainer.removeChild(favoritedItem);
-                   }
-                   updateFavoritesSectionVisibility(); 
-               }
-
-              document.addEventListener("DOMContentLoaded", function() {
-                   favoriteContainer = document.querySelector("#favoritesSection .favorite-container");
-                   favoritesSection = document.getElementById('favoritesSection');
-                   if (!favoriteContainer || !favoritesSection) {
-                       console.error("Favorites container or section not found."); 
-                       return;
-                   }
-
-                   document.querySelectorAll(".categories-wrapper .btn[data-path]").forEach(button => {
-                      const heartIcon = button.querySelector(".heart-icon");
-                      if (!heartIcon) {
-
-                          return; 
-                      }
-
-                      let gameId = button.dataset.gameId;
-                       if (!gameId) {
-                           const gamePath = button.getAttribute("data-path");
-
-                           gameId = gamePath ? `fav-${gamePath.replace(/[^a-zA-Z0-9]+/g, '-')}` : `fav-unknown-${Math.random().toString(16).slice(2)}`;
-                           button.dataset.gameId = gameId; 
-
-                       }
-
-                      if (!heartIcon._hasHeartListener) {
-                           heartIcon.addEventListener('click', handleHeartIconClick);
-                           heartIcon._hasHeartListener = true; 
-                      }
-
-                      const isHearted = localStorage.getItem(`heartState-${gameId}`) === "true"; 
-                      if (isHearted) {
-                          heartIcon.classList.add("hearted");
-                      } else {
-                          heartIcon.classList.remove("hearted"); 
-                      }
-                   });
-
-                   document.querySelectorAll(".categories-wrapper .game-category:not(#favoritesSection) .btn[data-game-id]").forEach(button => { 
-                       const gameId = button.dataset.gameId;
-                       const isHearted = localStorage.getItem(`heartState-${gameId}`) === "true"; 
-
-                       if (isHearted) {
-                           addToFavorites(button); 
-                       }
-                   });
-
-                   updateFavoritesSectionVisibility();
-
-              });
-          })(); 
-
-      </script>
-
-      <!-- Category Toggle Logic (Self-contained in IIFE) -->
-      <script>
-
-        (() => {
-            document.addEventListener('DOMContentLoaded', () => { 
-                  const toggleBtn = document.getElementById('Toggle'); 
-                  const categoriesWrapper = document.getElementById('categoriesWrapper');
-                  if(!toggleBtn || !categoriesWrapper) {
-
-                      return;
-                  }
-
-                  toggleBtn.addEventListener('click', () => {
-                      const isHidden = window.getComputedStyle(categoriesWrapper).display === 'none';
-                      if (isHidden) {
-                          categoriesWrapper.style.display = ''; 
-                          toggleBtn.textContent = 'Hide Categories';
-                          toggleBtn.setAttribute('aria-expanded', 'true');
-
-                          document.querySelectorAll('.game-category').forEach(category => {
-                              if (window.getComputedStyle(category).display !== 'none') { 
-                                  const updateFunc = category._updateArrowVisibility;
-                                  if (typeof updateFunc === 'function') setTimeout(updateFunc, 10);
-                              }
-                          });
-                      } else {
-                          categoriesWrapper.style.display = 'none'; 
-                          toggleBtn.textContent = 'Show Categories';
-                          toggleBtn.setAttribute('aria-expanded', 'false');
-                      }
-                  });
-
-                  toggleBtn.setAttribute('aria-expanded', window.getComputedStyle(categoriesWrapper).display !== 'none');
-
-            });
-        })();
-
-      </script>
-
-      <!-- Main Initializer (Runs on DOMContentLoaded) -->
-      <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("Main Initializer: DOM Loaded. Initializing...");
-
-            try {
-                console.log("Main Initializer: Setting up scroll arrows for all categories...");
-
-                document.querySelectorAll('.game-category').forEach(setupScrollArrows);
-                console.log("Main Initializer: Scroll arrow setup complete.");
-            } catch (error) {
-                console.error("Main Initializer: Error setting up scroll arrows:", error);
-            }
-
-            try {
-                const mainContainer = document.querySelector('main.hub-container');
-                if (mainContainer) {
-                    console.log("Main Initializer: Attaching delegated item launch listener to main.hub-container");
-                    mainContainer.addEventListener('click', function(event) {
-
-                        const clickedButton = event.target.closest('.btn[data-path]');
-                        if (!clickedButton) {
-
-                            return; 
-                        }
-
-                        if (event.target.classList.contains('heart-icon') || event.target.closest('.heart-icon')) {
-                           console.log("Delegated listener: Heart click detected, stopping app launch.");
-
-                           return;
-                        }
-
-                        console.log("Delegated listener: Valid button click detected for launching:", clickedButton); 
-
-                        const path = clickedButton.getAttribute('data-path');
-                        const itemName = getButtonName(clickedButton); 
-
-                        if (path && path !== '#') {
-                          console.log(`LAUNCHING (Delegated): "${itemName}" from path: "${path}"`); 
-
-                          localStorage.setItem("lastClickedUrl", path);
-                          localStorage.setItem("lastClickedGame", itemName); 
-
-                          window.location.href = "game.html";
-                        } else {
-                          console.error("Delegated Launch Error: Button missing or has invalid data-path.", clickedButton);
-                          alert("Error: Could not determine app details to launch.");
-                        }
-                    });
-                    console.log("Main Initializer: Delegated item launch listener attached.");
-                } else {
-                     console.error("Main Initializer: Could not find main.hub-container for delegated listener.");
-                }
-            } catch (error) {
-                 console.error("Main Initializer: Error attaching delegated item launch listener:", error);
-            }
-
-            try {
-                console.log("Main Initializer: Attaching search listeners...");
-                const searchInput = document.getElementById('myInput');
-                const searchIconBtn = document.querySelector('.search-icon-btn');
-
-                if (searchInput && searchIconBtn) {
-
-                     searchIconBtn.addEventListener('click', () => {
-                       searchInput.focus();
-                       filterGames(); 
-                     });
-
-                     searchInput.addEventListener('keypress', function(event) {
-                       if (event.key === 'Enter') {
-                         event.preventDefault(); 
-                         filterGames(); 
-                       }
-                     });
-
-                     searchInput.addEventListener('input', debounce(filterGames, 250)); 
-                     console.log("Main Initializer: Search listeners attached.");
-                 } else {
-                    console.error("Main Initializer: Search input (#myInput) or button (.search-icon-btn) not found.");
-                 }
-
-                if (searchInput && searchInput.value.trim() !== '') {
-                  console.log("Main Initializer: Performing initial filter based on input value.");
-                  filterGames(); 
-                } else {
-                   console.log("Main Initializer: No initial search value, skipping filter.");
-                }
-            } catch (error) {
-                 console.error("Main Initializer: Error attaching search listeners or performing initial filter:", error);
-            }
-
-            console.log("Main Initializer: Initialization complete.");
-        });
-      </script>
-
-      <!-- Particles.js Initialization (Self-contained in IIFE) -->
-      <script>
-      particlesJS("particles-js", {
-            "particles": {
-                "number": {
-                    "value": 80,
-                    "density": {
-                        "enable": true,
-                        "value_area": 800
-                    }
-                },
-                "color": {
-                    "value": "#ffffff"
-                },
-                "shape": {
-                    "type": "circle",
-                    "stroke": {
-                        "width": 0,
-                        "color": "#000000"
-                    }
-                },
-                "opacity": {
-                    "value": 0.5,
-                    "random": true,
-                    "anim": {
-                        "enable": false,
-                        "speed": 1,
-                        "opacity_min": 0.1,
-                        "sync": false
-                    }
-                },
-                "size": {
-                    "value": 3,
-                    "random": true,
-                    "anim": {
-                        "enable": false,
-                        "speed": 40,
-                        "size_min": 0.1,
-                        "sync": false
-                    }
-                },
-                "line_linked": {
-                    "enable": true,
-                    "distance": 150,
-                    "color": "#ffffff",
-                    "opacity": 0.4,
-                    "width": 1
-                },
-                "move": {
-                    "enable": true,
-                    "speed": 6,
-                    "direction": "none",
-                    "random": false,
-                    "straight": false,
-                    "out_mode": "out",
-                    "bounce": false,
-                    "attract": {
-                        "enable": false,
-                        "rotateX": 600,
-                        "rotateY": 1200
-                    }
-                }
-            },
-            "interactivity": {
-                "detect_on": "canvas",
-                "events": {
-                    "onhover": {
-                        "enable": true,
-                        "mode": "repulse"
-                    },
-                    "onclick": {
-                        "enable": true,
-                        "mode": "push"
-                    },
-                    "resize": true
-                },
-                "modes": {
-                    "grab": {
-                        "distance": 400,
-                        "line_linked": {
-                            "opacity": 1
-                        }
-                    },
-                    "bubble": {
-                        "distance": 400,
-                        "size": 40,
-                        "duration": 2,
-                        "opacity": 8,
-                        "speed": 3
-                    },
-                    "repulse": {
-                        "distance": 200,
-                        "duration": 0.4
-                    },
-                    "push": {
-                        "particles_nb": 4
-                    },
-                    "remove": {
-                        "particles_nb": 2
-                    }
-                }
-            },
-            "retina_detect": true
-        });
-
-      </script>
 <script>
-function showFavoritedGames(event) {
-  event.preventDefault();
-
-  const bigDiv = document.getElementById('bigDivToHide');
-  if (bigDiv) bigDiv.style.display = 'none';
-
-  const clickedLink = event.currentTarget;
-  if (clickedLink) clickedLink.style.display = 'none';
-
-  const categoriesWrapper = document.getElementById('categoriesWrapper');
-  if (categoriesWrapper) {
-    categoriesWrapper.querySelectorAll('section.game-category').forEach(section => {
-      if (!section.classList.contains('favorites-section')) {
-        section.style.display = 'none';
+  particlesJS("particles-js", {
+    "particles": {
+      "number": {
+        "value": 80,
+        "density": {
+          "enable": true,
+          "value_area": 800
+        }
+      },
+      "color": {
+        "value": "#ffffff"
+      },
+      "shape": {
+        "type": "circle",
+        "stroke": {
+          "width": 0,
+          "color": "#000000"
+        }
+      },
+      "opacity": {
+        "value": 0.5,
+        "random": true,
+        "anim": {
+          "enable": false,
+          "speed": 1,
+          "opacity_min": 0.1,
+          "sync": false
+        }
+      },
+      "size": {
+        "value": 3,
+        "random": true,
+        "anim": {
+          "enable": false,
+          "speed": 40,
+          "size_min": 0.1,
+          "sync": false
+        }
+      },
+      "line_linked": {
+        "enable": true,
+        "distance": 150,
+        "color": "#ffffff",
+        "opacity": 0.4,
+        "width": 1
+      },
+      "move": {
+        "enable": true,
+        "speed": 6,
+        "direction": "none",
+        "random": false,
+        "straight": false,
+        "out_mode": "out",
+        "bounce": false,
+        "attract": {
+          "enable": false,
+          "rotateX": 600,
+          "rotateY": 1200
+        }
       }
-    });
-  }
-
-  const favoritesSection = document.querySelector('section.favorites-section');
-  if (favoritesSection) {
-    favoritesSection.querySelectorAll('.scroll-arrows').forEach(arrowDiv => {
-      arrowDiv.style.display = 'none';
-    });
-
-    const btnContainer = favoritesSection.querySelector('.btn-container');
-    if (btnContainer) {
-      btnContainer.classList.remove('btn-container');
-      btnContainer.classList.add('btnnn-container');
-    }
-  }
-
-  const viewAllBtn = document.querySelector('.toggle-categories-btn[href="index.html"]'); 
-  const hideCategoriesBtn = document.querySelector('.toggle-categories-btn[href="gamesall.html?category=all"]'); 
-
-  if (viewAllBtn) viewAllBtn.hidden = false;  
-  if (hideCategoriesBtn) hideCategoriesBtn.hidden = true; 
-}
-
+    },
+    "interactivity": {
+      "detect_on": "canvas",
+      "events": {
+        "onhover": {
+          "enable": true,
+          "mode": "repulse"
+        },
+        "onclick": {
+          "enable": true,
+          "mode": "push"
+        },
+        "resize": true
+      },
+      "modes": {
+        "grab": {
+          "distance": 400,
+          "line_linked": {
+            "opacity": 1
+          }
+        },
+        "bubble": {
+          "distance": 400,
+          "size": 40,
+          "duration": 2,
+          "opacity": 8,
+          "speed": 3
+        },
+        "repulse": {
+          "distance": 200,
+          "duration": 0.4
+        },
+        "push": {
+          "particles_nb": 4
+        },
+        "remove": {
+          "particles_nb": 2
+        }
+      }
+    },
+    "retina_detect": true
+  });
 </script>
-  </body>
-  </html>
+<script>
+  document.querySelectorAll('.btn').forEach(button => {
+    const img = button.querySelector('.imgg');
+
+    button.addEventListener('mousemove', (e) => {
+      const rect = button.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const xPercent = x / rect.width * 120;
+      const yPercent = y / rect.height * 120;
+
+      img.style.transformOrigin = `${xPercent}% ${yPercent}%`;
+      img.style.transform = 'scale(1.4)';
+    });
+
+    button.addEventListener('mouseleave', () => {
+      img.style.transformOrigin = 'center center';
+      img.style.transform = 'scale(1)';
+    });
+  });
+</script>
+
+
+</body>
+</html>
