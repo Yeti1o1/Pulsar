@@ -29,7 +29,7 @@
             <ul>
                 <li>
                     <a href="#"
-                      style="display: block;"
+                      style="display: block; height: 20px;"
                       onmouseover="this.style.background='rgba(0,0,0,0.0)';"
                       onmouseout="this.style.background='';">
                         <span class="nav-text"></span>
@@ -40,21 +40,16 @@
             <ul>
                 <li>
                     <a href="index.html">
-                        <i class="fa fa-home fa-2x"></i>
-                        <span class="nav-text">
-                           Home
-                        </span>
+                        <span style="font-size: 1.75em; text-shadow: none;">🏠</span>
+                        <span class="nav-text">Home</span>
                     </a>
-
                 </li>
             </ul>
             <ul>
                 <li>
-                    <a href="apps.html" style="border-bottom: 1px solid #e5e5e5;">
-                        <i class="fa fa-cubes fa-2x"></i>
-                        <span class="nav-text">
-                           Apps
-                        </span>
+                  <a class="open-category-btn" data-category="apps" href="#"  style="border-bottom: 2px solid #5c5c5c;">
+                        <span style="font-size: 1.75em; text-shadow: none;">📱</span>
+                        <span class="nav-text">Apps</span>
                     </a>
                 </li>
             </ul>
@@ -178,6 +173,22 @@
                   </a>
                 </li>
             </ul>
+            <ul>
+                <li>
+                    <a href="https://discord.gg/9KKk4DNBPE" style="border-top: 2px solid #5c5c5c;">
+                        <span style="font-size: 1.75em; text-shadow: none;"><i class="fa-brands fa-discord"></i></span>
+                        <span class="nav-text">Discord</span>
+                    </a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                    <a href="https://github.com/Yeti1o1/Pulsar">
+                        <span style="font-size: 2.2em; text-shadow: none;"><i  class="fa-brands fa-github"></i></span>
+                        <span class="nav-text">Github</span>
+                    </a>
+                </li>
+            </ul>
         </nav>
 
         <section class="hub-controls">
@@ -207,11 +218,77 @@
 
 <a href="#" class="toggle-categories-btn hide-categories" style="text-decoration:none;">Hide Categories</a>
 
+            <button class="updrop-button"><i class="fa-solid fa-square-pen"></i></button>
 
             </div>
         </section>
 
     <main class="hub-container">
+
+<div class="Customization">
+<div style="position: fixed; top: 0; left: 0; width: 100%; height: 20vh; background: #111; z-index: 11111111111111111111111111111;"></div>
+
+<div class="quick-buttons">
+  <button class="color-btn black" data-color="#000000"></button>
+  <button class="color-btn white" data-color="#ffffff"></button>
+  <button class="color-btn red" data-color="linear-gradient(135deg, #ff5f6d, #ffc371)"></button>
+  <button class="color-btn blue" data-color="linear-gradient(-80deg, #3a5588, #0c1254)"></button>
+  <button class="color-btn green" data-color="linear-gradient(135deg, #11998e, #4cff90)"></button>
+  <button class="color-btn yellow" data-color="linear-gradient(135deg, #f8b500, #fceabb)"></button>
+  <button class="color-btn purple" data-color="linear-gradient(135deg, #412483, #c93fff)"></button>
+  <button class="color-btn orange" data-color="linear-gradient(135deg, #f12711, #f5af19)"></button>
+  <button class="color-btn pink" data-color="linear-gradient(135deg, #ff00dd, #f82c8f)"></button>
+  <button class="color-btn teal" data-color="linear-gradient(135deg, #185a9d, #43cea2)"></button>
+</div>
+
+<script>
+if (!localStorage.getItem('backgroundStyle') && !localStorage.getItem('backgroundValue')) {
+  localStorage.setItem('backgroundStyle', 'gradient');
+  localStorage.setItem('backgroundValue', 'linear-gradient(-80deg, #3a5588, #0c1254)');
+}
+
+document.querySelectorAll('.color-btn').forEach(button => {
+  button.addEventListener('click', () => {
+    const color = button.getAttribute('data-color');
+    if (color.startsWith('linear-gradient')) {
+      document.body.style.backgroundImage = color;
+      document.body.style.backgroundColor = '';
+      localStorage.setItem('backgroundStyle', 'gradient');
+      localStorage.setItem('backgroundValue', color);
+    } else {
+      document.body.style.background = color;
+      document.body.style.backgroundImage = '';
+      localStorage.setItem('backgroundStyle', 'solid');
+      localStorage.setItem('backgroundValue', color);
+    }
+  });
+});
+
+window.addEventListener('load', () => {
+  const bgStyle = localStorage.getItem('backgroundStyle');
+  const bgValue = localStorage.getItem('backgroundValue');
+
+  if (bgStyle && bgValue) {
+    if (bgStyle === 'gradient') {
+      document.body.style.backgroundImage = bgValue;
+      document.body.style.backgroundColor = '';
+    } else if (bgStyle === 'solid') {
+      document.body.style.background = bgValue;
+      document.body.style.backgroundImage = '';
+    }
+  }
+});
+
+</script>
+
+<div id="switchContainer">
+  <label id="toggleLabel" for="particlesToggle">Particles</label>
+  <label class="switch">
+    <input type="checkbox" id="particlesToggle" checked />
+    <span class="slider"></span>
+  </label>
+</div>
+</div>
 
         <div class="categories-wrapper" id="categoriesWrapper">
 
@@ -1194,6 +1271,33 @@
     </div>
     </div>
 </section>
+
+ <section class="game-category" id="apps-category">
+    <div class="category-header">
+    <h6><span style="font-size: 1.2em; text-shadow: none;">📱</span> Apps <a style="text-decoration:none;cursor:pointer;" class="toggle-all-btn"> View All</a></h6>
+        <div class="scroll-arrows">
+            <button class="scroll-arrow left-arrow" aria-label="Scroll Left"><i class="fas fa-angle-left"></i></button>
+            <button class="scroll-arrow right-arrow" aria-label="Scroll Right"><i class="fas fa-angle-right"></i></button>
+        </div>
+    </div> 
+    <div id="apps-category">
+    <div class="btn-container"> 
+         <button class="btn" data-path="Apps/Neutron.html" data-app-id="app-Neutron"><img class="imgg" src="Imgs/Neutronicon.png" alt="Neutron"><div class="game-info-bar"><span class="game-name">Neutron</span></div></button>
+         <button class="btn" data-path="Apps/Advanced Code Editor 1.html" data-app-id="app-Advanced-Code-Editor-1"><img class="imgg" src="Imgs/Advanced Code Editor 1icon.png" alt="Advanced Code Editor 1"><div class="game-info-bar"><span class="game-name">Advanced Code Editor 1</span></div></button>
+         <button class="btn" data-path="Apps/Advanced Code Editor 2.html" data-app-id="app-Advanced-Code-Editor-2"><img class="imgg" src="Imgs/Advanced Code Editor 2icon.png" alt="Advanced Code Editor 2"><div class="game-info-bar"><span class="game-name">Advanced Code Editor 2</span></div></button>
+         <button class="btn" data-path="Apps/Algebra Calculator.html" data-app-id="app-Algebra-Calculator"><img class="imgg" src="Imgs/Algebra Calculatoricon.png" alt="Algebra Calculator"><div class="game-info-bar"><span class="game-name">Algebra Calculator</span></div></button>
+         <button class="btn" data-path="Apps/Simple Calculator.html" data-app-id="app-Simple-Calculator"><img class="imgg" src="Imgs/Simple Calculatoricon.png" alt="Simple Calculator"><div class="game-info-bar"><span class="game-name">Simple Calculator</span></div></button>
+         <button class="btn" data-path="Apps/Emulators/Emulator JS/Emulator JS.html" data-app-id="app-Emulator-JS"><img class="imgg" src="Imgs/Emulator JSicon.png" alt="Emulator JS"><div class="game-info-bar"><span class="game-name">Emulator JS</span></div></button>
+         <button class="btn" data-path="Apps/Ruffle/Ruffle.html" data-app-id="app-Ruffle"><img class="imgg" src="Imgs/Ruffleicon.png" alt="Ruffle"><div class="game-info-bar"><span class="game-name">Ruffle</span></div></button>
+         <button class="btn" data-path="Apps/Turbowarp/Turbowarp.html" data-app-id="app-Turbowarp"><img class="imgg" src="Imgs/Turbowarpicon.png" alt="Turbowarp"><div class="game-info-bar"><span class="game-name">Turbowarp</span></div></button>
+         <button class="btn" data-path="Apps/Emulators/Emulator WebRetro/WebRetro.html" data-app-id="app-WebRetro"><img class="imgg" src="Imgs/Emulator WebRetroicon.png" alt="Emulator WebRetro"><div class="game-info-bar"><span class="game-name">WebRetro</span></div></button>
+         <button class="btn" data-path="Apps/MiniWiki.html" data-app-id="app-MiniWiki"><img class="imgg" src="Imgs/MiniWikiicon.png" alt="MiniWiki"><div class="game-info-bar"><span class="game-name">MiniWiki</span></div></button>
+         <button class="btn" data-path="Apps/Wordle Bot/Wordle Bot.html" data-app-id="app-Wordle-Bot"><img class="imgg" src="Imgs/Wordle Boticon.png" alt="Wordle Bot"><div class="game-info-bar"><span class="game-name">Wordle Bot</span></div></button>
+         <button class="btn" data-path="Apps/Weavesilk/index.html" data-app-id="app-Weavesilk"><img class="imgg" src="Imgs/Weavesilkicon.png" alt="Weavesilk"><div class="game-info-bar"><span class="game-name">Weavesilk</span></div></button>
+         <button class="btn" data-path="Apps/3D Particle Explorations/index.html" data-app-id="app-3D-Particle-Explorations"><img class="imgg" src="Imgs/3D Particle Explorationsicon.png" alt="3D Particle Explorations"><div class="game-info-bar"><span class="game-name">3D Particle Explorations</span></div></button>
+        </div>
+    </div>
+</section>
 </div>
 
 </div>
@@ -1578,8 +1682,38 @@ if (hideCategoriesBtn) {
     });
 }
 
+  const toggle = document.getElementById('particlesToggle');
+  const container = document.getElementById('particles-js');
 
+  const savedState = localStorage.getItem('particlesEnabled');
+  const enabled = savedState === null ? true : savedState === 'true';
 
+  toggle.checked = enabled;
+  container.style.display = enabled ? 'block' : 'none';
+
+  if (enabled) {
+    particlesJS.load('particles-js', 'particles.json', function() {
+      console.log('particles.js loaded');
+    });
+  }
+
+  toggle.addEventListener('change', () => {
+    const isChecked = toggle.checked;
+    localStorage.setItem('particlesEnabled', isChecked);
+    if (isChecked) {
+      container.style.display = 'block';
+      particlesJS.load('particles-js', 'particles.json', function() {
+        console.log('particles.js loaded');
+      });
+    } else {
+      container.style.display = 'none';
+    }
+  });
+
+  document.querySelector('.updrop-button').addEventListener('click', () => {
+    const customizationDiv = document.querySelector('.Customization');
+    customizationDiv.style.display = customizationDiv.style.display === 'none' ? 'block' : 'none';
+  });
 </script>
 
 </body>

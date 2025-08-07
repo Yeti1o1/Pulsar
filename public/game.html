@@ -54,6 +54,25 @@
             padding: 10px; 
         }
 
+        h3#gameNameDisplay {
+    top: 5px;                 /* just a bit down from top */
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    padding: 5px 15px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 5px;
+    font-size: 25px;
+    color: white;
+    text-align: center;
+    user-select: none;
+    pointer-events: none;
+    max-width: 90vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
         #fullscreenBtn {
         position: fixed;
         left: 93%;
@@ -232,7 +251,7 @@
     </button>
 </div>
 
-            <script>
+<script>
 
 const savedUrl = localStorage.getItem('lastClickedUrl');
 
@@ -247,8 +266,6 @@ if (savedUrl) {
     console.log("Loaded URL from localStorage:", savedUrl);
 }
 
-            </script>
-<script>
     function toggleFullscreen() {
         const iframe = document.getElementById("gameFrame");
         if (document.fullscreenElement) {
@@ -263,8 +280,6 @@ if (savedUrl) {
             iframe.msRequestFullscreen();
         }
     }
-</script>
-<script>
 
         window.onload = function () {
             const gameUrl = localStorage.getItem('lastClickedUrl'); 
@@ -392,8 +407,7 @@ if (savedUrl) {
         }
     }
 
-w
-    <script>
+
         window.addEventListener('load', () => {
             const gameFrame = document.getElementById("gameFrame");
 
@@ -433,8 +447,6 @@ w
             localStorage.removeItem('lastClickedUrl');
             localStorage.removeItem('lastClickedGame');
         }
-    </script>
-<script>
 
     window.addEventListener("load", () => {
         const gameUrl = localStorage.getItem('lastClickedUrl');
