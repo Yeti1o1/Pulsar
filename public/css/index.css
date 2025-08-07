@@ -101,8 +101,8 @@ body::before {
 }
 
 .btn .heart-icon.hearted {
-    color: #ff0000;
-    text-shadow: 0 0 8px #ff2600;
+    color: #ff1a1a;
+    text-shadow: 0 0 4px #ff2600;
 }
 
 .btn .heart-icon.hearted:hover {
@@ -174,7 +174,6 @@ body::before {
 }
 
 .btn:hover .heart-icon {
-    color: rgba(255, 255, 255, 0.842);
     background-color: rgba(0, 0, 0, 0.664);
 }
 
@@ -191,16 +190,13 @@ body::before {
     margin-bottom: 15px;
 }
 
-.category-header h6,
-.category-header h6 i {
-    background: linear-gradient(45deg, #ffffff, #cccccc);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    -webkit-text-fill-color: transparent;
-}
-
 .category-header h6 {
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    color: #eee;
+    -webkit-text-fill-color: initial;
+
     font-size: 1.4rem;
     text-shadow: 0 0 12px rgba(255, 255, 255, 0.6), 0 0 25px rgba(255, 255, 255, 0.5);
     display: inline-flex;
@@ -209,10 +205,17 @@ body::before {
     flex-shrink: 0;
 }
 
+
 .category-header h6 i {
     font-size: 0.9em;
     text-shadow: none;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+    color: initial !important;
+    -webkit-text-fill-color: initial !important;
 }
+
 
 .game-category {
     display: flex;
@@ -368,7 +371,6 @@ nav ul li .discord-btn {
 .scroll-arrow {
     align-items: center;
     background: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 50%;
     color: #ccc;
     cursor: pointer;
@@ -395,10 +397,11 @@ nav ul li .discord-btn {
 }
 
 .scroll-arrow:hover {
-    background: rgba(0, 0, 0, 0.7);
-    box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.4);
     color: #fff;
     transform: scale(1.1) translateZ(0);
+    border: visible;
+    border: solid white 3px;
 }
 
 .scroll-arrow:active {
@@ -432,18 +435,27 @@ nav ul li .discord-btn {
     z-index: 1;
 }
 
-.scroll-arrows button[style*="display: none"] {
-    display: none !important;
-}
-
 .right-side {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 15px;
-  margin-left: auto; 
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-left: auto; 
 }
 
+.Title {
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif !important;
+    font-size: 32px;
+    font-weight: bold;
+    position: absolute;
+    top: 50%;
+    left: 1.5px;
+    transform: translateY(-50%);
+    height: 64px;
+    line-height: 64px;
+    margin: 0;
+    white-space: nowrap;
+}
 .toggle-all-btn {
     background: rgba(87, 87, 87, 0);
     border: 1px solid rgba(141, 141, 141, 0.5);
