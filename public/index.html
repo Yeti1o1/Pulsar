@@ -199,10 +199,13 @@
             height: auto;
             vertical-align: middle;
           "></a>
-          <span style="font-family: 'Russo One', sans-serif !important; letter-spacing: 2px;">Pulsar</span>
+<span style="font-family: 'Trebuchet MS', Helvetica, sans-serif; letter-spacing: 4px; font-weight: 900; font-size: 1.2em; text-shadow: 2px 2px #00a2ff;">Pulsar</span>
         </h1>
 
           <div class="right-side">
+<button id="downloadBtn">Download Site Data</button>
+<input type="file" id="uploadInput" style="display:none" accept="application/json" />
+<button id="uploadBtn">Upload Site Data</button>
 
             <a href="https://docs.google.com/forms/d/e/1FAIpQLSfa_z2rCmPxeGooJCXz9XP9TZPi8Rltb-eDCrsD9CffWi1Uwg/viewform" target="_blank" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;background-color:#111;color:white;padding:10px 20px;border-radius:8px;font-size:16px;font-weight:bold;transition:background-color 0.3s;">
               <i class="fas fa-gavel" style="font-size:20px;"></i> <span>DMCA Takedown Form</span>
@@ -231,55 +234,15 @@
 <div class="quick-buttons">
   <button class="color-btn black" data-color="#000000"></button>
   <button class="color-btn white" data-color="#ffffff"></button>
-  <button class="color-btn red" data-color="linear-gradient(135deg, #ff5f6d, #ffc371)"></button>
+  <button class="color-btn red" data-color="linear-gradient(80deg, #ff5f6d, #ffc371)"></button>
   <button class="color-btn blue" data-color="linear-gradient(-80deg, #3a5588, #0c1254)"></button>
-  <button class="color-btn green" data-color="linear-gradient(135deg, #11998e, #4cff90)"></button>
-  <button class="color-btn yellow" data-color="linear-gradient(135deg, #f8b500, #fceabb)"></button>
-  <button class="color-btn purple" data-color="linear-gradient(135deg, #412483, #c93fff)"></button>
-  <button class="color-btn orange" data-color="linear-gradient(135deg, #f12711, #f5af19)"></button>
-  <button class="color-btn pink" data-color="linear-gradient(135deg, #ff00dd, #f82c8f)"></button>
-  <button class="color-btn teal" data-color="linear-gradient(135deg, #185a9d, #43cea2)"></button>
+  <button class="color-btn green" data-color="linear-gradient(80deg, #11998e, #4cff90)"></button>
+  <button class="color-btn yellow" data-color="linear-gradient(80deg, #f8b500, #fceabb)"></button>
+  <button class="color-btn purple" data-color="linear-gradient(80deg, #412483, #c93fff)"></button>
+  <button class="color-btn orange" data-color="linear-gradient(80deg, #f12711, #f5af19)"></button>
+  <button class="color-btn pink" data-color="linear-gradient(-80deg, #ff00dd, #f82c8f)"></button>
+  <button class="color-btn teal" data-color="linear-gradient(80deg, #185a9d, #43cea2)"></button>
 </div>
-
-<script>
-if (!localStorage.getItem('backgroundStyle') && !localStorage.getItem('backgroundValue')) {
-  localStorage.setItem('backgroundStyle', 'gradient');
-  localStorage.setItem('backgroundValue', 'linear-gradient(-80deg, #3a5588, #0c1254)');
-}
-
-document.querySelectorAll('.color-btn').forEach(button => {
-  button.addEventListener('click', () => {
-    const color = button.getAttribute('data-color');
-    if (color.startsWith('linear-gradient')) {
-      document.body.style.backgroundImage = color;
-      document.body.style.backgroundColor = '';
-      localStorage.setItem('backgroundStyle', 'gradient');
-      localStorage.setItem('backgroundValue', color);
-    } else {
-      document.body.style.background = color;
-      document.body.style.backgroundImage = '';
-      localStorage.setItem('backgroundStyle', 'solid');
-      localStorage.setItem('backgroundValue', color);
-    }
-  });
-});
-
-window.addEventListener('load', () => {
-  const bgStyle = localStorage.getItem('backgroundStyle');
-  const bgValue = localStorage.getItem('backgroundValue');
-
-  if (bgStyle && bgValue) {
-    if (bgStyle === 'gradient') {
-      document.body.style.backgroundImage = bgValue;
-      document.body.style.backgroundColor = '';
-    } else if (bgStyle === 'solid') {
-      document.body.style.background = bgValue;
-      document.body.style.backgroundImage = '';
-    }
-  }
-});
-
-</script>
 
 <div id="switchContainer">
   <label id="toggleLabel" for="particlesToggle">Particles</label>
@@ -320,7 +283,7 @@ window.addEventListener('load', () => {
     </div> 
     <div id="all-category">
     <div class="btn-container"> 
-        <button class="btn" data-path="Games/10 Minutes Till Dawn/index.html" data-game-id="fav-Games-Ten-Minutes-Till-Dawn-index-html"><img class="imgg" src="Imgs/10 Minutes Till Dawn.png" alt="10 Minutes Till Dawn"><div class="game-info-bar"><span class="game-name">10 Minutes Till Dawn</span></div><i class="fa fa-heart heart-icon"></i></button>
+        <button class="btn" data-path="Games/10 Minutes Till Dawn/index.html" data-game-id="fav-Games-10-Minutes-Till-Dawn-index-html"><img class="imgg" src="Imgs/10 Minutes Till Dawn.png" alt="10 Minutes Till Dawn"><div class="game-info-bar"><span class="game-name">10 Minutes Till Dawn</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/1v1.LOL/index.html" data-game-id="fav-Games-1v1-LOL-index-html"><img class="imgg" src="Imgs/1v1.LOL.png" alt="1v1.LOL"><div class="game-info-bar"><span class="game-name">1v1.LOL</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/1v1 Soccer/index.html" data-game-id="fav-Games-1v1-Soccer-index-html"><img class="imgg" src="Imgs/1v1 Soccer.png" alt="1v1 Soccer"><div class="game-info-bar"><span class="game-name">1v1 Soccer</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/2D Rocket League/index.html" data-game-id="fav-Games-2D-Rocket-League-index-html"><img class="imgg" src="Imgs/2D Rocket League.png" alt="2D Rocket League"><div class="game-info-bar"><span class="game-name">2D Rocket League</span></div><i class="fa fa-heart heart-icon"></i></button>
@@ -627,7 +590,7 @@ window.addEventListener('load', () => {
         <button class="btn" data-path="Games/Bitlife/index.html" data-game-id="fav-Games-Bitlife-index-html"><img class="imgg" src="Imgs/Bitlife.png" alt="Bitlife"><div class="game-info-bar"><span class="game-name">Bitlife</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Cube Field/index.html" data-game-id="fav-Games-Cube-Field-index-html"><img class="imgg" src="Imgs/Cube Field.png" alt="Cube Field"><div class="game-info-bar"><span class="game-name">Cube Field</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Just One Boss.html" data-game-id="fav-Games-Just-One-Boss-html"><img class="imgg" src="Imgs/Just One Boss.png" alt="Just One Boss"><div class="game-info-bar"><span class="game-name">Just One Boss</span></div><i class="fa fa-heart heart-icon"></i></button>
-        <button class="btn" data-path="Games/10 Minutes Till Dawn/index.html" data-game-id="fav-Games-Ten-Minutes-Till-Dawn-index-html"><img class="imgg" src="Imgs/10 Minutes Till Dawn.png" alt="10 Minutes Till Dawn"><div class="game-info-bar"><span class="game-name">10 Minutes Till Dawn</span></div><i class="fa fa-heart heart-icon"></i></button>
+        <button class="btn" data-path="Games/10 Minutes Till Dawn/index.html" data-game-id="fav-Games-10-Minutes-Till-Dawn-index-html"><img class="imgg" src="Imgs/10 Minutes Till Dawn.png" alt="10 Minutes Till Dawn"><div class="game-info-bar"><span class="game-name">10 Minutes Till Dawn</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Space Garden.html" data-game-id="fav-Games-Space-Garden-html"><img class="imgg" src="Imgs/Space Garden.png" alt="Space Garden"><div class="game-info-bar"><span class="game-name">Space Garden</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Tunnel Rush/Index.html" data-game-id="fav-Games-Tunnel-Rush-Index-html"><img class="imgg" src="Imgs/Tunnel Rush.png" alt="Tunnel Rush"><div class="game-info-bar"><span class="game-name">Tunnel Rush</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Portal/index.html" data-game-id="fav-Games-Portal-index-html"><img class="imgg" src="Imgs/Portal.png" alt="Portal"><div class="game-info-bar"><span class="game-name">Portal</span></div><i class="fa fa-heart heart-icon"></i></button>
@@ -684,7 +647,7 @@ window.addEventListener('load', () => {
         <button class="btn" data-path="Games/Sniper Shot Bullet Time/index.html" data-game-id="fav-Games-Sniper-Shot-Bullet-Time-html"><img class="imgg" src="Imgs/Sniper Shot Bullet Time.png" alt="Sniper Shot Bullet Time"><div class="game-info-bar"><span class="game-name">Sniper Shot Bullet Time</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Alien Hominid/index.html" data-game-id="fav-Games-Alien-Hominid-index-html"><img class="imgg" src="Imgs/Alien Hominid.png" alt="Alien Hominid"><div class="game-info-bar"><span class="game-name">Alien Hominid</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Raft Wars/index.html" data-game-id="fav-Games-Raft-Wars-index-html"><img class="imgg" src="Imgs/Raft Wars.png" alt="Raft Wars"><div class="game-info-bar"><span class="game-name">Raft Wars</span></div><i class="fa fa-heart heart-icon"></i></button>
-        <button class="btn" data-path="Games/10 Minutes Till Dawn/index.html" data-game-id="fav-Games-Ten-Minutes-Till-Dawn-index-html"><img class="imgg" src="Imgs/10 Minutes Till Dawn.png" alt="10 Minutes Till Dawn"><div class="game-info-bar"><span class="game-name">10 Minutes Till Dawn</span></div><i class="fa fa-heart heart-icon"></i></button>
+        <button class="btn" data-path="Games/10 Minutes Till Dawn/index.html" data-game-id="fav-Games-10-Minutes-Till-Dawn-index-html"><img class="imgg" src="Imgs/10 Minutes Till Dawn.png" alt="10 Minutes Till Dawn"><div class="game-info-bar"><span class="game-name">10 Minutes Till Dawn</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Stick Archers Battle/index.html" data-game-id="fav-Games-Stick-Archers-Battle-index-html"><img class="imgg" src="Imgs/Stick Archers Battle.png" alt="Stick Archers Battle"><div class="game-info-bar"><span class="game-name">Stick Archers Battle</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Laser Lord.html" data-game-id="fav-Games-Laser-Lord-html"><img class="imgg" src="Imgs/Laser Lord.png" alt="Laser Lord"><div class="game-info-bar"><span class="game-name">Laser Lord</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/N-Gon Master/index.html" data-game-id="fav-Games-N-Gon-Master-index-html"><img class="imgg" src="Imgs/N-Gon Master.png" alt="N-Gon Master"><div class="game-info-bar"><span class="game-name">N-Gon Master</span></div><i class="fa fa-heart heart-icon"></i></button>
@@ -735,7 +698,7 @@ window.addEventListener('load', () => {
         <button class="btn" data-path="Games/Scratch Brawl 1.html" data-game-id="fav-Games-Scratch-Brawl-1-html"><img class="imgg" src="Imgs/Scratch Brawl 1.png" alt="Scratch Brawl 1"><div class="game-info-bar"><span class="game-name">Scratch Brawl 1</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Gun Mayhem 1/index.html" data-game-id="fav-Games-Gun-Mayhem-1-index-html"><img class="imgg" src="Imgs/Gun Mayhem 1.png" alt="Gun Mayhem 1"><div class="game-info-bar"><span class="game-name">Gun Mayhem 1</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Alien Hominid/index.html" data-game-id="fav-Games-Alien-Hominid-index-html"><img class="imgg" src="Imgs/Alien Hominid.png" alt="Alien Hominid"><div class="game-info-bar"><span class="game-name">Alien Hominid</span></div><i class="fa fa-heart heart-icon"></i></button>
-        <button class="btn" data-path="Games/10 Minutes Till Dawn/index.html" data-game-id="fav-Games-Ten-Minutes-Till-Dawn-index-html"><img class="imgg" src="Imgs/10 Minutes Till Dawn.png" alt="10 Minutes Till Dawn"><div class="game-info-bar"><span class="game-name">10 Minutes Till Dawn</span></div><i class="fa fa-heart heart-icon"></i></button>
+        <button class="btn" data-path="Games/10 Minutes Till Dawn/index.html" data-game-id="fav-Games-10-Minutes-Till-Dawn-index-html"><img class="imgg" src="Imgs/10 Minutes Till Dawn.png" alt="10 Minutes Till Dawn"><div class="game-info-bar"><span class="game-name">10 Minutes Till Dawn</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Gun Mayhem 2/index.html" data-game-id="fav-Games-Gun-Mayhem-2-index-html"><img class="imgg" src="Imgs/Gun Mayhem 2.png" alt="Gun Mayhem 2"><div class="game-info-bar"><span class="game-name">Gun Mayhem 2</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Gun Mayhem Redux/index.html" data-game-id="fav-Games-Gun-Mayhem-Redux-index-html"><img class="imgg" src="Imgs/Gun Mayhem Redux.png" alt="Gun Mayhem Redux"><div class="game-info-bar"><span class="game-name">Gun Mayhem Redux</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Scratch Brawl 2.html" data-game-id="fav-Games-Scratch-Brawl-2-html"><img class="imgg" src="Imgs/Scratch Brawl 2.png" alt="Scratch Brawl 2"><div class="game-info-bar"><span class="game-name">Scratch Brawl 2</span></div><i class="fa fa-heart heart-icon"></i></button>
@@ -1017,7 +980,7 @@ window.addEventListener('load', () => {
         <button class="btn" data-path="Games/Vex 7/index.html" data-game-id="fav-Games-Vex-7-index-html"><img class="imgg" src="Imgs/Vex 7.png" alt="Vex 7"><div class="game-info-bar"><span class="game-name">Vex 7</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Backrooms/index.html" data-game-id="fav-Games-Backrooms-index-html"><img class="imgg" src="Imgs/Backrooms.png" alt="Backrooms"><div class="game-info-bar"><span class="game-name">Backrooms</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Alien Hominid/index.html" data-game-id="fav-Games-Alien-Hominid-index-html"><img class="imgg" src="Imgs/Alien Hominid.png" alt="Alien Hominid"><div class="game-info-bar"><span class="game-name">Alien Hominid</span></div><i class="fa fa-heart heart-icon"></i></button>
-        <button class="btn" data-path="Games/10 Minutes Till Dawn/index.html" data-game-id="fav-Games-Ten-Minutes-Till-Dawn-index-html"><img class="imgg" src="Imgs/10 Minutes Till Dawn.png" alt="10 Minutes Till Dawn"><div class="game-info-bar"><span class="game-name">10 Minutes Till Dawn</span></div><i class="fa fa-heart heart-icon"></i></button>
+        <button class="btn" data-path="Games/10 Minutes Till Dawn/index.html" data-game-id="fav-Games-10-Minutes-Till-Dawn-index-html"><img class="imgg" src="Imgs/10 Minutes Till Dawn.png" alt="10 Minutes Till Dawn"><div class="game-info-bar"><span class="game-name">10 Minutes Till Dawn</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Avalanche/index.html" data-game-id="fav-Games-Avalanche-index-html"><img class="imgg" src="Imgs/Avalanche.png" alt="Avalanche"><div class="game-info-bar"><span class="game-name">Avalanche</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Bob The Robber.html" data-game-id="fav-Games-Bob-The-Robber-html"><img class="imgg" src="Imgs/Bob The Robber.png" alt="Bob The Robber"><div class="game-info-bar"><span class="game-name">Bob The Robber</span></div><i class="fa fa-heart heart-icon"></i></button>
         <button class="btn" data-path="Games/Bounce Back/index.html" data-game-id="fav-Games-Bounce-Back-index-html"><img class="imgg" src="Imgs/Bounce Back.png" alt="Bounce Back"><div class="game-info-bar"><span class="game-name">Bounce Back</span></div><i class="fa fa-heart heart-icon"></i></button>
@@ -1714,6 +1677,142 @@ if (hideCategoriesBtn) {
     const customizationDiv = document.querySelector('.Customization');
     customizationDiv.style.display = customizationDiv.style.display === 'none' ? 'block' : 'none';
   });
+
+if (!localStorage.getItem('backgroundStyle') && !localStorage.getItem('backgroundValue')) {
+  localStorage.setItem('backgroundStyle', 'gradient');
+  localStorage.setItem('backgroundValue', 'linear-gradient(-80deg, #3a5588, #0c1254)');
+}
+
+document.querySelectorAll('.color-btn').forEach(button => {
+  button.addEventListener('click', () => {
+    const color = button.getAttribute('data-color');
+    if (color.startsWith('linear-gradient')) {
+      document.body.style.backgroundImage = color;
+      document.body.style.backgroundColor = '';
+      localStorage.setItem('backgroundStyle', 'gradient');
+      localStorage.setItem('backgroundValue', color);
+    } else {
+      document.body.style.background = color;
+      document.body.style.backgroundImage = '';
+      localStorage.setItem('backgroundStyle', 'solid');
+      localStorage.setItem('backgroundValue', color);
+    }
+  });
+});
+
+window.addEventListener('load', () => {
+  const bgStyle = localStorage.getItem('backgroundStyle');
+  const bgValue = localStorage.getItem('backgroundValue');
+
+  if (bgStyle && bgValue) {
+    if (bgStyle === 'gradient') {
+      document.body.style.backgroundImage = bgValue;
+      document.body.style.backgroundColor = '';
+    } else if (bgStyle === 'solid') {
+      document.body.style.background = bgValue;
+      document.body.style.backgroundImage = '';
+    }
+  }
+});
+
+  const heartIcon = document.getElementById('heartIcon');
+
+  const gameId = localStorage.getItem('lastClickedUrl') || 'default-game-id';
+
+  function updateHeartUI(isFavorited) {
+    if (isFavorited) {
+      heartIcon.classList.add('favorited');
+      heartIcon.style.color = 'rgb(0, 132, 255)';
+    } else {
+      heartIcon.classList.remove('favorited');
+      heartIcon.style.color = 'white';
+    }
+  }
+
+  function getFavorites() {
+    return JSON.parse(localStorage.getItem('favorites') || '{}');
+  }
+
+  function setFavorites(favorites) {
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+  }
+
+  function toggleFavorite() {
+    const favorites = getFavorites();
+    const isFavorited = !!favorites[gameId];
+    if (isFavorited) {
+      delete favorites[gameId];
+    } else {
+      favorites[gameId] = true;
+    }
+    setFavorites(favorites);
+    updateHeartUI(!isFavorited);
+  }
+
+  // Initialize on load
+  const favorites = getFavorites();
+  updateHeartUI(!!favorites[gameId]);
+
+  heartIcon.addEventListener('click', toggleFavorite);
+
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'favorites') {
+      const newFavorites = JSON.parse(e.newValue || '{}');
+      updateHeartUI(!!newFavorites[gameId]);
+    }
+  });
+  </script>
+<script>
+const downloadBtn = document.getElementById('downloadBtn');
+const uploadBtn = document.getElementById('uploadBtn');
+const uploadInput = document.getElementById('uploadInput');
+
+downloadBtn.addEventListener('click', () => {
+  const data = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    data[key] = localStorage.getItem(key);
+  }
+  const jsonStr = JSON.stringify(data, null, 2);
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'Pulsar_Site_Data.json';
+  a.click();
+
+  URL.revokeObjectURL(url);
+});
+
+uploadBtn.addEventListener('click', () => {
+  uploadInput.click();
+});
+
+uploadInput.addEventListener('change', (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (typeof data === 'object' && data !== null) {
+        for (const key in data) {
+          localStorage.setItem(key, data[key]);
+        }
+        alert('LocalStorage restored successfully!');
+        location.reload();
+      } else {
+        alert('Invalid file format.');
+      }
+    } catch {
+      alert('Failed to parse JSON.');
+    }
+  };
+  reader.readAsText(file);
+});
+
 </script>
 
 </body>

@@ -55,7 +55,7 @@
         }
 
         h3#gameNameDisplay {
-    top: 5px;                 /* just a bit down from top */
+    top: 5px;        
     left: 50%;
     transform: translateX(-50%);
     margin: 0;
@@ -143,7 +143,8 @@
     }
 
     .heart.favorited {
-        color: rgb(0, 132, 255);
+        color: #ff1a1a;
+        text-shadow: 0 0 4px #ff2600;
     }
 
     #backBtn {
@@ -222,7 +223,6 @@
 <h3 id="gameNameDisplay"></h3>
 </div>
 
-<!-- Iframe container and fullscreen button -->
 <div style="position: relative; z-index: 10; display: flex; justify-content: center; padding: 0 20px;">
     <!-- Center iframe with equal space on left and right -->
     <iframe id="gameFrame" frameborder="0" marginheight="0" marginwidth="0" 
@@ -464,6 +464,54 @@ if (savedUrl) {
             }
         }
     });
+
+const heartIcon = document.getElementById('heartIcon');
+
+function getGameId() {
+  const url = localStorage.getItem('lastClickedUrl');
+  if (!url) return 'default-game-id';
+  return 'fav-' + url.replace(/[^a-zA-Z0-9]+/g, '-');
+}
+
+const gameId = getGameId();
+
+function updateHeartUI(isFavorited) {
+  if (isFavorited) {
+    heartIcon.classList.add('hearted');
+    heartIcon.style.color = '#ff1a1a';  } else {
+    heartIcon.classList.remove('hearted');
+    heartIcon.style.color = 'white';
+  }
+}
+
+function toggleFavorite() {
+  const key = `heartState-${gameId}`;
+  const isFavorited = localStorage.getItem(key) === 'true';
+
+  if (isFavorited) {
+    localStorage.setItem(key, 'false');
+  } else {
+    localStorage.setItem(key, 'true');
+  }
+  updateHeartUI(!isFavorited);
+}
+
+function syncFromStorage() {
+  const key = `heartState-${gameId}`;
+  const isFavorited = localStorage.getItem(key) === 'true';
+  updateHeartUI(isFavorited);
+}
+
+heartIcon.addEventListener('click', toggleFavorite);
+
+window.addEventListener('storage', (e) => {
+  if (e.key === `heartState-${gameId}`) {
+    syncFromStorage();
+  }
+});
+
+syncFromStorage();
+
 </script>
 
     </body>

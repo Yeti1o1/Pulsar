@@ -39,3 +39,4 @@ document.getElementById("switcher").onselect = async function (event) {
             break;
     }
 }
+
