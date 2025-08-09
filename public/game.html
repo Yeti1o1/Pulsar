@@ -513,6 +513,11 @@ window.addEventListener('storage', (e) => {
 syncFromStorage();
 
 </script>
+<script>
+document.addEventListener("contextmenu",e=>e.preventDefault());
+document.addEventListener("keydown",e=>{if(e.key==="F12"||(e.ctrlKey&&e.shiftKey&&(e.key==="I"||e.key==="J"))||(e.ctrlKey&&e.key==="U"))e.preventDefault()});
+setInterval(()=>{if((window.outerWidth-window.innerWidth)>160||(window.outerHeight-window.innerHeight)>160)window.location.href="about:blank"},500);
+</script>
 
     </body>
     </html>

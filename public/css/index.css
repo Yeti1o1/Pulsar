@@ -87,7 +87,7 @@ body::before {
     top: 8px;
     right: 8px;
     font-size: 1.1rem;
-    color: rgba(255, 255, 255, 0.733);
+    color: rgba(236, 235, 235, 0.733);
     background-color: rgba(0, 0, 0, 0.534);
     padding: 4px 5px;
     border-radius: 4px;
@@ -523,7 +523,7 @@ nav ul li .discord-btn {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 15px;
+    gap: 10px;
     margin-left: auto; 
 }
 
@@ -772,10 +772,26 @@ nav ul li:nth-child(6) { animation-delay: 0.65s !important; }
     position: fixed;
     top: 100px;
     display: flex;
-    gap:85px;
-    right: 17.5%;
+    gap: 40px;
+    right: 18.5%;
     z-index: 11111111111111111111;
 }
+
+
+@media (max-width: 1200px) {
+  .quick-buttons {
+    gap: 40px;
+    right: 10%; 
+  }
+}
+
+@media (max-width: 768px) {
+  .quick-buttons {
+    gap: 20px;
+    right: 5%;
+  }
+}
+
 
 .search-icon-btn {
     background: transparent;
