@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blackjack</title>
+<style>
+  :root {
+  --bg: #1e4d2b; /* dark green background */
+  --card: #f8f8f8;
+  --accent: #c28e5d; /* gold-brown accent */
+  --muted: #c28e5d; /* lighter muted tan */
+}
+* { box-sizing: border-box }
+html, body { height: 100% }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: var(--card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.app {
+  width: 980px;
+  max-width: 98vw;
+  background: #0a4412;
+  border-radius: 14px;
+  padding: 20px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.balance { color: var(--muted) }
+.board {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 18px;
+}
+.table {
+  background: linear-gradient(180deg, #2f5e3b, #1e4d2b); /* green table gradient */ 
+  padding: 24px; /* increased padding for bigger cards */
+  border-radius: 10px;
+}
+.hand {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px; /* increased padding */
+  border-radius: 10px;
+  margin-bottom: 18px; /* slightly bigger margin */
+}
+.hand h3 {
+  margin: 0 0 12px;
+  font-size: 16px; /* bigger heading */
+  color: var(--muted);
+}
+.cards {
+  display: flex;
+  gap: 12px; /* bigger gaps between cards */
+}
+.card {
+  width: 96px;       /* bigger width */
+  height: 132px;     /* bigger height */
+  border-radius: 12px;
+  background: white;
+  color: #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px;     /* increased padding */
+  font-weight: bold;
+  font-size: 1.2em;  /* bigger text */
+}
+.card.red { color: #cc1b1b }
+.controls-panel {
+  background: #2f5e3b; /* matching dark green panel */
+  padding: 16px; /* increased padding */
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px; /* bigger gaps */
+}
+button {
+  padding: 10px 16px; /* bigger buttons */
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1.1em; /* bigger text */
+}
+button.primary {
+  background: var(--accent);
+  color: #2b1b07;
+}
+button.ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: var(--card);
+}
+input[type=number] {
+  width: 100px; /* wider input */
+  padding: 8px;
+  border-radius: 6px;
+  border: none;
+  background: #2f5e3b;
+  color: var(--card);
+  font-weight: bold;
+  font-size: 1.1em;
+}
+.status {
+  padding: 10px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  font-size: 1.1em;
+}
+.hide { display: none }
+
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div><strong>Blackjack</strong></div>
+    <div class="balance">Bank: $<span id="bank">1000</span></div>
+  </div>
+  <div class="board">
+    <div class="table">
+      <div class="hand">
+        <h3>Dealer <span id="dealerValue"></span></h3>
+        <div class="cards" id="dealerCards"></div>
+      </div>
+      <div class="hand">
+        <h3>Player <span id="playerValue"></span></h3>
+        <div class="cards" id="playerCards"></div>
+      </div>
+      <div class="status" id="message">Place your bet and deal.</div>
+    </div>
+    <div class="controls-panel">
+      <div>
+        Bet: <input id="betInput" type="number" min="1" step="1" value="50">
+        <button id="betHalf" class="ghost">½</button>
+        <button id="betMax" class="ghost">Max</button>
+      </div>
+      <button id="deal" class="primary">Deal</button>
+      <button id="hit" class="ghost" disabled>Hit</button>
+      <button id="stand" class="ghost" disabled>Stand</button>
+      <button id="double" class="ghost" disabled>Double</button>
+      <button id="resetBank" class="ghost">Reset Bank</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const suits=['♠','♥','♦','♣']
+const ranks=['A','2','3','4','5','6','7','8','9','10','J','Q','K']
+let deck=[],dealer=[],player=[]
+let bank=1000,bet=50,roundActive=false,dealerHole=true
+const $=id=>document.getElementById(id)
+
+function makeDeck(){
+  deck=[]
+  for(const s of suits) for(const r of ranks) deck.push({s,r})
+  for(let i=deck.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1))
+    ;[deck[i],deck[j]]=[deck[j],deck[i]]
+  }
+}
+function valueOf(hand){
+  let sum=0,aces=0
+  for(const c of hand){
+    if(c.r==='A'){aces++; sum+=11}
+    else if(['K','Q','J'].includes(c.r)) sum+=10
+    else sum+=Number(c.r)
+  }
+  while(sum>21 && aces>0){sum-=10; aces--}
+  return sum
+}
+function renderCard(c,faceDown=false){
+  const el=document.createElement('div')
+  el.className='card'+(c.s==='♥'||c.s==='♦'?' red':'')
+if (faceDown) {
+  el.textContent = '🂠';
+  el.style.fontSize = '8em'; // scales with card size
+  el.style.display = 'flex';
+  el.style.alignItems = 'center';
+  el.style.justifyContent = 'center';
+  el.style.lineHeight = '1';
+  return el;
+}
+  el.innerHTML=`<div>${c.r}</div><div style="text-align:center">${c.s}</div><div style="text-align:right">${c.r}</div>`
+  return el
+}
+function render(){
+  $('dealerCards').innerHTML=''
+  dealer.forEach((c,i)=>$('dealerCards').appendChild(renderCard(c,i===1&&dealerHole)))
+  $('playerCards').innerHTML=''
+  player.forEach(c=>$('playerCards').appendChild(renderCard(c)))
+  $('dealerValue').textContent=(!dealerHole?`(${valueOf(dealer)})`:'')
+  $('playerValue').textContent=player.length?`(${valueOf(player)})`:''
+  $('bank').textContent=bank
+}
+function startRound(){
+  bet=Number($('betInput').value)||1
+  if(bet>bank){$('message').textContent='Not enough money';return}
+  if(bet<1){$('message').textContent='Bet must be at least $1';return}
+  bank-=bet
+  dealer=[]; player=[]
+  if(deck.length<15) makeDeck()
+  player.push(deck.pop(),deck.pop())
+  dealer.push(deck.pop(),deck.pop())
+  dealerHole=true
+  roundActive=true
+  $('hit').disabled=false
+  $('stand').disabled=false
+  $('double').disabled=bank>=bet
+  $('deal').disabled=true
+  $('message').textContent='Your turn.'
+  render()
+  if(valueOf(player)===21){endRound(true)}
+}
+function dealerPlay(){
+  dealerHole=false
+  render()
+  while(valueOf(dealer)<17){dealer.push(deck.pop());render()}
+}
+function endRound(blackjack=false){
+  dealerHole=false
+  if(!blackjack) dealerPlay()
+  const p=valueOf(player),d=valueOf(dealer)
+  let msg=''
+  if(p>21){msg='Bust! You lose.'}
+  else if(d>21){msg='Dealer busts! You win.';bank+=bet*2}
+  else if(blackjack){msg='Blackjack! You win 3:2.';bank+=bet+Math.floor(bet*2.5)}
+  else if(p>d){msg='You win!';bank+=bet*2}
+  else if(p<d){msg='You lose.'}
+  else {msg='Push.';bank+=bet}
+  $('message').textContent=msg
+  roundActive=false
+  $('hit').disabled=true
+  $('stand').disabled=true
+  $('double').disabled=true
+  $('deal').disabled=false
+  render()
+}
+$('deal').onclick=startRound
+$('hit').onclick=()=>{player.push(deck.pop());render();if(valueOf(player)>21)endRound()}
+$('stand').onclick=()=>endRound()
+$('double').onclick=()=>{
+  if(bank>=bet && roundActive){
+    bank-=bet;bet*=2
+    player.push(deck.pop())
+    render()
+    if(valueOf(player)>21)endRound()
+    else endRound()
+  }
+}
+$('resetBank').onclick=()=>{bank=1000;render()}
+$('betHalf').onclick=()=>{$('betInput').value=Math.max(1,Math.floor(bank/2))}
+$('betMax').onclick=()=>{$('betInput').value=bank}
+makeDeck()
+render()
+</script>
+</body>
+</html>
