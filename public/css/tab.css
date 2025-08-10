@@ -78,61 +78,6 @@ margin-top: 20px;
 animation: appear 0.5s ease-in-out; 
 }
 
-.updrop-container {
-    position: fixed;
-    top: 200px;
-    right: 200px;
-    z-index: 9000;
-}
-
-.updrop-button {
-    background-color: #000000;
-    color: white;
-    font-size: 24px;
-    border: none;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
-
-.updrop-menu {
-    display: none;
-    position: absolute;
-    bottom: 60px;
-    right: 0;
-    background-color: #000000;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    list-style: none;
-    padding: 10px;
-    z-index: 1000;
-    border-color: white;
-}
-
-.updrop-menu.active {
-    display: block;
-    z-index: 1000;
-}
-
-.updrop-menu li {
-    padding: 10px;
-    margin: 5px 0;
-    color: white;
-    cursor: pointer;
-    border-radius: 4px;
-    text-align: center;
-    transition: background-color 0.3s;
-    z-index: 500;
-}
-
-.updrop-menu li:hover {
-    background-color: #111;
-}
 #uv-form {
 display: flex;
 width: 90%;
@@ -203,7 +148,7 @@ main {
 .search-nav-bar {
     height: 75px;
     width: 100%;
-    background: #000000;
+    background: #111111;
     display: flex;
     align-items: center;
     padding: 0.75rem 1rem;
@@ -252,17 +197,6 @@ i[class="fas fa-cog"]:hover {
     left: 0;
     cursor: default;
   }
-#stitle {
-    text-align: center;
-    font-size: 10rem; 
-    color: #ffffff; 
-    text-shadow: 
-        0 0 5px rgba(255, 255, 255, 0.8), 
-        0 0 10px rgba(237, 239, 242, 0.5), 
-        0 0 20px rgba(221, 225, 230, 0.3); 
-    animation: glowFadeAnim 6s ease-in-out infinite alternate; 
-    animation: appear .6s ease-in-out; 
-}
 
 @keyframes appear {
     from {
@@ -274,7 +208,7 @@ i[class="fas fa-cog"]:hover {
 }
 #memo {
     text-align: center;
-    font-size: 1.1em;
+    font-size: 1.5em;
     color: #f0f0f0;
     margin-top: 10px; 
     font-style: italic; 
@@ -356,4 +290,194 @@ background: #ffffff88;
 
 .tab.active .tab-content {
     display: block;  
+}
+
+* {
+    cursor: auto !important;
+}
+body {
+    zoom: 0.8;
+}
+    #searchButton {
+  display: none;
+    }
+    body {
+  position: relative;
+}
+#urlInput {
+    width: 35rem;
+    height: 4rem;
+    background: #ffffff;
+    color: rgb(0, 0, 0);
+    outline: none;
+    border: none;
+    padding: 14px;
+    font-size: 2rem;
+    font-weight: 900;
+    border-radius: 1rem;
+    align-self: center;
+    align-items: center;
+    align-content: center;
+}
+#MyInput {
+    width: 35rem;
+    height: 4rem;
+    background: #ffffff;
+    color: rgb(0, 0, 0);
+    outline: none;
+    border: none;
+    padding: 14px;
+    font-size: 1rem;
+    font-weight: 900;
+    border-radius: 1rem;
+}
+
+#frame {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: black;
+    outline: none;
+    border: none;
+}
+.iframeWindow {
+    position: absolute;
+    width: 125vw;
+    height: 106vh;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    left: 0;
+    bottom: -12.8vh;
+    background-color: #00000000;
+    z-index: -1;
+}
+
+#switcher {
+    position: absolute;
+    z-index: 999;
+}
+#reloadButton {
+    position: absolute;
+    z-index: 999;
+}
+#searchButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #111;
+  color: rgb(0, 0, 0);
+  padding: 10px 20px;
+  font-size: 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+#searchButton:hover {
+  background-color: #111;
+}
+body {
+    background-color: linear-gradient(135deg, #0f0063, #4e06a0, #b300ff)
+}
+#switcher {
+  position: absolute;
+  top: 0.25%;
+  right: 0.5%;
+  padding: 12.5px 20px;
+  font-size: 20px;
+  border-radius: 4px;
+  background-color: #111111;
+  color: #ffffff;
+  appearance: none;
+  height: 6.5vh;
+  width: 11.5vw;
+}
+#reloadButton {
+  position: absolute;
+  top: 5%;
+  left: 7.5%;
+  padding: 15px 20px;
+  font-size: 20px;
+  border: none;
+  background-color: #00000000;
+  color: #ffffff;
+  appearance: none;
+}
+#switcher option {
+  padding: 10px;
+}
+#overlay {
+            position: fixed;
+            top: 7vh;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            z-index: 9999;
+            display: none;
+        }
+        #iframeWindow {
+            z-index: 9999;
+            display: none;
+        }
+        #topBar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6vh;
+            background: #111111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+        }
+        #topUrlInput {
+            width: 75%;
+            height: 3.25vh;
+            background: #ffffff;
+            color: #000000;
+            outline: none;
+            border: none;
+            padding: 5px;
+            font-size: 1.25rem;
+            font-weight: 600;
+            border-radius: 5px;
+        }
+        #topGoButton {
+            height: 4vh;
+            margin-left: 5px;
+            background: #111;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+#myInput {
+    flex-grow: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    color: #fff;
+    font-size: 1rem;
+    outline: none;
+}
+
+#myInput::placeholder {
+    color: #aaa;
+}
+.search-wrapper {
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    display: flex;
+    flex-grow: 1;
+    width: clamp(100px, 25vw, 325px);
+    padding: 0px 5px 0px 15px;
 }

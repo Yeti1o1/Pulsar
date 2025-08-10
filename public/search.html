@@ -14,60 +14,190 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link rel="icon" href="Imgs/favicon.ico" type="image/x-icon">
-    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/index.css">
-    <link rel="stylesheet" href="css/i.css">
-<style>
-
-    body, html {
-        background-image: none;
-        background-color: black;
-    }
-            .iframe-container {
-            position: absolute;
-            width: 100%;
-            height: 95%;
-            top: 5%;
-        }
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        * {
-    cursor: auto !important;
-}
-</style>
+    <link rel="stylesheet" href="css/search.css">
+    <link rel="stylesheet" href="css/tab.css">
+    
 </head>
 <body>
 
-    <!-- Navigation Bar with Tabs -->
     <div class="search-nav-bar">
         <div class="tabs-container" id="tabsContainer">
-            <!-- Tabs will be dynamically added here -->
+
             <button id="addTab" class="tab">+</button>
         </div>
     </div>
     <div class="top-bar"></div>
 
-    <!-- Custom Dropdown Menu -->
-    <div class="custom-dropdown">
-        <button class="custom-dropdown-button"><i class="fa-solid fa-bars-staggered" aria-hidden="true"></i></button>
-        <div class="dropdown-options">
-            <div class="side-bar">
-            <a href="search.html" class="searching-button"><i class="fas fa-home"></i></a>
-            <a href="ai.html" class="searching-button"><i class="fas fa-robot"></i></a>
-            <a href="games.html" class="searching-button"><i class="fa-solid fa-basketball"></i></a>
-            <a href="apps.html" class="searching-button"><i class="fas fa-mobile-alt"></i></a>
-            <a href="settings.html" class="searching-button"><i class="fas fa-cog"></i></a>
-            <a href="credits.html" class="searching-button"><i class="fas fa-book"></i></a>
-            </div>
-        </div>
-    </div>
+<div class="area"></div><nav class="main-menu">
+            <ul>
+                <li>
+                    <a href="#"
+                      style="display: block; height: 20px;"
+                      onmouseover="this.style.background='rgba(0,0,0,0.0)';"
+                      onmouseout="this.style.background='';">
+                        <span class="nav-text"></span>
+                    </a>
+                </li>
+            </ul>
+
+            <ul>
+                <li>
+                    <a href="index.html">
+                        <span style="font-size: 1.75em; text-shadow: none;">🏠</span>
+                        <span class="nav-text">Home</span>
+                    </a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                  <a class="open-category-btn" data-category="apps" href="#"  style="border-bottom: 2px solid #5c5c5c;">
+                        <span style="font-size: 1.75em; text-shadow: none;">📱</span>
+                        <span class="nav-text">Apps</span>
+                    </a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                  <a class="open-category-btn" data-category="all" href="#">
+                      <span style="font-size: 1.75em; text-shadow: none;">🕹️</span>
+                      <span class="nav-text">All Games</span>
+                  </a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                  <a class="open-category-btn" data-category="recommended" href="#">
+                      <span style="font-size: 1.75em; text-shadow: none;">🌟</span>
+                      <span class="nav-text">Recommended</span>
+                  </a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                  <a class="open-category-btn" data-category="shooter" href="#">
+                      <span style="font-size: 1.75em; text-shadow: none;">🎯</span>
+                      <span class="nav-text">Shooter</span>
+                  </a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                  <a class="open-category-btn" data-category="combat" href="#">
+                      <span style="font-size: 1.75em; text-shadow: none;">🥊</span>
+                      <span class="nav-text">Combat</span>
+                  </a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                  <a class="open-category-btn" data-category="puzzle" href="#">
+                      <span style="font-size: 1.75em; text-shadow: none;">🧩</span>
+                      <span class="nav-text">Puzzle</span>
+                  </a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                  <a class="open-category-btn" data-category="multiplayer" href="#">
+                      <span style="font-size: 1.75em; text-shadow: none;">👥</span>
+                      <span class="nav-text">Multiplayer</span>
+                  </a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                  <a class="open-category-btn" data-category="io" href="#">
+                      <span style="font-size: 1.75em; text-shadow: none;">🌐</span>
+                      <span class="nav-text">IO</span>
+                  </a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                  <a class="open-category-btn" data-category="adventure" href="#">
+                      <span style="font-size: 1.75em; text-shadow: none;">🗺️</span>
+                      <span class="nav-text">Adventure</span>
+                  </a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                  <a class="open-category-btn" data-category="clicker" href="#">
+                      <span style="font-size: 1.75em; text-shadow: none;">🔴</span>
+                      <span class="nav-text">Clickers</span>
+                  </a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                  <a class="open-category-btn" data-category="survival" href="#">
+                      <span style="font-size: 1.75em; text-shadow: none;">🛡️</span>
+                      <span class="nav-text">Survival</span>
+                  </a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                  <a class="open-category-btn" data-category="racing" href="#">
+                      <span style="font-size: 1.75em; text-shadow: none;">🏎️</span>
+                      <span class="nav-text">Racing</span>
+                  </a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                  <a class="open-category-btn" data-category="mini" href="#">
+                      <span style="font-size: 1.75em; text-shadow: none;">🎲</span>
+                      <span class="nav-text">Minigames</span>
+                  </a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                  <a class="open-category-btn" data-category="simulator" href="#">
+                      <span style="font-size: 1.75em; text-shadow: none;">🚜</span>
+                      <span class="nav-text">Simulators</span>
+                  </a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                  <a class="open-category-btn" data-category="platformer" href="#">
+                      <span style="font-size: 1.75em; text-shadow: none;">🏃‍♂️</span>
+                      <span class="nav-text">Platformers</span>
+                  </a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                  <a class="open-category-btn" data-category="sports" href="#">
+                      <span style="font-size: 1.75em; text-shadow: none;">🏈</span>
+                      <span class="nav-text">Sports</span>
+                  </a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                    <a href="https://discord.gg/9KKk4DNBPE" style="border-top: 2px solid #5c5c5c;">
+                        <span style="font-size: 1.75em; text-shadow: none;"><i class="fa-brands fa-discord"></i></span>
+                        <span class="nav-text">Discord</span>
+                    </a>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                    <a href="https://github.com/Yeti1o1/Pulsar">
+                        <span style="font-size: 2.2em; text-shadow: none;"><i  class="fa-brands fa-github"></i></span>
+                        <span class="nav-text">Github</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
     <script>
     const color = option.getAttribute('data-color');
-    
+
     if (color === 'black-solid') {
         document.body.style.backgroundImage = 'linear-gradient(315deg, #000000, #000000)';
     } else if (color === 'green-gradient') {
@@ -77,24 +207,21 @@
     } else if (color === 'blue-gradient') {
         document.body.style.backgroundImage = 'linear-gradient(315deg, #00aaff, #0044cc)';
     } else if (color === 'white-gradient') {
-        document.body.style.backgroundImage = 'linear-gradient(315deg, #ffffff, #f0f0f0)'; // White gradient
+        document.body.style.backgroundImage = 'linear-gradient(315deg, #ffffff, #f0f0f0)'; 
     } else if (color === 'yellow-gradient') {
-        document.body.style.backgroundImage = 'linear-gradient(315deg, #ffff00, #ffcc00)'; // Yellow gradient
+        document.body.style.backgroundImage = 'linear-gradient(315deg, #ffff00, #ffcc00)'; 
     } else if (color === 'orange-gradient') {
-        document.body.style.backgroundImage = 'linear-gradient(315deg, #ff6600, #ff3300)'; // Orange gradient
+        document.body.style.backgroundImage = 'linear-gradient(315deg, #ff6600, #ff3300)'; 
     } else if (color === 'blu-gradient') {
-        document.body.style.backgroundImage = 'linear-gradient(315deg, #080ba3, black)'; // Blue gradient
+        document.body.style.backgroundImage = 'linear-gradient(315deg, #080ba3, black)'; 
     }
-    
-    
-    // Save the selected background to localStorage
+
     localStorage.setItem('bgColor', document.body.style.backgroundImage);
-    
-    // Display pulsarDiv after the background change
+
     pulsarDiv.style.display = 'block';
-    
+
     </script>
-    
+
         <script>
 const addTabButton = document.getElementById('addTab');
 const tabsContainer = document.getElementById('tabsContainer');
@@ -219,7 +346,6 @@ bottomElement.addEventListener('mouseout', function() {
   tabsContainer.classList.remove('hide-custom-cursor');
 });
 
-// CSS class to hide the custom cursor
 const style = document.createElement('style');
 style.textContent = `
   .hide-custom-cursor .customCursor {
@@ -229,34 +355,32 @@ style.textContent = `
 document.head.appendChild(style);
 
         </script>
-        
-    
-        
+
         <script>
             const customCursor = document.getElementById('customCursor');
             const spikes = document.getElementById('spikes');
             let mouseX = 0;
             let mouseY = 0;
-            let zoomFactor = 0.8; // Match your CSS zoom value
-        
+            let zoomFactor = 0.8; 
+
             document.addEventListener('mousemove', (e) => {
                 mouseX = e.clientX / zoomFactor; 
                 mouseY = e.clientY / zoomFactor;
                 customCursor.style.display = 'block'; 
             });
-        
+
             document.addEventListener('mouseleave', () => {
                 customCursor.style.display = 'none'; 
             });
-        
+
             document.addEventListener('mouseenter', () => {
                 customCursor.style.display = 'block'; 
             });
-        
+
             function updateCursor() {
                 customCursor.style.left = `${mouseX}px`;
                 customCursor.style.top = `${mouseY}px`;
-        
+
                 const cursorRect = customCursor.getBoundingClientRect();
                 if (Math.abs(mouseX - cursorRect.left) > 10 || Math.abs(mouseY - cursorRect.top) > 10) {
                     customCursor.style.left = `${mouseX}px`;
@@ -265,7 +389,7 @@ document.head.appendChild(style);
                 requestAnimationFrame(updateCursor);
             }
             requestAnimationFrame(updateCursor);
-        
+
             const hoverElements = document.querySelectorAll('.nav-button');
             hoverElements.forEach(element => {
                 element.addEventListener('mouseenter', () => {
@@ -276,7 +400,7 @@ document.head.appendChild(style);
                 });
             });
         </script>
-        
+
 <script>
  window.addEventListener("message", (event) => {
     if (event.origin === window.origin) {
@@ -286,11 +410,10 @@ document.head.appendChild(style);
         if (activeTab) {
             const tabId = activeTab.dataset.tabId || `tab-${Date.now()}`;
 
-            // Retrieve existing data to avoid overwriting favicon
             let tabData = localStorage.getItem(tabId) ? JSON.parse(localStorage.getItem(tabId)) : {};
 
             tabData.title = title || tabData.title || "Blank Tab";
-            tabData.favicon = favicon !== undefined ? favicon : tabData.favicon || "Imgs/Thebestlogo.png";
+            tabData.favicon = favicon !== undefined ? favicon : tabData.favicon || "Imgs/Logo.png";
 
             localStorage.setItem(tabId, JSON.stringify(tabData));
             activeTab.dataset.tabId = tabId;
@@ -304,7 +427,6 @@ function updateTab(tab) {
     const tabTitleInput = tab.querySelector('input');
     let tabFavicon = tab.querySelector('.favicon');
 
-    // Retrieve stored tab data
     const tabId = tab.dataset.tabId;
     const storedData = tabId ? JSON.parse(localStorage.getItem(tabId)) : null;
 
@@ -313,12 +435,10 @@ function updateTab(tab) {
         tab.dataset.favicon = storedData.favicon;
     }
 
-    // Update the title
     if (!tabTitleInput.value || tabTitleInput.value === "Blank Tab") {
         tabTitleInput.value = tab.dataset.title || "Blank Tab";
     }
 
-    // Ensure favicon persists and doesn't revert
     if (!tabFavicon) {
         tabFavicon = document.createElement('img');
         tabFavicon.classList.add('favicon');
@@ -332,7 +452,6 @@ function updateTab(tab) {
     tabFavicon.style.marginRight = '10px';
 }
 
-// Load saved tab data on page load
 window.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".tab").forEach(tab => {
         updateTab(tab);

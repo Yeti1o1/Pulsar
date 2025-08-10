@@ -18,180 +18,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- UV Scripts -->
     <!-- Link to external CSS file -->
-    <link rel="stylesheet" href="css/i.css">
+    <link rel="stylesheet" href="css/tab.css">
 
     <script src="/uv/uv.bundle.js"></script>
     <script src="/uv/uv.config.js"></script>
     <script src="/baremux/index.js"></script>
-<style>
-* {
-    cursor: auto !important;
-}
-body {
-    zoom: 0.8;
-}
-    #searchButton {
-  display: none;
-    }
-    body {
-  position: relative;
-}
-#urlInput {
-    width: 35rem;
-    height: 4rem;
-    background: #ffffff;
-    color: rgb(0, 0, 0);
-    outline: none;
-    border: none;
-    padding: 14px;
-    font-size: 2rem;
-    font-weight: 900;
-    border-radius: 1rem;
-    align-self: center;
-    align-items: center;
-    align-content: center;
-}
-#MyInput {
-    width: 35rem;
-    height: 4rem;
-    background: #ffffff;
-    color: rgb(0, 0, 0);
-    outline: none;
-    border: none;
-    padding: 14px;
-    font-size: 1rem;
-    font-weight: 900;
-    border-radius: 1rem;
-}
 
-#frame {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    background: black;
-    outline: none;
-    border: none;
-}
-.iframeWindow {
-    position: absolute;
-    width: 125vw;
-    height: 106vh;
-    border: 0;
-    padding: 0;
-    margin: 0;
-    left: 0;
-    bottom: -12.8vh;
-    background-color: #00000000;
-    z-index: -1;
-}
-
-#switcher {
-    position: absolute;
-    z-index: 999;
-}
-#reloadButton {
-    position: absolute;
-    z-index: 999;
-}
-#searchButton {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: #111;
-  color: rgb(0, 0, 0);
-  padding: 10px 20px;
-  font-size: 14px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease;
-}
-
-#searchButton:hover {
-  background-color: #111;
-}
-body {
-    background-color: linear-gradient(135deg, #0f0063, #4e06a0, #b300ff)
-}
-#switcher {
-  position: absolute;
-  top: 0.25%;
-  right: 0.5%;
-  padding: 12.5px 20px;
-  font-size: 20px;
-  border-radius: 4px;
-  background-color: #000000;
-  color: #ffffff;
-  appearance: none;
-  height: 6.5vh;
-  width: 11.5vw;
-}
-#reloadButton {
-  position: absolute;
-  top: 5%;
-  left: 7.5%;
-  padding: 15px 20px;
-  font-size: 20px;
-  border: none;
-  background-color: #00000000;
-  color: #ffffff;
-  appearance: none;
-}
-#switcher option {
-  padding: 10px;
-}
-#overlay {
-            position: fixed;
-            top: 7vh;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: white;
-            z-index: 9999;
-            display: none;
-        }
-        #iframeWindow {
-            z-index: 9999;
-            display: none;
-        }
-        #topBar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 6vh;
-            background: #000000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 5px;
-        }
-        #topUrlInput {
-            width: 75%;
-            height: 3.25vh;
-            background: #ffffff;
-            color: #000000;
-            outline: none;
-            border: none;
-            padding: 5px;
-            font-size: 1.25rem;
-            font-weight: 600;
-            border-radius: 5px;
-        }
-        #topGoButton {
-            height: 4vh;
-            margin-left: 5px;
-            background: #111;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            padding: 5px 10px;
-        }
-</style>
     <script>
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", async () => {
@@ -207,14 +39,25 @@ body {
         <button class="reloadButton" id="reloadButton"><i class="fas fa-redo"></i></button>
         <input type="text" id="topUrlInput" placeholder="Enter URL...">
     </div>
-    <h1 id="stitle">Pulsar</h1>
-    <p id="memo">Browse the web unblocked, for free</p>
+
+        <h1 class="Title">
+          <a href="index.html"><img src="Imgs/Logo.png" alt="Logo" style="
+            width: 60px;
+            height: auto;
+            vertical-align: middle;
+          "></a>
+<span style="font-family: 'Trebuchet MS', Helvetica, sans-serif; letter-spacing: 4px; font-weight: 900; font-size: 1.2em; text-shadow: 2px 2px #00a2ff;">Pulsar</span>
+        </h1>
+            <p id="memo">Browse the web unblocked, for free</p>
     </br></br>
     <div style="display: flex; justify-content: center; align-items: center;">
-        <div style="position: relative;">
-            <input type="text" id="urlInput" placeholder="" style="padding-left: 50px;">
-            <i class="fa fa-search" aria-hidden="true" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: black;"></i>
-        </div>
+
+            <div class="search-wrapper" id="searchWrapper">
+                <input type="text" id="urlInput" placeholder="Search for games...">
+                <button class="search-icon-btn" aria-label="Search">
+                   <i class="fa fa-search"></i>
+                </button>
+            </div>
     </div>
     
     <button class="searchButton" id="searchButton"></button>

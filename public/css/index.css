@@ -149,7 +149,6 @@ body::before {
 }
 
 .btn-container-grid::-webkit-scrollbar {
-    /* Removed display:none here as grid containers usually don't have scrollbar */
     display: none;
 }
 
