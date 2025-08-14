@@ -20,8 +20,7 @@ const simulation = {
         mobs.draw();
         simulation.draw.cons();
         simulation.draw.body();
-        if (!m.isBodiesAsleep) mobs.loop();
-        mobs.healthBar();
+        if (!m.isTimeDilated) mobs.loop();
         m.draw();
         m.hold();
         level.customTopLayer();
@@ -29,7 +28,7 @@ const simulation = {
         b.fire();
         b.bulletRemove();
         b.bulletDraw();
-        if (!m.isBodiesAsleep) b.bulletDo();
+        if (!m.isTimeDilated) b.bulletDo();
         simulation.drawCircle();
         simulation.runEphemera();
         ctx.restore();
@@ -105,20 +104,29 @@ const simulation = {
             Engine.update(engine, simulation.delta);
             // level.custom();
             // level.customTopLayer();
-            if (!m.isBodiesAsleep) mobs.loop();
+            if (!m.isTimeDilated) mobs.loop();
             if (m.fieldMode !== 7) m.hold();
             b.bulletRemove();
-            if (!m.isBodiesAsleep) b.bulletDo();
+            if (!m.isTimeDilated) b.bulletDo();
             simulation.runEphemera();
         }
         simulation.isTimeSkipping = false;
     },
     ephemera: [], //array that is used to store ephemera objects
-    removeEphemera: function (name) {
-        for (let i = 0, len = simulation.ephemera.length; i < len; i++) {
-            if (simulation.ephemera[i].name === name) {
-                simulation.ephemera.splice(i, 1);
-                break;
+    removeEphemera: function (who, isRemoveByName) {
+        if (isRemoveByName) { //who is a string
+            for (let i = 0, len = simulation.ephemera.length; i < len; i++) {
+                if (simulation.ephemera[i].name === who) {
+                    simulation.ephemera.splice(i, 1);
+                    break;
+                }
+            }
+        } else {
+            for (let i = 0, len = simulation.ephemera.length; i < len; i++) {
+                if (simulation.ephemera[i] === who) {
+                    simulation.ephemera.splice(i, 1);
+                    break;
+                }
             }
         }
     },
@@ -145,10 +153,9 @@ const simulation = {
     //     mobs.draw();
     //     simulation.draw.cons();
     //     simulation.draw.body();
-    //     if (!m.isBodiesAsleep) {
+    //     if (!m.isTimeDilated) {
     //         // mobs.loop();
     //     }
-    //     mobs.healthBar();
     //     m.draw();
     //     m.hold();
     //     // v.draw(); //working on visibility work in progress
@@ -157,7 +164,7 @@ const simulation = {
     //     b.fire();
     //     b.bulletRemove();
     //     b.bulletDraw();
-    //     if (!m.isBodiesAsleep) b.bulletDo();
+    //     if (!m.isTimeDilated) b.bulletDo();
     //     simulation.drawCircle();
     //     // simulation.clip();
     //     ctx.restore();
@@ -179,7 +186,7 @@ const simulation = {
     paused: false,
     isChoosing: false,
     testing: false, //testing mode: shows wire frame and some variables
-    cycle: 0, //total cycles, 60 per second
+    cycle: 600, //total cycles, 60 per second
     fpsCap: null, //limits frames per second to 144/2=72,  on most monitors the fps is capped at 60fps by the hardware
     fpsCapDefault: 72, //use to change fpsCap back to normal after a hit from a mob
     isCommunityMaps: false,
@@ -193,7 +200,6 @@ const simulation = {
     difficultyMode: 2, //normal difficulty is 2
     difficulty: 0,
     constraint: 0,
-    dmgScale: null,
     healScale: 1,
     accelScale: null,
     CDScale: null,
@@ -347,7 +353,7 @@ const simulation = {
             if (simulation.drawList[i].time) {
                 simulation.drawList[i].time--;
             } else {
-                if (!m.isBodiesAsleep) simulation.drawList.splice(i, 1); //remove when timer runs out
+                if (!m.isTimeDilated) simulation.drawList.splice(i, 1); //remove when timer runs out
             }
         }
     },
@@ -431,48 +437,6 @@ const simulation = {
             }
         }
         document.getElementById("right-HUD").innerHTML = text
-
-
-        // let text = ""
-        // if (simulation.difficultyMode > 2 && level.constraintDescription1) {
-        //     text += `<span class='constraint'>${level.constraintDescription1}</span>`
-        //     // text += `${level.constraintDescription1}`
-        // }
-        // if (simulation.difficultyMode > 4 && level.constraintDescription2) {
-        //     text += `<br><span class='constraint'>${level.constraintDescription2}</span>`
-        // }
-        // for (let i = 0, len = tech.tech.length; i < len; i++) { //add tech
-        //     if (tech.tech[i].isLost) {
-        //         if (text) text += "<br>" //add a new line, but not on the first line
-        //         text += `<span style="text-decoration: line-through;">${tech.tech[i].name}</span>`
-        //     } else if (tech.tech[i].count > 0 && !tech.tech[i].isInstant) {
-        //         if (text) text += "<br>" //add a new line, but not on the first line
-        //         text += tech.tech[i].name
-        //         if (tech.tech[i].count > 1) text += ` (${tech.tech[i].count}x)`
-        //     }
-        // }
-        // document.getElementById("right-HUD").innerHTML = text
-
-        // let constraints = ""
-        // if (simulation.difficultyMode > 2 && level.constraintDescription1) {
-        //     constraints += `<span class='constraint' style="opacity: 0.35;">${level.constraintDescription1}</span>`
-        //     // text += `${level.constraintDescription1}`
-        // }
-        // if (simulation.difficultyMode > 4 && level.constraintDescription2) {
-        //     constraints += `<br><span class='constraint' style="opacity: 0.35;">${level.constraintDescription2}</span>`
-        // }
-        // let text = ""
-        // for (let i = 0, len = tech.tech.length; i < len; i++) { //add tech
-        //     if (tech.tech[i].isLost) {
-        //         if (text) text += "<br>" //add a new line, but not on the first line
-        //         text += `<span style="text-decoration: line-through;">${tech.tech[i].name}</span>`
-        //     } else if (tech.tech[i].count > 0 && !tech.tech[i].isInstant) {
-        //         if (text) text += "<br>" //add a new line, but not on the first line
-        //         text += tech.tech[i].name
-        //         if (tech.tech[i].count > 1) text += ` (${tech.tech[i].count}x)`
-        //     }
-        // }
-        // document.getElementById("right-HUD").innerHTML = constraints + `<div class="right-HUD-tech">` + text + `</div>`
     },
     lastLogTime: 0,
     isTextLogOpen: true,
@@ -496,14 +460,14 @@ const simulation = {
         }
     },
     nextGun() {
-        if (b.inventory.length > 1 && !tech.isGunCycle) {
+        if (b.inventory.length > 1 && !(tech.isGunCycle || tech.isGunChoice)) {
             b.inventoryGun++;
             if (b.inventoryGun > b.inventory.length - 1) b.inventoryGun = 0;
             simulation.switchGun();
         }
     },
     previousGun() {
-        if (b.inventory.length > 1 && !tech.isGunCycle) {
+        if (b.inventory.length > 1 && !(tech.isGunCycle || tech.isGunChoice)) {
             b.inventoryGun--;
             if (b.inventoryGun < 0) b.inventoryGun = b.inventory.length - 1;
             simulation.switchGun();
@@ -578,14 +542,105 @@ const simulation = {
                     simulation.zoomScale += step
                     if (this.count < 1 && this.currentLevel === level.onLevel && simulation.isAutoZoom) {
                         simulation.zoomScale = newZoomScale
-                        simulation.removeEphemera(this.name)
+                        simulation.removeEphemera(this)
                     }
                     simulation.setZoom(simulation.zoomScale);
                 },
             })
         }
     },
-    translatePlayerAndCamera(where) {
+    isInvertedVertical: false,
+    flipCameraVertical(frames = 1, passFunction = () => { }) {
+        if (!simulation.isInvertedVertical) {
+            if (frames > 0) {
+                let count = 0
+                const loop = () => {
+                    if (m.alive) {
+                        if (simulation.paused) {
+                            requestAnimationFrame(loop);
+                        } else {
+                            count++
+                            ctx.setTransform(1, 0, 0, 1, 0, 0); ///reset to avoid build up of transformations
+                            if (count === frames) {
+                                // Flip the canvas vertically
+                                ctx.translate(0, canvas.height); // Move the origin down to the bottom
+                                ctx.scale(1, -1); // Flip vertically
+                                //flip mouse Y again to make sure it caught
+                                // mouseMove.reset()
+                            } else {
+                                requestAnimationFrame(loop);
+                                ctx.translate(0, canvas.height * count / frames);
+                                ctx.scale(1, 1 - 2 * count / frames);
+                            }
+                            if (count > Math.floor(frames / 2) && !simulation.isInvertedVertical) {
+                                //flip mouse Y at the 1/2 way point
+                                simulation.isInvertedVertical = true
+                                mouseMove.reset()
+                                simulation.mouse.y = canvas.height - simulation.mouse.y
+                                //passFunction probably flips the map elements 
+                                passFunction()
+                            }
+                        }
+                    }
+                }
+                requestAnimationFrame(loop);
+            } else {
+                // Flip the canvas vertically
+                ctx.translate(0, canvas.height); // Move the origin down to the bottom
+                ctx.scale(1, -1); // Flip vertically
+                //flip mouse Y
+                simulation.isInvertedVertical = true
+                mouseMove.reset()
+                simulation.mouse.y = canvas.height - simulation.mouse.y
+
+            }
+        }
+    },
+    unFlipCameraVertical(frames = 0, passFunction = () => { }) {
+        if (frames) {
+            let count = 0
+            const loop = () => {
+                if (m.alive) {
+                    if (simulation.paused) {
+                        requestAnimationFrame(loop);
+                    } else {
+                        count++
+                        ctx.setTransform(1, 0, 0, 1, 0, 0); ///reset to avoid build up of transformations
+                        if (count === frames) {
+                            // requestAnimationFrame(() => { ctx.reset(); });
+                            // ctx.translate(0, 0);
+                            // ctx.scale(1, 1);
+
+                            //flip mouse Y again to make sure it caught
+                            // mouseMove.reset()
+
+                        } else {
+                            requestAnimationFrame(loop);
+                            ctx.translate(0, canvas.height - canvas.height * count / frames);
+                            ctx.scale(1, -1 + 2 * count / frames);
+                        }
+                        if (count > Math.floor(frames / 2) && simulation.isInvertedVertical) {
+                            simulation.isInvertedVertical = false
+                            //flip mouse Y at the 1/2 way point
+                            mouseMove.reset()
+                            simulation.mouse.y = canvas.height - simulation.mouse.y
+
+                            passFunction()//passFunction probably draws new map elements 
+                        }
+                    }
+                }
+            }
+            requestAnimationFrame(loop);
+        } else {
+            ctx.reset();
+            ctx.font = "25px Arial";
+            simulation.isInvertedVertical = false
+            mouseMove.reset()
+            simulation.mouse.y = canvas.height - simulation.mouse.y
+
+        }
+    },
+    translatePlayerAndCamera(where, isTranslateBots = true) {
         //infinite falling.  teleport to sky after falling
         const before = { x: player.position.x, y: player.position.y, }
         Matter.Body.setPosition(player, { x: where.x, y: where.y });
@@ -595,25 +650,27 @@ const simulation = {
         m.transY += change.y
         simulation.mouseInGame.x = (simulation.mouse.x - canvas.width2) / simulation.zoom * simulation.edgeZoomOutSmooth + canvas.width2 - m.transX;
         simulation.mouseInGame.y = (simulation.mouse.y - canvas.height2) / simulation.zoom * simulation.edgeZoomOutSmooth + canvas.height2 - m.transY;
+
         m.angle = Math.atan2(simulation.mouseInGame.y - m.pos.y, simulation.mouseInGame.x - m.pos.x);
 
         //is there a reason to update m.pos here?
         // m.pos.x = player.position.x;
         // m.pos.y = playerBody.position.y - m.yOff;
-
-        for (let i = 0; i < bullet.length; i++) {
-            if (bullet[i].botType) {
-                if (Vector.magnitudeSquared(Vector.sub(bullet[i].position, player.position)) > 1000000) { //far away bots teleport to player
-                    Matter.Body.setPosition(bullet[i], Vector.add(player.position, { x: 250 * (Math.random() - 0.5), y: 250 * (Math.random() - 0.5) }));
-                    Matter.Body.setVelocity(bullet[i], { x: 0, y: 0 });
-                } else { //close bots maintain relative distance to player on teleport
-                    Matter.Body.setPosition(bullet[i], Vector.sub(bullet[i].position, change));
+        if (isTranslateBots) {
+            for (let i = 0; i < bullet.length; i++) {
+                if (bullet[i].botType) {
+                    if (Vector.magnitudeSquared(Vector.sub(bullet[i].position, player.position)) > 1000000) { //far away bots teleport to player
+                        Matter.Body.setPosition(bullet[i], Vector.add(player.position, { x: 250 * (Math.random() - 0.5), y: 250 * (Math.random() - 0.5) }));
+                        Matter.Body.setVelocity(bullet[i], { x: 0, y: 0 });
+                    } else { //close bots maintain relative distance to player on teleport
+                        Matter.Body.setPosition(bullet[i], Vector.sub(bullet[i].position, change));
+                    }
                 }
             }
         }
     },
     setupCamera() { //makes the camera not scroll after changing locations
-        // //only works if velocity is zero
+        // only works if velocity is zero
         m.pos.x = player.position.x;
         m.pos.y = playerBody.position.y - m.yOff;
         const scale = 0.8;
@@ -635,6 +692,20 @@ const simulation = {
         ctx.scale(simulation.zoom / simulation.edgeZoomOutSmooth, simulation.zoom / simulation.edgeZoomOutSmooth); //zoom in once centered
         ctx.translate(-canvas.width2 + m.transX, -canvas.height2 + m.transY); //translate
         // ctx.translate(-canvas.width2 + m.transX - player.velocity.x, -canvas.height2 + m.transY + player.velocity.y); //translate
+        //calculate in game mouse position by undoing the zoom and translations
+        simulation.mouseInGame.x = (simulation.mouse.x - canvas.width2) / simulation.zoom * simulation.edgeZoomOutSmooth + canvas.width2 - m.transX;
+        simulation.mouseInGame.y = (simulation.mouse.y - canvas.height2) / simulation.zoom * simulation.edgeZoomOutSmooth + canvas.height2 - m.transY;
+    },
+    //for moving camera away from player
+    setCameraPosition(x, y, zoom = 1) {
+        ctx.restore();
+        ctx.save();
+        ctx.translate(canvas.width2, canvas.height2); //center
+        ctx.scale(zoom, zoom); //zoom in once centered
+        ctx.translate(- x, - y); //center
+
+        // ctx.scale(simulation.zoom / simulation.edgeZoomOutSmooth, simulation.zoom / simulation.edgeZoomOutSmooth); //zoom in once centered
+        // ctx.translate(-canvas.width2, -canvas.height2); //translate
         //calculate in game mouse position by undoing the zoom and translations
         simulation.mouseInGame.x = (simulation.mouse.x - canvas.width2) / simulation.zoom * simulation.edgeZoomOutSmooth + canvas.width2 - m.transX;
         simulation.mouseInGame.y = (simulation.mouse.y - canvas.height2) / simulation.zoom * simulation.edgeZoomOutSmooth + canvas.height2 - m.transY;
@@ -708,7 +779,7 @@ const simulation = {
                 bodies[i].force.y += bodies[i].mass * magnitude;
             }
         }
-        if (!m.isBodiesAsleep) {
+        if (!m.isTimeDilated) {
             addGravity(powerUp, simulation.g);
             addGravity(body, simulation.g);
         }
@@ -716,6 +787,14 @@ const simulation = {
     },
     firstRun: true,
     splashReturn() {
+        if (document.fullscreenElement) {
+            // mouseMove.isLockPointer = true
+            document.body.addEventListener('mousedown', mouseMove.pointerUnlock, { once: true })//watches for mouse clicks that exit draft mode and self removes
+
+            document.exitPointerLock();
+            mouseMove.isPointerLocked = false
+            mouseMove.reset()
+        }
         document.getElementById("previous-seed").innerHTML = `previous seed: <span style="font-size:80%;">${Math.initialSeed}</span><br>`
         document.getElementById("seed").value = Math.initialSeed = Math.seed //randomize initial seed
 
@@ -736,6 +815,8 @@ const simulation = {
         document.getElementById("experiment-button").style.opacity = "0";
         document.getElementById("training-button").style.display = "inline"
         document.getElementById("training-button").style.opacity = "0";
+        document.getElementById("start-button").style.display = "inline"
+        document.getElementById("start-button").style.opacity = "0";
         document.getElementById("experiment-grid").style.display = "none"
         document.getElementById("pause-grid-left").style.display = "none"
         document.getElementById("pause-grid-right").style.display = "none"
@@ -749,6 +830,7 @@ const simulation = {
         setTimeout(() => {
             document.getElementById("experiment-button").style.opacity = "1";
             document.getElementById("training-button").style.opacity = "1";
+            document.getElementById("start-button").style.opacity = "1";
             document.getElementById("info").style.opacity = "1";
             document.getElementById("splash").style.opacity = "1";
         }, 200);
@@ -775,6 +857,7 @@ const simulation = {
         document.getElementById("info").style.display = "none";
         document.getElementById("experiment-button").style.display = "none";
         document.getElementById("training-button").style.display = "none";
+        document.getElementById("start-button").style.display = "none";
         // document.getElementById("experiment-button").style.opacity = "0";
         document.getElementById("splash").onclick = null; //removes the onclick effect so the function only runs once
         document.getElementById("splash").style.display = "none"; //hides the element that spawned the function
@@ -800,6 +883,8 @@ const simulation = {
         document.getElementById("pause-grid-left").style.opacity = "1"
         ctx.globalCompositeOperation = "source-over"
         ctx.shadowBlur = 0;
+
+        mouseMove.reset()
         requestAnimationFrame(() => {
             ctx.setTransform(1, 0, 0, 1, 0, 0); //reset warp effect
             ctx.setLineDash([]) //reset stroke dash effect
@@ -812,14 +897,13 @@ const simulation = {
         } else {
             Composite.add(engine.world, [player])
         }
-        shuffle(level.constraint)
+        seededShuffle(level.constraint)
         level.populateLevels()
         input.endKeySensing();
         simulation.ephemera = []
         powerUps.powerUpStorage = []
-        tech.setupAllTech(); //sets tech to default values
+        tech.resetAllTech(); //sets tech to default values
         b.resetAllGuns();
-        tech.duplication = 0;
         for (i = 0, len = b.guns.length; i < len; i++) { //find which gun 
             if (b.guns[i].name === "laser") b.guns[i].chooseFireMethod()
             if (b.guns[i].name === "nail gun") b.guns[i].chooseFireMethod()
@@ -827,16 +911,9 @@ const simulation = {
             if (b.guns[i].name === "harpoon") b.guns[i].chooseFireMethod()
             if (b.guns[i].name === "foam") b.guns[i].chooseFireMethod()
         }
-        tech.dynamoBotCount = 0;
-        tech.nailBotCount = 0;
-        tech.laserBotCount = 0;
-        tech.orbitBotCount = 0;
-        tech.foamBotCount = 0;
-        tech.soundBotCount = 0;
-        tech.boomBotCount = 0;
-        tech.plasmaBotCount = 0;
-        tech.missileBotCount = 0;
+        b.zeroBotCount()
 
+        m.isSwitchingWorlds = false
         simulation.isChoosing = false;
         b.setFireMethod()
         b.setFireCD();
@@ -865,7 +942,7 @@ const simulation = {
         simulation.makeGunHUD();
         simulation.lastLogTime = 0;
         mobs.mobDeaths = 0
-
+        level.isFlipped = false
         level.onLevel = 0;
         level.levelsCleared = 0;
         level.updateDifficulty()
@@ -883,6 +960,7 @@ const simulation = {
         m.onGround = false
         m.lastOnGroundCycle = 0
         m.health = 0;
+        level.isLowHeal = false
         m.addHealth(0.25)
         m.drop();
         m.holdingTarget = null
@@ -911,14 +989,14 @@ const simulation = {
             simulation.ephemera.push({
                 name: "dmgDefBars", count: 0, do() {
                     if (!(m.cycle % 15)) { //4 times a second
-                        const defense = m.defense()             //update defense bar
+                        const defense = m.defense() //update defense bar
                         if (m.lastCalculatedDefense !== defense) {
                             document.getElementById("defense-bar").style.width = Math.floor(300 * m.maxHealth * (1 - defense)) + "px";
                             m.lastCalculatedDefense = defense
                         }
-                        const damage = tech.damageFromTech()             //update damage bar
+                        const damage = tech.damageAdjustments() //update damage bar
                         if (m.lastCalculatedDamage !== damage) {
-                            document.getElementById("damage-bar").style.height = Math.floor((Math.atan(0.25 * damage - 0.25) + 0.25) * 0.53 * canvas.height) + "px";
+                            document.getElementById("damage-bar").style.height = Math.floor((Math.atan(0.25 * damage - 0.25) + 0.25) * 0.63 * canvas.height) + "px";
                             m.lastCalculatedDamage = damage
                         }
                     }
@@ -926,7 +1004,7 @@ const simulation = {
             })
         }
         simulation.ephemera.push({
-            name: "uniqueName", count: 0, do() {
+            name: "checks", count: 0, do() {
                 if (!(m.cycle % 60)) { //once a second
                     //energy overfill 
                     if (m.energy > m.maxEnergy) {
@@ -938,11 +1016,10 @@ const simulation = {
                             //infinite falling.  teleport to sky after falling
 
                             simulation.ephemera.push({
-                                name: "slow player",
                                 count: 160, //cycles before it self removes
                                 do() {
                                     this.count--
-                                    if (this.count < 0 || m.onGround) simulation.removeEphemera(this.name)
+                                    if (this.count < 0 || m.onGround) simulation.removeEphemera(this)
                                     if (player.velocity.y > 70) Matter.Body.setVelocity(player, { x: player.velocity.x * 0.99, y: player.velocity.y * 0.99 });
                                     if (player.velocity.y > 90) Matter.Body.setVelocity(player, { x: player.velocity.x * 0.99, y: player.velocity.y * 0.99 });
                                 },
@@ -965,11 +1042,10 @@ const simulation = {
                             }
                         } else if (level.fallMode === "position") { //fall and stay in the same horizontal position
                             simulation.ephemera.push({
-                                name: "slow player",
                                 count: 180, //cycles before it self removes
                                 do() {
                                     this.count--
-                                    if (this.count < 0 || m.onGround) simulation.removeEphemera(this.name)
+                                    if (this.count < 0 || m.onGround) simulation.removeEphemera(this)
                                     if (player.velocity.y > 70) Matter.Body.setVelocity(player, { x: player.velocity.x * 0.99, y: player.velocity.y * 0.99 });
                                     if (player.velocity.y > 90) Matter.Body.setVelocity(player, { x: player.velocity.x * 0.99, y: player.velocity.y * 0.99 });
                                 },
@@ -990,11 +1066,9 @@ const simulation = {
                             for (let i = 0; i < bullet.length; i++) {
                                 if (bullet[i].botType) Matter.Body.setPosition(bullet[i], Vector.sub(bullet[i].position, change));
                             }
-                        } else { //get hurt and go to start
+                        } else { //go to start
                             Matter.Body.setVelocity(player, { x: 0, y: 0 });
                             Matter.Body.setPosition(player, { x: level.enter.x + 50, y: level.enter.y - 20 });
-                            // m.damage(0.02 * simulation.difficultyMode);
-                            // m.energy -= 0.02 * simulation.difficultyMode
                             // move bots
                             for (let i = 0; i < bullet.length; i++) {
                                 if (bullet[i].botType) {
@@ -1003,11 +1077,6 @@ const simulation = {
                                 }
                             }
                         }
-
-
-
-
-
                     }
                     if (isNaN(player.position.x)) m.death();
                     if (m.lastKillCycle + 300 > m.cycle) { //effects active for 5 seconds after killing a mob
@@ -1052,19 +1121,18 @@ const simulation = {
                         if (Matter.Query.point(map, m.pos).length > 0 || Matter.Query.point(map, player.position).length > 0) {
                             //check for the next few seconds to see if being stuck continues
                             simulation.ephemera.push({
-                                name: "stuck",
                                 count: 240, //cycles before it self removes
                                 do() {
                                     if (Matter.Query.point(map, m.pos).length > 0 || Matter.Query.point(map, player.position).length > 0) {
                                         this.count--
 
                                         if (this.count < 0) {
-                                            simulation.removeEphemera(this.name)
+                                            simulation.removeEphemera(this)
                                             Matter.Body.setVelocity(player, { x: 0, y: 0 });
                                             Matter.Body.setPosition(player, { x: level.enter.x + 50, y: level.enter.y - 20 });
                                         }
                                     } else {
-                                        simulation.removeEphemera(this.name)
+                                        simulation.removeEphemera(this)
                                     }
                                 },
                             })
@@ -1076,7 +1144,13 @@ const simulation = {
                                 m.health *= 0.95 //remove 5%
                                 m.displayHealth();
                             }
-
+                            simulation.drawList.push({ //add dmg to draw queue
+                                x: m.pos.x,
+                                y: m.pos.y,
+                                radius: 5,
+                                color: "rgb(255, 0, 195)",
+                                time: 4
+                            });
                         }
                         if (tech.cyclicImmunity && m.immuneCycle < m.cycle + tech.cyclicImmunity) m.immuneCycle = m.cycle + tech.cyclicImmunity; //player is immune to damage for 60 cycles
 
@@ -1126,6 +1200,7 @@ const simulation = {
         simulation.fpsInterval = 1000 / simulation.fpsCap;
         simulation.then = Date.now();
         requestAnimationFrame(cycle); //starts game loop
+        // if (document.fullscreenElement) mouseMove.isLockPointer = true //this interacts with the mousedown event listener to exit pointer lock
     },
     clearTimeouts() {
         let id = window.setTimeout(function () { }, 0);
@@ -1135,8 +1210,10 @@ const simulation = {
     },
     clearNow: false,
     clearMap() {
+        level.isVerticalFLipLevel = false
         level.isProcedural = false;
         level.fallMode = "";
+        simulation.unFlipCameraVertical()
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         if (m.alive) {
             if (tech.isLongitudinal) b.guns[3].waves = []; //empty array of wave bullets
@@ -1199,6 +1276,7 @@ const simulation = {
         m.drop();
         m.hole.isOn = false;
         simulation.drawList = [];
+        mobs.maxMobBody = 40
 
         if (tech.isHealAttract && m.alive) { //send health power ups to the next level
             let healCount = 0
@@ -1219,15 +1297,18 @@ const simulation = {
         }
         if (tech.isDronesTravel && m.alive) {
             //count drones
-            let droneCount = 0
+            // let droneCount = 0
+            let droneArray = []
             let sporeCount = 0
             let wormCount = 0
             let fleaCount = 0
-            let deliveryCount = 0
             for (let i = 0; i < bullet.length; ++i) {
-                if (bullet[i].isDrone) {
-                    droneCount++
-                    if (bullet[i].isImproved) deliveryCount++
+                if (bullet[i].isDrone && bullet[i].endCycle !== Infinity) {
+                    droneArray.push({
+                        isImproved: bullet[i].isImproved,
+                        scale: bullet[i].scale,
+                        endCycle: bullet[i].endCycle,
+                    })
                 } else if (bullet[i].isSpore) {
                     sporeCount++
                 } else if (bullet[i].wormSize) {
@@ -1238,7 +1319,34 @@ const simulation = {
             }
 
             //respawn drones in animation frame
-            requestAnimationFrame(() => { b.delayDrones({ x: level.enter.x + 50, y: level.enter.y - 60 }, droneCount, deliveryCount) });
+            requestAnimationFrame(() => {
+                let respawnDrones = () => {
+                    const where = {
+                        x: level.enter.x + 50,
+                        y: level.enter.y - 60
+                    }
+                    if (droneArray.length) {
+                        requestAnimationFrame(respawnDrones);
+                        if (!simulation.paused && !simulation.isChoosing && m.alive) {
+                            if (tech.isDroneRadioactive) {
+                                b.droneRadioactive({ x: where.x + 50 * (Math.random() - 0.5), y: where.y + 50 * (Math.random() - 0.5) }, 0)
+                                if (droneArray[0].scale) bullet[bullet.length - 1].size = droneArray[0].scale
+                            } else {
+                                b.drone({ x: where.x + 50 * (Math.random() - 0.5), y: where.y + 50 * (Math.random() - 0.5) }, 0)
+                                const who = bullet[bullet.length - 1]
+                                if (droneArray[0].isImproved) who.isImproved = true;
+                                if (droneArray[0].scale) {
+                                    who.scale = droneArray[0].scale
+                                    Matter.Body.scale(who, who.scale, who.scale);
+                                }
+                                who.endCycle = droneArray[0].endCycle + 300
+                            }
+                            droneArray.shift() //remove first element
+                        }
+                    }
+                }
+                requestAnimationFrame(respawnDrones);
+            });
 
             //respawn spores in animation frame
             let respawnSpores = () => {
@@ -1307,7 +1415,7 @@ const simulation = {
             for (let i = 0, len = mob.length; i < len; i++) {
                 if (mob[i].isDropPowerUp && mob[i].alive) count++
             }
-            count *= 0.3 //to fake the 25% chance, this makes it not random, and more predictable
+            count *= 0.4 //to fake the 25% chance, this makes it not random, and more predictable
             let cycle = () => { //run after waiting a cycle for the map to be cleared
                 const types = ["heal", "ammo", "heal", "ammo", "research", "coupling", "boost", "tech", "gun", "field"]
                 for (let i = 0; i < count; i++) powerUps.spawnDelay(types[Math.floor(Math.random() * types.length)], 1)
@@ -1851,6 +1959,451 @@ const simulation = {
             ctx.fillStyle = "rgba(0, 0, 255, 0.25)";
             ctx.fill();
             // ctx.stroke();
+        },
+        font: {
+            word: new Path2D(),
+            xPos: 0,
+            yPos: 0,
+            drawString(text, x, y) {
+                this.xPos = x
+                this.yPos = y
+                const letters = text.toLowerCase().split('')
+                letters.forEach((letter, index) => {
+                    if (letter >= 'a' && letter <= 'z' && this[letter]) {
+                        this[letter]()
+                        if (index < letters.length - 1) {
+                            this.xPos += 29
+                        }
+                    } else if (letter === ' ') {
+                        this.xPos += 29
+                    }
+                })
+            },
+            a() {
+                this.word.moveTo(this.xPos - 1, this.yPos + 40)
+                this.word.lineTo(this.xPos + 10, this.yPos + 0)
+                this.word.lineTo(this.xPos + 21, this.yPos + 40)
+                this.word.moveTo(this.xPos + 5, this.yPos + 20)
+                this.word.lineTo(this.xPos + 15, this.yPos + 20)
+            },
+            b() {
+                this.word.moveTo(this.xPos + 1, this.yPos);
+                this.word.lineTo(this.xPos + 1, this.yPos + 40);
+                this.word.moveTo(this.xPos + 1, this.yPos);
+                this.word.bezierCurveTo(this.xPos + 22, this.yPos, this.xPos + 22, this.yPos + 20, this.xPos + 1, this.yPos + 20);
+                this.word.moveTo(this.xPos + 1, this.yPos + 20);
+                this.word.bezierCurveTo(this.xPos + 25, this.yPos + 20, this.xPos + 25, this.yPos + 40, this.xPos + 1, this.yPos + 40);
+            },
+            c() {
+                // Calculate the starting point on the ellipse to move to
+                const startAngle = 0.2 * Math.PI;
+                const startX = (this.xPos + 11) + (11 * Math.cos(startAngle));
+                const startY = (this.yPos + 20) + (20 * Math.sin(startAngle));
+                this.word.moveTo(startX, startY);
+
+                // Draws a smooth partial ellipse for the 'C'
+                this.word.ellipse(this.xPos + 11, this.yPos + 20, 11, 20, 0, startAngle, 1.8 * Math.PI);
+            },
+            d() {
+                this.word.moveTo(this.xPos + 0, this.yPos);
+                this.word.lineTo(this.xPos + 0, this.yPos + 40);
+                // this.word.moveTo(this.xPos + 3, this.yPos + 40);
+                this.word.arcTo(this.xPos + 19, this.yPos + 40, this.xPos + 19, this.yPos + 20, 20);
+                this.word.arcTo(this.xPos + 19, this.yPos, this.xPos + 1, this.yPos, 20);
+            },
+            e() {
+                this.word.moveTo(this.xPos + 19, this.yPos + 0)
+                this.word.lineTo(this.xPos + 0, this.yPos + 0)
+                this.word.lineTo(this.xPos + 0, this.yPos + 20)
+                this.word.lineTo(this.xPos + 17, this.yPos + 20)
+                this.word.moveTo(this.xPos + 0, this.yPos + 20)
+                this.word.lineTo(this.xPos + 0, this.yPos + 40)
+                this.word.lineTo(this.xPos + 19, this.yPos + 40)
+            },
+            f() {
+                this.word.moveTo(this.xPos + 0, this.yPos + 0)
+                this.word.lineTo(this.xPos + 0, this.yPos + 40)
+                this.word.moveTo(this.xPos + 0, this.yPos + 0)
+                this.word.lineTo(this.xPos + 19, this.yPos + 0)
+                this.word.moveTo(this.xPos + 0, this.yPos + 20)
+                this.word.lineTo(this.xPos + 16, this.yPos + 20)
+            },
+            g() {
+                // Rounded G with curved edges
+                this.word.moveTo(this.xPos + 17, this.yPos + 6);
+                this.word.bezierCurveTo(this.xPos + 17, this.yPos + 2, this.xPos + 14, this.yPos + 0, this.xPos + 8, this.yPos + 0);
+                this.word.bezierCurveTo(this.xPos + 3, this.yPos + 0, this.xPos + 0, this.yPos + 4, this.xPos + 0, this.yPos + 20);
+                this.word.bezierCurveTo(this.xPos + 0, this.yPos + 36, this.xPos + 3, this.yPos + 40, this.xPos + 8, this.yPos + 40);
+                this.word.bezierCurveTo(this.xPos + 14, this.yPos + 40, this.xPos + 17, this.yPos + 36, this.xPos + 17, this.yPos + 30);
+                this.word.lineTo(this.xPos + 17, this.yPos + 20);
+                this.word.lineTo(this.xPos + 10, this.yPos + 20);
+            },
+            // g() {
+            //     this.word.moveTo(this.xPos + 17, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 40)
+            //     this.word.lineTo(this.xPos + 17, this.yPos + 40)
+            //     this.word.lineTo(this.xPos + 17, this.yPos + 20)
+            //     this.word.lineTo(this.xPos + 10, this.yPos + 20)
+            // },
+            h() {
+                this.word.moveTo(this.xPos + 0, this.yPos + 0)
+                this.word.lineTo(this.xPos + 0, this.yPos + 40)
+                this.word.moveTo(this.xPos + 0, this.yPos + 20)
+                this.word.lineTo(this.xPos + 17, this.yPos + 20)
+                this.word.lineTo(this.xPos + 17, this.yPos + 40)
+                this.word.moveTo(this.xPos + 17, this.yPos + 20)
+                this.word.lineTo(this.xPos + 17, this.yPos + 0)
+            },
+            i() {
+                this.word.moveTo(this.xPos + 0, this.yPos + 0)
+                this.word.lineTo(this.xPos + 19, this.yPos + 0)
+                this.word.moveTo(this.xPos + 9, this.yPos + 0)
+                this.word.lineTo(this.xPos + 9, this.yPos + 40)
+                this.word.moveTo(this.xPos + 0, this.yPos + 40)
+                this.word.lineTo(this.xPos + 19, this.yPos + 40)
+            },
+            // j() {
+            //     this.word.moveTo(this.xPos + 18, this.yPos + 0);
+            //     this.word.lineTo(this.xPos + 18, this.yPos + 40);
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 40);
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 30);
+            // },
+            j() {
+                // Rounded J with curved bottom
+                this.word.moveTo(this.xPos + 18, this.yPos + 0);
+                this.word.lineTo(this.xPos + 18, this.yPos + 30);
+                this.word.bezierCurveTo(this.xPos + 18, this.yPos + 37, this.xPos + 14, this.yPos + 40, this.xPos + 8, this.yPos + 40);
+                this.word.bezierCurveTo(this.xPos + 2, this.yPos + 40, this.xPos + 0, this.yPos + 37, this.xPos + 0, this.yPos + 30);
+            },
+            k() {
+                this.word.moveTo(this.xPos + 0, this.yPos + 0)
+                this.word.lineTo(this.xPos + 0, this.yPos + 40)
+                this.word.moveTo(this.xPos + 0, this.yPos + 20)
+                this.word.lineTo(this.xPos + 19, this.yPos + 0)
+                this.word.moveTo(this.xPos + 4, this.yPos + 17)
+                this.word.lineTo(this.xPos + 19, this.yPos + 40)
+            },
+            l() {
+                this.word.moveTo(this.xPos + 1, this.yPos + 0)
+                this.word.lineTo(this.xPos + 1, this.yPos + 40)
+                this.word.lineTo(this.xPos + 20, this.yPos + 40)
+            },
+            m() {
+                this.word.moveTo(this.xPos + 0, this.yPos + 40)
+                this.word.lineTo(this.xPos + 0, this.yPos + 0)
+                this.word.lineTo(this.xPos + 9, this.yPos + 20)
+                this.word.lineTo(this.xPos + 17, this.yPos + 0)
+                this.word.lineTo(this.xPos + 17, this.yPos + 40)
+            },
+            n() {
+                this.word.moveTo(this.xPos + 0, this.yPos + 40)
+                this.word.lineTo(this.xPos + 0, this.yPos + 0)
+                this.word.lineTo(this.xPos + 17, this.yPos + 40)
+                this.word.lineTo(this.xPos + 17, this.yPos + 0)
+            },
+            o() {
+                this.word.moveTo(this.xPos + 20, this.yPos + 20);
+                this.word.ellipse(this.xPos + 9, this.yPos + 20, 11, 20, 0, 0, 2 * Math.PI);
+            },
+            p() {
+                // Rounded P with curved top section
+                this.word.moveTo(this.xPos + 0, this.yPos + 40);
+                this.word.lineTo(this.xPos + 0, this.yPos + 0);
+                this.word.lineTo(this.xPos + 10, this.yPos + 0);
+                this.word.bezierCurveTo(this.xPos + 15, this.yPos + 0, this.xPos + 18, this.yPos + 3, this.xPos + 18, this.yPos + 10);
+                this.word.bezierCurveTo(this.xPos + 18, this.yPos + 17, this.xPos + 15, this.yPos + 20, this.xPos + 10, this.yPos + 20);
+                this.word.lineTo(this.xPos + 0, this.yPos + 20);
+            },
+            // p() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 40)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 18, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 18, this.yPos + 20)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 20)
+            // },
+            q() {
+                this.word.moveTo(this.xPos + 20, this.yPos + 20);
+                this.word.ellipse(this.xPos + 9, this.yPos + 20, 11, 20, 0, 0, 2 * Math.PI);
+                this.word.moveTo(this.xPos + 12, this.yPos + 28);
+                this.word.lineTo(this.xPos + 20, this.yPos + 40);
+            },
+            r() {
+                // Rounded R with curved top section
+                this.word.moveTo(this.xPos + 0, this.yPos + 40);
+                this.word.lineTo(this.xPos + 0, this.yPos + 0);
+                this.word.lineTo(this.xPos + 10, this.yPos + 0);
+                this.word.bezierCurveTo(this.xPos + 15, this.yPos + 0, this.xPos + 18, this.yPos + 3, this.xPos + 18, this.yPos + 10);
+                this.word.bezierCurveTo(this.xPos + 18, this.yPos + 17, this.xPos + 15, this.yPos + 20, this.xPos + 10, this.yPos + 20);
+                this.word.lineTo(this.xPos + 0, this.yPos + 20);
+                this.word.moveTo(this.xPos + 8, this.yPos + 20);
+                this.word.lineTo(this.xPos + 18, this.yPos + 40);
+            },
+            // r() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 40)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 17, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 17, this.yPos + 20)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 20)
+            //     this.word.lineTo(this.xPos + 19, this.yPos + 40)
+            // },
+            // s() {
+            //     this.word.moveTo(this.xPos + 18, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 20)
+            //     this.word.lineTo(this.xPos + 18, this.yPos + 20)
+            //     this.word.lineTo(this.xPos + 18, this.yPos + 40)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 40)
+            // },
+            s() {
+                // Rounded S shape using curves
+                this.word.moveTo(this.xPos + 18, this.yPos + 6);
+                this.word.bezierCurveTo(this.xPos + 18, this.yPos + 2, this.xPos + 15, this.yPos + 0, this.xPos + 9, this.yPos + 0);
+                this.word.bezierCurveTo(this.xPos + 3, this.yPos + 0, this.xPos + 0, this.yPos + 3, this.xPos + 0, this.yPos + 8);
+                this.word.bezierCurveTo(this.xPos + 0, this.yPos + 13, this.xPos + 3, this.yPos + 16, this.xPos + 9, this.yPos + 18);
+                this.word.bezierCurveTo(this.xPos + 15, this.yPos + 20, this.xPos + 18, this.yPos + 24, this.xPos + 18, this.yPos + 32);
+                this.word.bezierCurveTo(this.xPos + 18, this.yPos + 37, this.xPos + 15, this.yPos + 40, this.xPos + 9, this.yPos + 40);
+                this.word.bezierCurveTo(this.xPos + 3, this.yPos + 40, this.xPos + 0, this.yPos + 37, this.xPos + 0, this.yPos + 34);
+            },
+            t() {
+                this.word.moveTo(this.xPos - 1, this.yPos + 0)
+                this.word.lineTo(this.xPos + 21, this.yPos + 0)
+                this.word.moveTo(this.xPos + 10, this.yPos + 0)
+                this.word.lineTo(this.xPos + 10, this.yPos + 40)
+            },
+            // u() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 40)
+            //     this.word.lineTo(this.xPos + 17, this.yPos + 40)
+            //     this.word.lineTo(this.xPos + 17, this.yPos + 0)
+            // },
+            u() {
+                // Rounded U with curved bottom
+                this.word.moveTo(this.xPos + 0, this.yPos + 0);
+                this.word.lineTo(this.xPos + 0, this.yPos + 30);
+                this.word.bezierCurveTo(this.xPos + 0, this.yPos + 37, this.xPos + 3, this.yPos + 40, this.xPos + 8, this.yPos + 40);
+                this.word.bezierCurveTo(this.xPos + 14, this.yPos + 40, this.xPos + 17, this.yPos + 37, this.xPos + 17, this.yPos + 30);
+                this.word.lineTo(this.xPos + 17, this.yPos + 0);
+            },
+            v() {
+                this.word.moveTo(this.xPos + 0, this.yPos + 0)
+                this.word.lineTo(this.xPos + 8, this.yPos + 40)
+                this.word.lineTo(this.xPos + 17, this.yPos + 0)
+            },
+            w() {
+                this.word.moveTo(this.xPos + 0, this.yPos + 0)
+                this.word.lineTo(this.xPos + 0, this.yPos + 40)
+                this.word.lineTo(this.xPos + 8, this.yPos + 20)
+                this.word.lineTo(this.xPos + 17, this.yPos + 40)
+                this.word.lineTo(this.xPos + 17, this.yPos + 0)
+            },
+            x() {
+                this.word.moveTo(this.xPos + 0, this.yPos + 0)
+                this.word.lineTo(this.xPos + 19, this.yPos + 40)
+                this.word.moveTo(this.xPos + 19, this.yPos + 0)
+                this.word.lineTo(this.xPos + 0, this.yPos + 40)
+            },
+            y() {
+                this.word.moveTo(this.xPos + -1, this.yPos + 0);
+                this.word.lineTo(this.xPos + 10, this.yPos + 20);
+                this.word.lineTo(this.xPos + 21, this.yPos + 0);
+                this.word.moveTo(this.xPos + 10, this.yPos + 20);
+                this.word.lineTo(this.xPos + 10, this.yPos + 40);
+            },
+            z() {
+                this.word.moveTo(this.xPos + 0, this.yPos + 0)
+                this.word.lineTo(this.xPos + 17, this.yPos + 0)
+                this.word.lineTo(this.xPos + 0, this.yPos + 40)
+                this.word.lineTo(this.xPos + 17, this.yPos + 40)
+            }
+            //letters are 50 tall and 40 wide
+            // a() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 20, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 40, this.yPos + 50)
+            //     this.word.moveTo(this.xPos + 10, this.yPos + 25)
+            //     this.word.lineTo(this.xPos + 30, this.yPos + 25)
+            // },
+            // b() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 37)
+            //     this.word.lineTo(this.xPos + 10, this.yPos + 25)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 12)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 0)
+            // },
+            // c() {
+            //     this.word.moveTo(this.xPos + 35, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 50)
+            // },
+            // d() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 25)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 0)
+            // },
+            // e() {
+            //     this.word.moveTo(this.xPos + 35, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 25)
+            //     this.word.lineTo(this.xPos + 25, this.yPos + 25)
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 25)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 50)
+            // },
+            // f() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 50)
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 0)
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 25)
+            //     this.word.lineTo(this.xPos + 27, this.yPos + 25)
+            // },
+            // g() {
+            //     this.word.moveTo(this.xPos + 35, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 25)
+            //     this.word.lineTo(this.xPos + 20, this.yPos + 25)
+            // },
+            // h() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 50)
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 25)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 25)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 50)
+            //     this.word.moveTo(this.xPos + 35, this.yPos + 25)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 0)
+            // },
+            // i() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 0)
+            //     this.word.moveTo(this.xPos + 17, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 17, this.yPos + 50)
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 50)
+            // },
+            // j() {
+            //     this.word.moveTo(this.xPos + 34, this.yPos + 0);
+            //     this.word.lineTo(this.xPos + 34, this.yPos + 50);
+            //     this.word.lineTo(this.xPos + 3, this.yPos + 50);
+            //     this.word.lineTo(this.xPos + 3, this.yPos + 37);
+            // },
+            // k() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 50)
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 25)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 0)
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 25)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 50)
+            // },
+            // l() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 50)
+            // },
+            // m() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 18, this.yPos + 25)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 50)
+            // },
+            // n() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 0)
+            // },
+            // o() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 15)
+            //     this.word.lineTo(this.xPos + 18, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 15)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 35)
+            //     this.word.lineTo(this.xPos + 18, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 35)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 15)
+            // },
+            // p() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 25)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 25)
+            // },
+            // q() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 15)
+            //     this.word.lineTo(this.xPos + 18, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 15)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 35)
+            //     this.word.lineTo(this.xPos + 18, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 35)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 15)
+            //     this.word.moveTo(this.xPos + 20, this.yPos + 30)
+            //     this.word.lineTo(this.xPos + 40, this.yPos + 50)
+            // },
+            // r() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 30, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 30, this.yPos + 25)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 25)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 50)
+            // },
+            // s() {
+            //     this.word.moveTo(this.xPos + 35, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 25)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 25)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 50)
+            // },
+            // t() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 40, this.yPos + 0)
+            //     this.word.moveTo(this.xPos + 20, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 20, this.yPos + 50)
+            // },
+            // u() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 0)
+            // },
+            // v() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 17, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 0)
+            // },
+            // w() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 20, this.yPos + 25)
+            //     this.word.lineTo(this.xPos + 40, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 40, this.yPos + 0)
+            // },
+            // x() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 50)
+            //     this.word.moveTo(this.xPos + 35, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 50)
+            // },
+            // y() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 0);
+            //     this.word.lineTo(this.xPos + 20, this.yPos + 25);
+            //     this.word.lineTo(this.xPos + 40, this.yPos + 0);
+            //     this.word.moveTo(this.xPos + 20, this.yPos + 25);
+            //     this.word.lineTo(this.xPos + 20, this.yPos + 50);
+            // },
+            // z() {
+            //     this.word.moveTo(this.xPos + 0, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 0)
+            //     this.word.lineTo(this.xPos + 0, this.yPos + 50)
+            //     this.word.lineTo(this.xPos + 35, this.yPos + 50)
+            // }
         }
     },
     checkLineIntersection(v1, v1End, v2, v2End) {
@@ -1904,7 +2457,9 @@ const simulation = {
         }
     },
     enableConstructMode() {
+        tech.giveTech('motion sickness') //for precise mouse control
         level.isProcedural = false //this is set to be true in levels like labs that need x+ and y+ in front of positions
+        level.isVerticalFLipLevel = false
         simulation.isConstructionMode = true;
         simulation.isHorizontalFlipped = false;
         simulation.isAutoZoom = false;
@@ -1928,11 +2483,20 @@ const simulation = {
                         simulation.outputMapString(`spawn.randomMob(${x}, ${y}, 0);\n`);
                     }
                 } else if (e.button === 4) {
-                    simulation.outputMapString(`${Math.floor(simulation.constructMouseDownPosition.x)}, ${Math.floor(simulation.constructMouseDownPosition.y)}`);
+                    simulation.outputMapString(`${Math.floor(simulation.constructMouseDownPosition.x)}, ${Math.floor(simulation.constructMouseDownPosition.y)} `);
                 } else if (simulation.mouseInGame.x > simulation.constructMouseDownPosition.x && simulation.mouseInGame.y > simulation.constructMouseDownPosition.y) { //make sure that the width and height are positive
                     if (e.button === 0) { //add map
+                        // if (level.isProcedural) {
+                        //     simulation.outputMapString(`spawn.mapRect(x+${x}, ${y}, ${dx}, ${dy});\n`);
+                        // } else {
+                        //     simulation.outputMapString(`spawn.mapRect(${x}, ${y}, ${dx}, ${dy});\n`);
+                        // }
                         if (level.isProcedural) {
                             simulation.outputMapString(`spawn.mapRect(x+${x}, ${y}, ${dx}, ${dy});\n`);
+                        } else if (level.isVerticalFLipLevel) {
+                            console.log('hi')
+                            simulation.outputMapString(`spawn.mapRect(${x}, ${y}, ${dx}, ${dy});\n`);
+                            simulation.outputMapString(`//spawn.mapRect(${x}, ${-y - dy}, ${dx}, ${dy});\n`);
                         } else {
                             simulation.outputMapString(`spawn.mapRect(${x}, ${y}, ${dx}, ${dy});\n`);
                         }

@@ -1,149 +1,352 @@
 ******************************************************** NEXT PATCH **************************************************
 
-tech: hidden-variable theory - after choosing a fieldtech gain 1.15x damage
-  for pilot wave only
-polariton - boosts also give 0.3x damage taken
+tech: liquid-propellant - missiles speed up, missiles explode a 2nd time at 0.8x radius and damage
+tech: hypergolic propellant - secondary explision is 1.7x original's radius and damage
+cruise missile 2->1.75x damage
+  it's compatible with more missile tech now
 
-constraints
-  removed
-    full damage taken after boss dies
-      wording is too unclear
-  new
-    0.5x energy regen from all sources
-  balanced
-    slow bots
-      bots have roughly 15% reduction in damage in addition to a slow follow speed
-    mob death heals mobs
-      has 1000->700 range and 1->0.33 healing
-    periodically spawn WIMPs
-      has a 30s delay and a 15->6s spawn rate
-    50->40% JUNK chance
+T4 mobs have more health
+  bigSucker - lower acceleration
+  slasher4 - lower acceleration, slower stab speed
+  slasher5 - shorter swords, slower accceleration, 3->2 active swords
+  quadLaser - slower acceleration, slower rotational torque, longer laser on/off cycles
+T4 bosses are invulnerable for fewer cycles
 
+subway has only 3 stations (previously 4 or 5)
+removed a 200ms delay on entering fullscreen, also cleaned up mouse lock code and removed a 100ms delay
+  fullscreen still doesn't work well in firefox or safari, but works 99% on chrome
+most ephemera are now removed by self reference not by name
 
-heuristics gives (1-1.5x)->(1-2x) fire rate and +5% JUNK
-autonomous defense harpoon now scale from Bessemer process
-  but at half the rate since there are 6 harpoons
-Bessemer process and rail gun scale at 0.1->0.07
-
-bugs
-  crash with training level "heal" and power ups
-  set difficulty mode level 2 for training
-
-******************************************************** BUGS ********************************************************
-
-figure out why seeded random isn't making runs the same:
-  shuffle is being used for a wide variety of things that don't need a seeded random
-    make two shuffle functions?
-  check which of these is working
-    level order
-    is flipped
-    constraint order
-    mob type order
-    boss order
-    gun, field, tech options
-  make field options offered precalculated so it doesn't depend on player choices?
-  generate all constraints at the start of the game
-    doesn't seem to be determined by the seed...
-    display future constraints in pause menu?
-
-at start of level game go stuck in pause state
-  no crash or bug report
-  occur level 8
-  after 2 levels of sending power ups to next level
-  auto drones grabbed a power up and game froze while in power up mode
-  running code to exit pause kinda worked
-
-ants marching outline on splash screen doesn't sync right on safari
-
-player can become crouched while not touching the ground if they exit the ground while crouched
+bug
+  T4 bosses spawn order was not random
+    the list wasn't getting shuffled
 
 *********************************************************** TODO *****************************************************
+
+perfect diamagnetism tech:   - using field while crouching will pull in blocks
+  releasing field will fire the blocks  (like control)
+  very strong, but high energy cost
+
+tech -  gain 5% duplication each time you expend a research orb
+
+gun tech upgrade that rewards pressing fire with a precise rhythm
+  press fire every 2-3 seconds and each time you get a "perfect" rhythm
+    gain 1.5x damage for that gun, but lose the bonus if you miss the timing
+    refund ammo cost for each perfect
+  gun:
+    shotgun?
+    super balls?
+  need to draw an on screen animation to help with timing
+
+persistent effects: effects that carry over to your next game: "for the next 3 runs of n-gon"
+  offer a research donation and get a random effect
+  new power up type
+    reward for completing reactor
+    large yellow?
+  effects
+    start with ____ power ups
+    the first research is free
+    start with ____ duplication
+    start with ____ damage
+    start with ____ damage reduction
+challenges
+  names: Epistemic logic, Temporal logic, relational semantics, Axiomatic systems, Modal realism
+  if you ______ for a level
+    don't crouch
+    don't fire
+    don't use field
+    don't get taken damage/get hit
+    keep energy above 90
+  get _______:
+    damage, damage taken, power ups, duplication
+  for the next ___ choices
+    always pick the last choice
+    research once
+    pick only JUNK tech
+  at the end of the next level
+    leave __ mobs alive
+    leave a boss alive
+    leave __ power ups
+
+see if LLM can improve the performance of
+  line of sight code?
+
+new boss - murmuration of small mobs (maybe 30-50)
+  first mob of this type in mob array controls the others
+    commands
+      every 5 seconds have %5 mobs fire at player (if in line of sight)
+      use seePlayerByHistory to set goal for the murmuration
+        if one mob can't see goal have them target other mobs in the murmuration
+    if no more mobs left on death spawn power ups
+
+diagetic letters
+  !training levels
+    write out current objective on level background
+    since it can only make letters in alphabet, all instructions would need to be customized
+    maybe just a message on the first training level telling them to look in the console
+  initial
+    !added instructions for inputs
+      maybe only if new player...
+    !let player know what lore chapter they are on
+      especially pacifist chapter
+
+tech, field? base game? - doing damage heals 1x (less?) of the last damage taken
+  so you can't heal if you take damage twice before doing enough damage
+    should work similar to the cloaking heal tech 
+  how much damage? change in m.health needs to match total damage done to mobs
+  makes sense as a field tech
+    ?plasma torch, pilot wave, molecular assembler
+    couple scale with coupling
+
+super balls tech - that hit blocks produce 10 balls?
+  destroy the block after 3 hits?
+
+nail gun guntech - needles follow you around until you get close to a mob and then they all fire
+  like the spell in eldin ring with the 3 swords
+
+tech:   -  scale max energy with current health
+  nonrefundable
+tech:   -  set max health equal to max energy
+tech:   -  set max energy equal to max health
+  names
+    Free energy
+    stress-energy tensor
+    binding energy
+    condensed matter
+    mass hyperboloid
+    off shell
+    stress–energy tensor
+    nuclear pasta
+    Lagrangian
+
+tech:   - make a few random types of special bullets for super balls
+  super ball type ideas:
+    shoot lasers
+      vertical laser directed down
+      random directions
+      2 horizontal lasers
+    damaging aura
+    duplicate ball after hitting map or mob
+      but don't extend life span
+    freeze mobs  (with aura)
+    stun mobs (bigger ball)
+    aim at nearby mobs after hitting: mob or map
+    explode every couple seconds
+    extra long life
+      prevent it from getting slow, like reactor bosses
+    randomly change direction
+    fire nails at nearby mobs
+    attract mobs, like black hole
+    attract other super balls and grow as they merge
+
+tech:   - give ____ (nails) a tail that damages mobs.
+  use plasma code that runs in bullet history
+
+constraint - periodic darkness
+  random delay and duration of darkness?
+  trigger after getting a power up?
+
+tech:  - repeat all _____ effects a second time
+  on remove/eject tech
+  on mob death
+  on getting hit
+
+wormhole tech:  - random bullets fire from both wormholes
+  fire b.needle() for 3 seconds after making a new wormhole
+    need to adjust b.needle() for positions that aren't the player's
+
+add sounds?  see ***sound*** section below
+  Web Audio API
+  AI sound generation survey (June 2025)
+    https://elevenlabs.io/sound-effects
+      sound effects, not too expensive?  $11/month?
+      seems able ot generate violent sounds, like shotgun
+      seems to work well, but can't do music
+    https://stableaudio.com/generate
+      makes 3 minute songs, no singing
+      best songs?
+    https://suno.com/
+      3min+ songs with lyrics
+      average songs
+    https://www.udio.com/create
+      advanced features
+      average songs
+    
+power up: entanglement - make it spawn from killing a mob that kinda looks like the player?
+
+tech:  - limit the total number of tech 
+  skin tech or field tech
+  limit:
+    match level.levelsCleared (times 2?)
+    match set number, like 10
+    match number of guns (times 3?)
+    only show choices for: gun tech, field tech, nonrefundable tech
+  benefit:
+    improve ability to choose and eject
+    improve damage, damage taken
+  UI
+    pop up a menu that asks player to choose one of their tech to remove
+      before or after normal tech UI
+      can copy the standard tech UI with a few differences
+
+tech:  - nonrefundable tech that gives you 2 tech that each have minor negative effects
+  synergy with removing tech builds
+  minor negative tech
+    lower damage
+    higher damage taken
+    research costs 2x
+    you can't heal
+  positive effects
+    benefit after removing the negative tech
+
+mob that does very fast tiny little hops, like a little bunny
+  it has extra gravity so it can jump faster
+
+field tech: - use _____ to refresh current choices  (or give +6 choices for the next 3 tech)
+  which field? (pick one based on the name)
+    pilot wave (choices)
+    wormhole? (alt reality)
+    time dilation (rewind time)
+  or skin tech
+  use 
+    10 health
+    all your energy 
+      produce a new choice for each 30 energy
+
+mob status: confused - I could rotate the velocity that mobs have gently over 1-2 seconds. that might work.
+  probably also want to add a force so effects are noticable for stationary mobs
+  problem is that mobs all have different airFriction
+
+constraint: remove 10% of your tech until the end of the level
+  does remove then add give any benefits, or lasting effects?
+
+mob: weeping angle - spawns long lasting bullets, like seekers, but called weepers
+  tier 3
+mob: weepers - bullet
+  when you aren't facing it or blocked line of site
+    moves extra fast
+    can harm player on collision
+  player can see
+    invincible
+    frozen/not moving/slow moving?
+
+!conformal infinity - after making a wormhole, subsequent wormholes generate energy 10 energy for the next 5 seconds
+  replace holographic principle?
+  !image
+!quasar  - gain 1 random small power up for each block your wormhole eats
+  cap at 10?
+  !image
+
+!!!mob: spiker - moves around, but then stops and makes porcupine spikes for 2 seconds, then moves again.
+  maybe use hopper movement?
+  maybe use slasher laser code
+
+guntech:  - 0.5x damage taken while ____  gun is equipped
+  wave or shotgun?
+  thematic issues? (how is a gun going to protect you)
+
+make guns do different things if  tap or hold fire
+  effects have some overlap with crouch
+  guns
+    wave: amplitude difference, single wave/double wave
+    nail gun:  one large bullet, faster
+    laser: wide beam
+    super balls: ball velocity
+    foam: speed, size
+    harpoon: retract early?
+  like incendiary, but only active on tap and release
+    bigger explosions to balance?
+
+tech - if you haven't fired a bullet in 4 seconds your next bullet is bigger?
+  effect?
+    size: nail gun,shotgun,super balls,drones,foam,harpoon
+    spores,mine: number of projectiles
+    wave?
+    explosion size: missiles,grenades
+    laser?
+  code?
+    ephemera?  This doesn't sync to the bullet fired, it would have to be a additional projectiles
+    custom to each gun?
+
+option for numerical HUD
+  dmg, energy, health, defense
+
+hold jump to jump higher
+  field tech?  or skin tech?
+    maybe require nitinol first?
+
+wormhole fieldtech:   - gain 1% duplication for this level each time the wormhole eats a block
+  add a limit to the number of blocks that can be duplicated?
+  can this be exploited to not be fun?
+  how many blocks are on an average level?
+
+tech - rip in spacetime - using wormhole leaves behind a zone of radiation, like neutron bomb  ( grenadeNeutron )
+  make a new bullet type for rip() in spacetime so you can use it for several things
+  rips()
+    lasts 2-10 seconds?
+    damages mobs and player
+    slows things caught inside?
+    black circle with randomly changing radius and sparkles inside the black circle
+      white stroke (maybe with dotted lines like laser)
+
+tech - benefit if you haven't killed any mobs on this level
+  have to clean up mobs that die on level spawn from falling blocks 
+tech - benefit in the first 20 seconds of the level
+
+soft body boss?
+  search    softBody(x, y, angle = 0, isAttached = true, len = 15, radius = 20, stiffness = 1, damping = 1) {
+
+new level idea: large map sized blocks that can't be destroyed that the player walks on as a part of the level
+  eventually the blocks fall
+    after fall level progresses to a phase 2 to clean up the blocks or leave them
+    should bosses be killed by falling blocks??
+  how to avoid the large block vibrating/dancing on tiny block issue
+
+new level idea:  escort mission
+  player has to stay near something that moves slowly through the level
+    maybe only a zone around the escort is safe
+      safe from?
+        lasers
+        slime
+        radiation
+    use line of site vision?
+    is it going to feel too slow?
+    where to put in level order?
+      random option instead of reactor?
+      normal level?
+      4th hard level?
+        already too many hard options
+          you could put in 2 hard levels in the level list
+    make the style look like substructure, that level looks great
+      use the motion sense lasers
+
+  
+tech: conformal - remove the research costs of all tech
+  conformal - similar rules for small and big scales  linked to holographic principle
+  there's about 15 tech with a research cost
+
+tech: holonomy - parallel transport of a vector leads to movement (applies to curved space)
+  when far away from your wormhole regenerate 1% of your max energy per second
+  when far away from your wormhole reduce damage taken
+  heal last hit damage after enter wormhole
+
+tech: quasar - plasma torch from both ends of wormhole
+  only after wormhole eats a block fire?
+    or just increase plasma length after eating block?
 
 procedural animation 
   https://www.youtube.com/watch?v=qlfh_rv6khY
 
-maybe no constraints on final boss and reactor?
-
-constraints balance
-  50% JUNK chance
-  4x shielded mob chance
-  power ups are sent to next level
-  +33% chance for mobs to respawn
-  -1 choice
-  2x ammo costs
-    maybe nerf...
-  0 duplication
-  50% max energy
-  50% max health
-  bots follow slow
-  0.1x damage after a power up
-  mob death heals mobs
-  mobs heal for your lost health
-  periodically spawn WIMPs
-  0.5x energy regen
-
-each difficulty setting adds a chance for a random effect
-  make some effects only possible on certain levels, or with certain bosses?
-  not implemented random constraint ideas________________________
-    mob death spawns something
-      mob bullets
-    bosses heals nearby mobs
-    ammo power ups give 0.7x ammo
-    2x research costs
-    mobs slowly regen health
-    exit door takes 10x time to open,
-      and while door is opening (ghosters, suckers) attack?
-    can't pause while choosing tech, gun, field similar to eternalism
-    can't have more then 15 bullets
-    bots do 0.5x damage
-    remove 2 random tech and return them next level
-    too niche
-      player damage is 0.25x while player is invulnerable
-      all hazards: lasers and slime do 3x damage
-      player lasers and radiation do 0.5x damage
-      explosions do 0.5x damage
-      freeze effects last 0.25x time
-
-tech: - lower damage taken over 10s to 0x but after taking damage increase damage taken to 1x
-  isn't this just CPT skin with less steps?
-  maybe skin 
-
-tech: - freezing grenades/explosions
-
-tech: - randomize constraints somehow
-    in pause interface or power up selection menu?
-    each time you research the current constraints also randomize?
-    only allowed if difficulty is high enough
-
+tech: ice-VII - 1.5x duration for ice-IX
+tech:  - freezing grenades/explosions
 tech:  - when you get a bot, get a second bot
-
-tech:  - boost power ups also give 0.1x damage taken
-
-tech:  - tech have +3 choices to eject your tech
-  <eject> tech name
-    no description?
-
-copy negative-player as a boss?  or a JUNK tech?
-  code is in community map (not sure which)
-
-harpoon tech:  - after firing 4 harpoons your next harpoon has 4x damage
-  need to track number fired
-
 tech:  - after killing a Boss
   heal to full
   gain 3x damage for the rest of the level
 
-tech: clicking on this tech in the pause menu will teleport you to the next level
-
-tech:   - instead of reeling in grappling hook teleport to the hook after releasing field button
-  this might need another buff?
-    give damage immunity after teleport for 1+ seconds to balance
-
 new level - rework testChamber
 
-skin with wheel instead of legs
-
-Boss (or mob) that quickly moves towards player, but they moves perpendicularly to player, like dodging
+Boss (or mob) that quickly moves towards player, but then moves perpendicularly to player, like dodging
   could respond to when player presses fire key or to when it takes damage
 
 new snakeBoss type that eats mobs
@@ -174,15 +377,6 @@ tech: atomic pile - lose 1 health if you are above the maximum energy
   do damage?
   plasma torch tech?
 
-field tech: molecular assembler - every time you spawn a drone/spore/... become immune to damage for time
-  scales with how much energy was used to spawn drone/...
-
-figure out how to put instructions for controls in background on initial level
-  mouse smooth makes the text position jitter when it moves sub pixels
-    hide the jitter with artificial jitter to make it seem intentional
-      make it look like the instructions are on a fuzzy TV screen
-    when player presses move buttons highlight the box/letter for those buttons
-  
 make player mass an adjustable var in the skin
   does this mess with jump height or air control?
 increase mass and movement speed at the same time
@@ -192,31 +386,6 @@ increase mass and movement speed at the same time
   possible player.mass bad interactions
     grapple
 
-JUNK tech - player takes damage from block collisions
-  is this gonna contribute to lag?
-
-bullets should trigger shrinking platforms level element?
-
-level element - player activated elevators
-  could be fast and throw player
-  could just rise up slow (slow might have a bad jerky animation)
-
-rework energy and health HUD
-  make both diegetic?
-    how?  not sure there is a good way to do this...
-  should health be red or green?
-
-flip player upside down
-  how 
-    rotate player in matter.js
-      make sure floor sensor works
-    flip player crouch direction
-    redraw legs, orb
-    flip gravity
-  when to use?
-    fieldTech: negative mass?
-    effect in level
-
 tech - after a power up is duplicated
   update text to random effect after choosing tech, or after each trigger, or on first display of tech
   pick 1 effect at random
@@ -224,13 +393,7 @@ tech - after a power up is duplicated
     summon JUNK bots for 10 seconds
     2x current energy
     gain 1.01x damage permanently
-  cool name: 
-
-field tech: negative mass - quickly pull/teleport in all nearby blocks and then fire them away from player
-  how does player triggers effect?
-    picking up a block pulls in all nearby blocks, throwing block fires all nearby blocks
-    taking damage
-  auto aim 50% of blocks at mobs
+  cool name:
 
 after picking up heals gain ____
   0.1x damage taken for 12s
@@ -246,42 +409,8 @@ tech - getting caught in an explosion gives you _____
   damage for 10 seconds?
   heals
 
-tech - limit total number of tech to like 10?
-
-tech - destroying blocks gives _____
-
-removeJunkTechFromPool doesn't seem to remove the correct amount
-
-wormholes that end inside wall check to see if the space before the wall is safe and end there instead
-  can use laser code
-
-tech:  - (1 + 0.01)x for each tech, gun, field you've picked up
-  scales with born rule, duplication, remove tech
-
 explosions have a chance to spawn spores
   infinite feedback loop with spores that explode?
-
-make sure healing isn't effected by simulation.healScale
-  instead heal orb size should be scaled
-    but the ratio between size and heal shouldn't be effected
-
-boss - tracks the position, velocity, angle of power ups, blocks, and bullets it fires
-  reactor only?
-  will rewind time
-    after damage threshold?
-  does it track player bullets? 
-
-button/switch input ideas from Cocoon game
-  pick up blocks that have a rubber band attached to a sliding switch
-    as player moves the vector direction of the rubber band will move the slider left or right
-    use this to open doors, move larger blocks, ...
-  switches that toggle left, right when player presses input.field while standing nearby
-    replace laser off on switch?
-    platform that rises up when player presses input.field while standing
-  How to instruct player to use field on these?
-    color with field #0ff
-    draw field effect
-    make it still functional without the field button
 
 tech - getting a new gun also gives you 2 random tech for that gun
   or a field?
@@ -305,6 +434,31 @@ improve new player experience
 -40% foam ammo gain
 When foam is in an explosion it also explodes with size proportional to the size of the foam bubble
 Requires foam, explosion source, not aerogel
+
+new level similar to ash tray maze
+  !!not sure how this works with theme (most levels are locations that have industrial stuff)
+  this might work as another line of sight level?
+    could be fine without line of sight if rooms don't exist until they open up?
+  where to put in game sequence?
+  watch a run through   https://www.youtube.com/watch?v=nudSXUMBEV4
+    close off doors as player gets close
+    open up doors as player gets close
+    holes in the floor
+    slide large walls back to open up levels below
+    show a zone, then close it off, but eventually reveal it later
+    rise up pillars during combat
+    small maze rooms, 1-2 really huge rooms, long corridors, medium combat rooms
+  triggers for changes
+    clearing mobs in a zone
+      or time based if player is too slow
+    player gets close to a zone
+  make map elements shift around as player moves through the game
+    start with map elements filling everywhere and slow open up new zones
+  need a cool way to animate adding and removing map elements
+    maybe for the entire level redraw the map every 15 cycles?
+      simulation.draw.setPaths() //update map graphics
+    slide map around
+    small map squares that each add in sequentially
 
 Cosmological natural selection:  do something with black holes
   spawn black hole mobs
@@ -428,16 +582,6 @@ make a lemming that walks until it hits a wall and then turns around robotically
   body or mob?
   can't be killed?
 
-use ephemera to replace some bad code
-  JUNK?
-  request animation stuff
-  simulation checks
-    damage and defense bars
-      disable and enable ephemera with settings
-
-perfect diamagnatism - invulnerable while field is active?
-  also drain energy while field is active?
-
 mobs attack mines
   mines periodically set all mobs to have player location to be the mine
     is this going to work with all mob vision types?
@@ -451,23 +595,8 @@ Tech: relativity
 wormhole tech - teleport away mobs with mass below 3 when they get too near the player
     short CD, small energy cost, only mobs below a mass
 
-extend brainstorming animation timers to fps cap?
-  will it be smoother or choppier?
-  anything else needs to hit limited fps on a high fps monitor?
-
-perfect diamagnatism could bounce on mobs, or even map elements?
-  could work like a rocket jump?
-
 tech: Bose Einstein condensate - freezes enemies in pilot wave, and drains some energy?
-
-make super balls with Zectron deflectable with field
-  but is there a simple way to do this?
-
-set mob health bar colors based on status effects?
-  make mob damage immunity a mob status effect?
   
-tech: rail gun area damage effect, but for all harpoon mode
-
 mob status effect - vulnerability
   mobs take 4x damage for __ time
     afterwards mobs go back to normal damage taken
@@ -563,8 +692,6 @@ tech: get sent to a new tab that closes in 3 minutes
   give player equipment like many-worlds
     count guns, field, tech and give random stuff on new tab
   i-frame instead of tab?
-
-tech: missiles explode a 2nd time after 1/2 a second (with a slightly different position determined by original velocity)
 
 seed isn't working right from shared URL
 
@@ -926,9 +1053,6 @@ mob/boss that fires a laser at player, but give player time to avoid
   they target where player was 1 second ago
   they turn to face player?
 
-tech rocket jump - jumping produces an explosion at your feet that lets you jump extra high, but does some damage
-  require electric reactive armor?
-
 Plasma Burner: upgrade for plasma torch, basically just a jet engine. does high damage, but short range, mostly for player movement.
   maybe reduce gravity to really low then apply a vector away from mouse direction
 
@@ -937,17 +1061,6 @@ auto-gon - auto battler with n-gon mob AI and tech
     they fight other mobs and bosses
   similar research and tech system to n-gon
   some mobs can fire player weapons
-
-tech: relativistic jets:
-  small particles that shot out from front and back poles and end up in a wide variety of spirals
-    slow trickle when charging and several more when firing
-  
-Tech: Make player smol
-
-adapt the cloaking graphics to make a flashlight cone visual effect
-  put code in level.do?
-
-be nice if block throwing had a projected path
 
 Pilot wave tech
   Energy use is increased, but you can now shape blocks using pressure
@@ -1248,6 +1361,12 @@ add sounds
     // tone(445.50)
     // tone(495)
 
+Freesound Freesound - A collaborative database of Creative Commons licensed sounds. Has a huge collection with specific game-sound tags game-sound for easy filtering.
+OpenGameArt.org Library of Game Sounds | OpenGameArt.org - Specifically focused on game assets with music and sound effects for creating video games Library of Game Sounds | OpenGameArt.org. They can even generate credits files for attribution.
+Pixabay Download Free Game Sound Effects - Royalty-Free Video Game Sounds | Sound Library - Pixabay - Offers royalty-free video game sound effects Download Free Game Sound Effects - Royalty-Free Video Game Sounds | Sound Library - Pixabay that are easy to use.
+Mixkit Download Free Game Sound Effects | Mixkit - Has 36 free game sound effects Download Free Game Sound Effects | Mixkit including arcade games sounds to sporting game samples Download Free Game Sound Effects | Mixkit.
+Zapsplat Game Developer Sounds | Download FREE Game Developer sound effects | Zapsplat - Thousands of free sounds for game developers, including action tones, win, bonus, level up, coins Game Developer Sounds | Download FREE Game Developer sound effects | Zapsplat.
+
 ******************************************************** IMAGES ********************************************************
 
 process:  discord midjourney prompts -> "pixelmator pro" adjust color, repair, scale to 384x256, export PNG -> webP? -> place in /img folder
@@ -1277,20 +1396,20 @@ if pause is pressed while selecting power ups, display pause menu on top of sele
   time dilation - graphic of a hyperbolic equation Luminogram
   negative mass - Blacklight painting by Moebius
   plasma torch - by Dan Mumford
-
   metamaterial cloaking - Scientific photography by Miki Asai,   by Bruce Munro
   molecular assembler - by Laurie Greasley 16-bit Isometric 
-  wormhole - by Tim White
+  wormhole - wormhole funnel entrance and exit classic sci-fi painting
   pilot wave - none
 
   nail gun - Screenprint
   shotgun - blueprint by Dan McPharlin
   grenades, missiles, explosions - vibrant fireball explosion sonic shockwave ring art by Victo Ngai --ar 3:2 --v 5 --s 750
+    Detailed Intricate Fine lines Surreal styles Vivid colors Moody colors
   spores - turquoise black spores on a white background full color scientific anatomy by Ernst Haeckel
   drones - insect quadcopter tilt-shift photography
   super balls - By Akari Toriyama
   wave - sound wave oscilloscope by Paul Catherall,   concentric circles by Paul Catherall 
-    Barbara Takenaga's painting depicting a clean sound wave on aoscilloscope device --ar 3:2 --v 5
+    Barbara Takenaga's painting depicting a clean sound wave on oscilloscope device --ar 3:2 --v 5
   foam - black blobs Ink doodle
   harpoon - iron harpoon on a rope weapon art white background by Eiichiro Oda --no fish --ar 3:2 --v 5 --s 750
   mine - by Dan McPharlin
@@ -1321,18 +1440,14 @@ look up sci-fi science ideas here  https://projectrho.com/public_html/rocket/
 
 possible names for tech
   sidereal - with respect to the stars  (an extra rotation for time keeping)
-  holonomy -  parallel transport of a vector leads to movement (applies to curved space)
-  holographic - 2-D surface can predict the 3-D space behind it?  I think
   entropic gravity - gravity is emergent in a holographic way
     (maybe a field tech for negative mass)
-  conformal - similar rules for small and big scales  linked to holographic principle
   hypergolic - A hypergolic propellant combination used in a rocket engine is one whose components spontaneously ignite when they come into contact with each other.
   swarm intelligence - for a drone tech
   metaheuristic - is a higher-level procedure or heuristic designed to find, generate, or select a heuristic (partial search algorithm) that may provide a sufficiently good solution to an optimization problem, especially with incomplete or imperfect information or limited computation capacity
   stochastic optimization
   electrostatic discharge
   Gödel's incompleteness
-  quantum zeno effect  (perturbation of a system prevents some systems from evolving because it scrambles coherence)  (apply to lasers, fields)
   counterfactual - something false
   regression to the mean
   phlogiston theory is a superseded scientific theory that postulated the existence of a fire-like element called phlogiston
@@ -1343,14 +1458,13 @@ possible names for tech
   SQUID (for superconducting quantum interference device) is a very sensitive magnetometer used to measure extremely subtle magnetic fields, based on superconducting loops containing Josephson junctions.
   Josephson junction - superconducting junction used in SQUIDS and quantum computers
   nuclear pasta - hard matter in neutron star
-  nonlocal, nonlocality:  maybe use for pilot wave 
+  spaghettification
   fine-tuned universe
   nonperturbative
   D-branes
   instanton or pseudoparticle
   soliton  (wave packet)
   hall effect thrusters
-  spaghettification
   particle accelerator
   superluminal signalling
   NP-complete
@@ -1379,21 +1493,77 @@ possible names for tech
   amalgam, amalgamation - the action, process, or result of combining or uniting. 
   thermoplastic - the stuff in 3-D printers, use for molecular assembler tech
   ergosphere - region of a spinning black hole that might allow FTL or alternate realities.
-  equivalence principle - gravity and acceleration are the same
   Casimir effect - attractive force between two close conductive plates
   difference engine - early calculator/computer
   cyanoacrylate - superglue use for a slowing effect?
-  superposition - something with waves overlapping
   math terms - integral, derivative, Laplace transform, inflection point
   quasicrystals - something with low friction, maybe defense?
-  Coalescence - things merging together like clouds.  maybe mergin power ups?
+  coalescence - things merging together like clouds.  maybe mergin power ups?
   trihydrogen cation - common molecule in space, dark matter tech?
   superradiance - laser tech
   cryocoolers - freezing effects
   metaphysics - maybe this changes something deep and universal about physics?  not sure
   cork - used as a heat shield for rockets
+  P = NP - something with speeding up calculation times
+  transistivity - something where a>b and b>c ->  a>c
+  lenticular - looks different from different angles (lasers?, cloaking?)
+    every few seconds pick a random skin tech?
+  De Sitter space - simple model of universe related to general relativity (mass-energy?)
+  active optics - something with lasers?  maybe something with diffuse beam getting smaller
+  quintessence - related to dark energy
+  biofilm - something defensive?  related to spores?
+  thermogalvanic - makes things cold, for no energy
+  intron - noncoding DNA that separates regions of coding DNA,  use for JUNK tech
+  virtual particles - can have these properties: imaginary mass, violation of the conservation of energy, violation of causality, traveling faster than light or backwards in time, popping in and out of the vacuum via vacuum fluctuations
+  Sintering - the process of compacting and forming a solid mass of material by pressure[1] or heat[2] without melting it to the point of liquefaction. Sintering happens as part of a manufacturing process used with metals, ceramics, plastics, 
+  Kolmogorov complexity - how long a computer program for an algorithm is
+  r-selection - flea/worm tech - opposite of K-selection, so lots of weaker sproes/fleas
+  acousto-optic modulator - sound makes light have a different frequency (maybe use for laser tech with many colors)
+  gravity wave - 
+  tuple - a finite list
+  Navier–Stokes - equations for the movement of fluids
+
+
+******************************************************** BUGS ********************************************************
+
+still getting some hidden mouse on fullscreen when drafting,
+  seems to occur when the game is slow
+    or maybe it occurs when the game pauses wen player takes damage?
+hides mouse when -> (eternalism or no pause) + fullscreen + show AI images
+  this was still broken in previous patch, probably never worked
+  maybe just disable eternalism / no pause if in fullscreen mode and AI images
+  maybe just disable eternalism / no pause always
+
+
+double bots on start of level
+  towers, flocculation, highrise
+  occured with only the base bot tech: sound-bot  giving 2x sound-bot, then back to 1 on next level
+  occured again on skyscrappers with 2x laser-bots, but should only be one
+    https://landgreen.github.io/n-gon/index.html?&seed=88132&gun0=drones&gun1=mine&tech0=quenching&tech1=sentry&tech2=energy%20conservation&tech3=boom-bot&tech4=gauge&tech5=nail-bot&tech6=enthalpy&molMode=0&field=metamaterial%20cloaking&difficulty=6
+    https://landgreen.github.io/n-gon/index.html?&seed=99677&gun0=laser&gun1=super%20balls&tech0=expansion&tech1=superposition&tech2=energy%20conservation&tech3=polyurethane%20foam&tech4=quasiparticles&tech5=laser-bot&tech6=recycling&molMode=1&field=standing%20wave&difficulty=5
+
+dmg side bar is too long sometimes
+  maybe rework damage indications
+
+graphical bug - player can become crouched while not touching the ground if they exit the ground while crouched
+
+safari browser looks weird with several stroke animations
+  might be related to dashed stroke 
+    ctx.setLineDash([200, 200]);
+  examples
+    going to next level, doorway animation
+    plasma field secret combo lightning
+
+on floccuation level there is a map element with poorly formed vertices
+  matter.min.js:16 matter-js: Bodies.fromVertices: Install the 'poly-decomp' library and use Common.setDecomp or provide 'decomp' as a global to decompose concave vertices.
 
 ******************************************************* DESIGN ******************************************************
+
+n-gon long term goals
+  more wild synergies, less balanced for rare combos
+  more subtle lore hints and world building
+  more secrets
+  more indication of when things occur
 
 priorities    
   synergies between tech

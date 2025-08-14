@@ -1,7 +1,7 @@
 const tech = {
     totalCount: null,
     removeCount: 0,
-    setupAllTech() {
+    resetAllTech() {
         for (let i = 0, len = tech.tech.length; i < len; i++) {
             tech.tech[i].isLost = false
             tech.tech[i].isBanished = false
@@ -12,25 +12,18 @@ const tech = {
             } else if (tech.tech[i].frequencyDefault) {
                 tech.tech[i].frequency = tech.tech[i].frequencyDefault
             } else {
-                tech.tech[i].frequency = 2
+                tech.tech[i].frequency = 1
             }
             if (tech.tech[i].name === "heals" || tech.tech[i].name === "ammo" || tech.tech[i].name === "research") tech.tech[i].value = tech.tech[i].defaultValue
         }
-        //remove lore if it's your first time playing since it's confusing
-        //also remove lore if cheating
+        m.resetSkin();
         tech.removeCount = 0;
         tech.pauseEjectTech = 1; //used in paradigm shift
         lore.techCount = 0;
-        if (simulation.isCheating || localSettings.runCount < 1) { //simulation.isCommunityMaps ||
-            for (let i = 0, len = tech.tech.length; i < len; i++) {
-                if (tech.tech[i].isLore) {
-                    tech.tech[i].frequency = 0;
-                    tech.tech[i].count = 0;
-                }
-            }
-        }
-
-        tech.damage = 1
+        tech.duplication = 0;
+        m.damageDone = 1
+        m.damageReduction = 1
+        powerUps.difficulty.setDamageAndDefense()
         tech.junkChance = 0;
         tech.extraMaxHealth = 0;
         tech.totalCount = 0;
@@ -66,7 +59,7 @@ const tech = {
         tech.removeCount += totalRemoved
         tech.tech[index].count = 0;
         tech.totalCount -= totalRemoved
-        simulation.updateTechHUD();
+        // simulation.updateTechHUD();
         tech.tech[index].isLost = true
         simulation.updateTechHUD();
         return totalRemoved //return the total number of tech removed
@@ -76,7 +69,7 @@ const tech = {
         tech.junkChance += percent
         if (tech.junkChance < 0.001 || tech.junkChance === undefined) tech.junkChance = 0
         if (tech.junkChance > 1) tech.junkChance = 1
-        simulation.inGameConsole(`<strong>+${(100 * percent).toFixed(0)}%</strong> <span class='color-text'>JUNK</span><span class='color-var'>tech</span> chance (${(100 * tech.junkChance).toFixed(0)} total chance)`)
+        simulation.inGameConsole(`<strong>+${(100 * percent).toFixed(0)}%</strong> <span class='color-text'>JUNK</span><span class='color-var'>tech</span> chance (${(100 * tech.junkChance).toFixed(0)}% total chance)`)
         // tech.junkChance += (1 - tech.junkChance) * percent
         return percent
 
@@ -150,10 +143,12 @@ const tech = {
             if (tech.tech[index].isLost) tech.tech[index].isLost = false; //give specific tech
             if (tech.isBanish && tech.tech[index].isBanished) tech.tech[index].isBanished = false //stops the bug where you can't gets stacks of tech you take with decoherence, I think
             if (tech.isDamageFieldTech && tech.tech[index].isFieldTech) {
-                tech.damage *= 1.15
+                const dmg = 1.3
+                m.damageDone *= dmg
                 // simulation.inGameConsole(`<strong class='color-d'>damage</strong> <span class='color-symbol'>*=</span> ${1.05}`)
-                simulation.inGameConsole(`<span class='color-var'>tech</span>.damage *= ${1.1} //hidden-variable theory`);
+                simulation.inGameConsole(`<span class='color-var'>tech</span>.damage *= ${dmg} //hidden-variable theory`);
             }
+            // console.log(index, tech.tech[index])
             tech.tech[index].effect(); //give specific tech
             tech.tech[index].count++
             if (!tech.tech[index].isInstant) tech.totalCount++ //used in power up randomization
@@ -249,18 +244,7 @@ const tech = {
         }
     },
     haveGunCheck(name, needActive = true) {
-        // if (
-        //     !build.isExperimentSelection &&
-        //     b.inventory.length > 2 &&
-        //     name !== b.guns[b.activeGun].name &&
-        //     Math.random() > 2 - b.inventory.length * 0.5
-        // ) {
-        //     return false
-        // }
-        // for (i = 0, len = b.inventory.length; i < len; i++) {
-        //     if (b.guns[b.inventory[i]].name === name) return true
-        // }
-        // return false
+        if (b.activeGun === null || b.activeGun === undefined) return false
         if (build.isExperimentSelection || !needActive) {
             for (i = 0, len = b.inventory.length; i < len; i++) {
                 if (b.guns[b.inventory[i]].name === name) return true
@@ -269,52 +253,68 @@ const tech = {
         } else { //must be holding gun, this is the standard while playing
             return b.inventory.length > 0 && b.guns[b.activeGun].name === name
         }
+
+        // if (build.isExperimentSelection || !needActive) {
+        //     for (i = 0, len = b.inventory.length; i < len; i++) {
+        //         if (b.guns[b.inventory[i]].name === name) return true
+        //     }
+        //     return false
+        // } else { //must be holding gun, this is the standard while playing
+        //     return b.inventory.length > 0 && b.guns[b.activeGun].name === name
+        // }
     },
     hasExplosiveDamageCheck() {
         return tech.haveGunCheck("missiles") || (m.fieldMode === 4 && simulation.molecularMode === 1) || tech.missileBotCount > 0 || tech.isBoomBotUpgrade || tech.isIncendiary || tech.isPulseLaser || tech.isTokamak || (tech.haveGunCheck("grenades") && !tech.isNeutronBomb)
     },
-    damage: 1, //used for tech changes to player damage that don't have complex conditions
-    damageFromTech() {
-        let dmg = tech.damage * m.fieldDamage
-        if (level.isNoDamage && (m.cycle - 180 < level.noDamageCycle)) dmg *= 0.1
-        if (tech.isMaxHealthDamage && m.health === m.maxHealth) dmg *= 1.5
-        if (tech.noDefenseSettingDamage && m.defense() === 1) dmg *= 2
+    damageAdjustments() {
+        let dmg = m.damageDone * m.fieldDamage * powerUps.difficulty.damageDone
+        if (level.isNoDamage && (m.cycle - 180 < level.noDamageCycle)) dmg *= 0.3
+        if (tech.isMaxHealthDamage && (m.health === m.maxHealth || (tech.isEnergyHealth && m.energy > m.maxEnergy - 0.01))) dmg *= 2
+        if (tech.isNoDeath && m.health < 0) dmg *= 3
+        if (tech.noDefenseSettingDamage && m.defense() === 1) dmg *= 2.5
         if (tech.isImmunityDamage && m.immuneCycle > m.cycle) dmg *= 3
         if (tech.isPowerUpDamage) dmg *= 1 + 0.07 * powerUp.length
         if (tech.isDamageCooldown) dmg *= m.lastKillCycle + tech.isDamageCooldownTime > m.cycle ? 0.4 : 4
-        if (tech.isDamageAfterKillNoRegen && m.lastKillCycle + 300 > m.cycle) dmg *= 2
         if (tech.isDivisor && b.activeGun !== undefined && b.activeGun !== null && b.guns[b.activeGun].ammo % 3 === 0) dmg *= 1.9
-        if (tech.isNoGroundDamage) dmg *= m.onGround ? 0.9 : 2
+        if (tech.isOffGroundDamage && !m.onGround && m.cycle - m.lastOnGroundCycle > 65) dmg *= 2.5
         if (tech.isDilate) dmg *= 1.9 + 1.1 * Math.sin(m.cycle * 0.01)
-        if (tech.isGunChoice && tech.buffedGun === b.inventoryGun) dmg *= 1 + 0.3 * b.inventory.length
+        if (tech.isGunChoice) dmg *= 1 + 0.4 * b.inventory.length
         if (powerUps.boost.endCycle > simulation.cycle) dmg *= 1 + powerUps.boost.damage
-        if (m.coupling && (m.fieldMode === 0 || m.fieldMode === 5)) dmg *= 1 + 0.015 * m.coupling
+        if (m.coupling && (m.fieldMode === 0 || m.fieldMode === 5)) dmg *= 1 + 0.025 * m.coupling
         if (tech.isVerlet) dmg *= 3
         if (tech.isTechDebt) dmg *= tech.totalCount > 20 ? Math.pow(0.85, tech.totalCount - 20) : 4 - 0.15 * tech.totalCount
         if (tech.isAnthropicDamage && tech.isDeathAvoidedThisLevel) dmg *= 2.71828
         if (tech.isDupDamage) dmg *= 1 + Math.min(1, tech.duplicationChance())
         if (tech.isDamageForGuns) dmg *= 1 + 0.22 * Math.max(0, b.inventory.length - 1)
         if (tech.isOneGun && b.inventory.length < 2) dmg *= 1.3
-        if (tech.isAcidDmg && m.health > 1) dmg *= 1.35;
+        if ((tech.isAcidDmg && m.health > 1) || (tech.isEnergyHealth && m.energy > 1)) dmg *= 1.35;
         if (tech.isRerollDamage) dmg *= 1 + Math.max(0, 0.05 * powerUps.research.count)
         if (tech.isBotDamage) dmg *= 1 + 0.04 * b.totalBots()
         if (tech.restDamage > 1 && player.speed < 1) dmg *= tech.restDamage
-        if (tech.isLowEnergyDamage) dmg *= 1 + 0.5 * Math.max(0, m.maxEnergy - m.energy)
+        if (tech.isLowEnergyDamage) dmg *= 1 + 0.7 * Math.max(0, m.maxEnergy - m.energy)
         if (tech.energyDamage) dmg *= 1 + m.energy * 0.23 * tech.energyDamage;
         if (tech.isDamageFromBulletCount) dmg *= 1 + bullet.length * 0.01
         if (tech.isNoFireDamage && m.cycle > m.fireCDcycle + 120) dmg *= 2
         if (tech.isSpeedDamage) dmg *= 1 + Math.min(2, ((tech.speedAdded + player.speed) * 0.033))//1 + Math.min(1, (tech.speedAdded + player.speed) * 0.0193)
         if (tech.isAxion && tech.isHarmDarkMatter) dmg *= ((tech.isMoveDarkMatter || tech.isNotDarkMatter) ? 3.2 : 2)
-        if (tech.isHarmDamage && m.lastHarmCycle + 480 > m.cycle) dmg *= 3;
+        if (tech.isHarmDamage && m.lastHarmCycle + 240 > m.cycle) dmg *= 4;
         if (tech.lastHitDamage && m.lastHit) dmg *= 1 + tech.lastHitDamage * m.lastHit
         // if (tech.isLowHealthDmg) dmg *= 1 + 0.6 * Math.max(0, 1 - (tech.isEnergyHealth ? m.energy : m.health))
         if (tech.isLowHealthDmg) dmg *= 1 + 0.6 * Math.max(0, (tech.isEnergyHealth ? m.maxEnergy - m.energy : m.maxHealth - m.health))
         if (tech.isJunkDNA) dmg *= 1 + 2 * (tech.junkChance + level.junkAdded)
+        if (tech.isDemineralize) {
+            //reduce mineral percent based on time since last check
+            const seconds = (simulation.cycle - tech.mineralLastCheck) / 60
+            tech.mineralLastCheck = simulation.cycle
+            tech.mineralDamage = 1 + (tech.mineralDamage - 1) * Math.pow(0.9, seconds);
+            tech.mineralDamageReduction = 1 - (1 - tech.mineralDamageReduction) * Math.pow(0.9, seconds);
+            dmg *= tech.mineralDamage
+        }
         return dmg
     },
     duplicationChance() {
         if (level.isNoDuplicate) return 0
-        return Math.min(1, Math.max(0, (tech.isPowerUpsVanish ? 0.13 : 0) + (tech.isStimulatedEmission ? 0.2 : 0) + tech.duplication + tech.duplicateChance + 0.05 * tech.isExtraGunField + m.duplicateChance + tech.fieldDuplicate + 0.08 * tech.isDuplicateMobs + 0.03 * tech.isMassProduction + 0.04 * tech.isHealAttract + tech.cloakDuplication + (tech.isAnthropicTech && tech.isDeathAvoidedThisLevel ? 0.6 : 0) + 0.06 * tech.isDupEnergy))
+        return Math.min(1, Math.max(0, (tech.isPowerUpsVanish ? 0.13 : 0) + (tech.isStimulatedEmission ? 0.2 : 0) + tech.duplication + tech.duplicateChance + 0.05 * tech.isExtraGunField + m.duplicateChance + tech.fieldDuplicate + 0.08 * tech.isDuplicateMobs + 0.03 * tech.isMassProduction + 0.04 * tech.isHealAttract + tech.cloakDuplication + (tech.isAnthropicTech && tech.isDeathAvoidedThisLevel ? 0.6 : 0) + 0.06 * tech.isDupEnergy + tech.blockDupCount))
     },
     setTechFrequency(name, frequency) {
         for (let i = 0, len = tech.tech.length; i < len; i++) {
@@ -349,7 +349,7 @@ const tech = {
     },
     tech: [{
         name: "tungsten carbide",
-        description: "<strong>+400</strong> maximum <strong class='color-h'>health</strong><br><strong>lose</strong> <strong class='color-h'>health</strong> after hard <strong>landings</strong>",
+        description: "<strong>+500</strong> maximum <strong class='color-h'>health</strong><br><strong>lose</strong> ~8 <strong class='color-h'>health</strong> after hard <strong>landings</strong>",
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -362,7 +362,7 @@ const tech = {
         effect() {
             tech.isFallingDamage = true;
             m.setMaxHealth();
-            m.addHealth(3 / simulation.healScale)
+            m.addHealth(5 / simulation.healScale)
             m.skin.tungsten()
         },
         remove() {
@@ -373,7 +373,7 @@ const tech = {
     },
     {
         name: "nitinol",
-        description: "<strong>1.3x</strong> <strong>movement</strong> and <strong>jumping</strong><br><strong>0.17</strong> seconds of <strong>coyote time</strong>",
+        description: "<strong>1.3x</strong> <strong>movement</strong> and <strong>jumping</strong><br><strong>0.17</strong> seconds of <strong>coyote time</strong> <em style ='float: right;'>(jumping after falling)</em>",
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -384,11 +384,37 @@ const tech = {
         },
         requires: "not skinned",
         effect() {
+            tech.isNitinol = true
             m.skin.mech();
             m.setMovement()
         },
         remove() {
+            tech.isNitinol = false
             if (this.count) m.resetSkin();
+        }
+    },
+    {
+        name: "acoustic levitation",
+        description: "<strong>0.7x</strong> <strong class='color-defense'>damage taken</strong><br><strong>+2</strong> seconds of <strong>coyote time</strong> <em style ='float: right;'>(jumping after falling)</em>",
+        maxCount: 3,
+        count: 0,
+        frequency: 2,
+        frequencyDefault: 2,
+        allowed() {
+            return tech.isNitinol
+        },
+        requires: "nitinol",
+        effect() {
+            tech.isCoyote = true
+            m.coyoteCycles += 120 //adjust this 120 value in mech() skin
+            m.damageReduction *= 0.7
+        },
+        remove() {
+            tech.isCoyote = false
+            if (this.count > 0) {
+                m.damageReduction /= 0.7
+                if (tech.isNitinol) m.skin.mech(); //resets m.coyoteCycles
+            }
         }
     },
     {
@@ -410,12 +436,13 @@ const tech = {
             m.skin.strokeGap();
         },
         remove() {
-            tech.isFireMoveLock = false
             if (tech.isFireMoveLock) {
+                tech.isFireMoveLock = false
                 b.setFireCD();
                 b.setFireMethod();
-                if (this.count) m.resetSkin();
+                m.resetSkin();
             }
+            tech.isFireMoveLock = false
         }
     },
     {
@@ -441,7 +468,7 @@ const tech = {
     },
     {
         name: "Hilbert space",
-        description: "<strong>4x</strong> <strong class='color-d'>damage</strong><br>after a <strong>collision</strong> enter an <strong class='alt'>alternate reality</strong>",
+        description: "<strong>3x</strong> <strong class='color-d'>damage</strong><br>after a <strong>collision</strong> enter an <strong class='alt'>alternate reality</strong>",
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -452,16 +479,16 @@ const tech = {
             return !m.isAltSkin && !tech.isResearchReality && !tech.isSwitchReality
         },
         requires: "not skinned, Ψ(t) collapse, many-worlds",
-        damage: 4,
+        damage: 3,
         effect() {
             m.skin.anodize();
-            tech.damage *= this.damage
+            m.damageDone *= this.damage
             tech.isCollisionRealitySwitch = true;
         },
         remove() {
             tech.isCollisionRealitySwitch = false;
             if (this.count && m.alive) {
-                tech.damage /= this.damage
+                m.damageDone /= this.damage
                 m.resetSkin();
             }
         }
@@ -484,7 +511,10 @@ const tech = {
         },
         remove() {
             tech.isDilate = false
-            if (this.count) m.resetSkin();
+            if (this.count) {
+                m.resetSkin();
+                if (tech.isDiaphragm) m.skin.dilate2()
+            }
         }
     },
     {
@@ -494,7 +524,7 @@ const tech = {
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
-        isSkin: true,
+        // isSkin: true,
         allowed() {
             return tech.isDilate
         },
@@ -506,22 +536,28 @@ const tech = {
         },
         remove() {
             tech.isDiaphragm = false
-            if (this.count) m.resetSkin();
+            if (this.count) {
+                m.resetSkin();
+                if (tech.isDilate) m.skin.dilate()
+            }
         }
     },
     {
         name: "mass-energy equivalence",
-        description: `<strong class='color-f'>energy</strong> protects you instead of <strong class='color-h'>health</strong>`,
+        description: `<strong class='color-f'>energy</strong> protects you instead of <strong class='color-h'>health</strong><br><strong>1.5x</strong> <strong class='color-d'>damage</strong>`,
         maxCount: 1,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
         isSkin: true,
         allowed() {
-            return !m.isAltSkin && !tech.isPiezo && !tech.isRewindAvoidDeath && !tech.isAnnihilation //&& !tech.isAmmoFromHealth && !tech.isRewindGun
+            return !m.isAltSkin && !tech.isPiezo && !tech.isRewindAvoidDeath && !tech.isAnnihilation && !tech.isNoDeath//&& !tech.isAmmoFromHealth && !tech.isRewindGun
         },
-        requires: "not piezoelectricity, CPT, annihilation",
+        requires: "not piezoelectricity, CPT, annihilation, quantum Zeno effect",
+        damage: 1.5,
         effect() {
+            m.damageDone *= this.damage
+
             m.health = 0
             document.getElementById("health").style.display = "none"
             document.getElementById("health-bg").style.display = "none"
@@ -534,9 +570,15 @@ const tech = {
         },
         remove() {
             if (this.count > 0) {
+                m.damageDone /= this.damage
                 tech.isEnergyHealth = false;
-                document.getElementById("health").style.display = "inline"
-                document.getElementById("health-bg").style.display = "inline"
+                if (tech.isEnergyHealth) {
+                    document.getElementById("health").style.display = "none"
+                    document.getElementById("health-bg").style.display = "none"
+                } else if (!level.isHideHealth) {
+                    document.getElementById("health").style.display = "inline"
+                    document.getElementById("health-bg").style.display = "inline"
+                }
                 document.getElementById("dmg").style.backgroundColor = "#f67";
                 m.health = Math.max(Math.min(m.maxHealth, m.energy), 0.1);
                 simulation.mobDmgColor = "rgba(255,0,0,0.7)"
@@ -551,7 +593,7 @@ const tech = {
         name: "1st ionization energy",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Ionization_energy' class="link">1st ionization energy</a>`,
         descriptionFunction() {
-            return `convert current and future <div class="heal-circle"></div> into <div class="heal-circle" style="background-color: #ff0; border: 0.5px #000 solid;"></div><br><div class="heal-circle" style="background-color: #ff0; border: 0.5px #000 solid;"></div> give <strong>+${14 * tech.largerHeals * (tech.isHalfHeals ? 0.5 : 1)}</strong> maximum <strong class='color-f'>energy</strong>`
+            return `convert current and future <div class="heal-circle"></div> into <div class="heal-circle" style="background-color: #ff0; border: 0.5px #000 solid;"></div><br><div class="heal-circle" style="background-color: #ff0; border: 0.5px #000 solid;"></div> give <strong>+${15 * tech.largerHeals * (tech.isHalfHeals ? 0.5 : 1)}</strong> maximum <strong class='color-f'>energy</strong>`
         },
         maxCount: 1,
         count: 0,
@@ -623,15 +665,16 @@ const tech = {
     {
         name: "CPT symmetry",
         descriptionFunction() {
-            return `after losing <strong class='color-h'>health</strong>, if you have above <strong>${(85 * Math.min(100, m.maxEnergy)).toFixed(0)}</strong> <strong class='color-f'>energy</strong><br><strong>rewind</strong> time for <strong>20</strong> <strong class='color-f'>energy</strong> per second`
+            return `after losing <strong class='color-h'>health</strong>, if you have above <strong>${(85 * Math.min(1, m.maxEnergy)).toFixed(0)}</strong> <strong class='color-f'>energy</strong><br><strong>rewind</strong> time for <strong>20</strong> <strong class='color-f'>energy</strong> per second`
         },
+        // (85 * Math.min(100, m.maxEnergy)
         maxCount: 1,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
         isSkin: true,
         allowed() {
-            return !m.isAltSkin && m.fieldUpgrades[m.fieldMode].name !== "standing wave" && !tech.isRewindField && !tech.isEnergyHealth
+            return !m.isAltSkin && m.fieldUpgrades[m.fieldMode].name !== "standing wave" && !tech.isEnergyHealth
         },
         requires: "not skinned, standing wave, max energy reduction, retrocausality, mass-energy",
         effect() {
@@ -646,16 +689,16 @@ const tech = {
     {
         name: "causality bots",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Causality' class="link">causality bots</a>`,
-        description: "when you <strong class='color-rewind'>rewind</strong> build scrap <strong class='color-bot'>bots</strong><br>that protect you for about <strong>9</strong> seconds",
+        description: "when CPT <strong>rewinds</strong> build scrap <strong class='color-bot'>bots</strong><br>that protect you for about <strong>9</strong> seconds",
         maxCount: 3,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
         isBotTech: true,
         allowed() {
-            return tech.isRewindAvoidDeath || tech.isRewindField
+            return tech.isRewindAvoidDeath
         },
-        requires: "CPT, retrocausality",
+        requires: "CPT",
         effect() {
             tech.isRewindBot++;
         },
@@ -666,15 +709,15 @@ const tech = {
     {
         name: "causality bombs",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Causality' class="link">causality bombs</a>`,
-        description: "when you <strong class='color-rewind'>rewind</strong> drop several <strong>grenades</strong>", //<br>become <strong>invulnerable</strong> until they <strong class='color-e'>explode</strong>
+        description: "when CPT <strong>rewinds</strong> drop several <strong>grenades</strong>", //<br>become <strong>invulnerable</strong> until they <strong class='color-e'>explode</strong>
         maxCount: 1,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
         allowed() {
-            return tech.isRewindAvoidDeath || tech.isRewindField
+            return tech.isRewindAvoidDeath
         },
-        requires: "CPT, retrocausality",
+        requires: "CPT",
         effect() {
             tech.isRewindGrenade = true;
         },
@@ -722,7 +765,7 @@ const tech = {
     },
     {
         name: "ordnance",
-        description: `spawn ${powerUps.orb.gun()} and get <strong>2x</strong> <em class='flicker'>frequency</em> for ${powerUps.orb.gunTech()}<br><strong>+6%</strong> <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>`,
+        description: `spawn ${powerUps.orb.gun()} and get <strong>2x</strong> <em class='flicker'>frequency</em> for ${powerUps.orb.gunTech()}<br><strong>+6%</strong> chance for <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>`,
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -787,13 +830,16 @@ const tech = {
     {
         name: "pigeonhole principle",
         descriptionFunction() {
-            let info = ""
-            if (this.count > 0 && Number.isInteger(tech.buffedGun) && b.inventory.length) {
-                let gun = b.guns[b.inventory[tech.buffedGun]].name
-                info = `<br>this level: <strong>${(1.3 * Math.max(0, b.inventory.length)).toFixed(2)}x</strong> <strong class='color-d'>damage</strong> for <strong class="highlight">${gun}</strong>`
-            }
-            return `<span style = 'font-size:95%;'>a new ${powerUps.orb.gun()} in your inventory is <strong>chosen</strong> each <strong>level</strong><br>if it's equipped, <strong>1.3x</strong> <strong class='color-d'>damage</strong> per ${powerUps.orb.gun()} in your inventory${info}</span>`
+            return `<strong>1.4x</strong> <strong class='color-d'>damage</strong> per ${powerUps.orb.gun()}, but your active ${powerUps.orb.gun()}<br>cycles each level and you can't <strong>switch</strong>`
         },
+        // descriptionFunction() {
+        //     let info = ""
+        //     if (this.count > 0 && Number.isInteger(tech.buffedGun) && b.inventory.length) {
+        //         let gun = b.guns[b.inventory[tech.buffedGun]].name
+        //         info = `<br>this level: <strong>${(1.3 * Math.max(0, b.inventory.length)).toFixed(2)}x</strong> <strong class='color-d'>damage</strong> for <strong class="highlight">${gun}</strong>`
+        //     }
+        //     return `<span style = 'font-size:95%;'>a new ${powerUps.orb.gun()} in your inventory is <strong>chosen</strong> each <strong>level</strong><br>if it's equipped, <strong>1.3x</strong> <strong class='color-d'>damage</strong> per ${powerUps.orb.gun()} in your inventory${info}</span>`
+        // },
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -813,7 +859,7 @@ const tech = {
     },
     {
         name: "generalist",
-        description: `spawn <strong>7</strong> ${powerUps.orb.gun()}, but you can't <strong>switch</strong> ${powerUps.orb.gun()}<br>your equipped ${powerUps.orb.gun()} cycles after each level`,
+        description: `spawn <strong>7</strong> ${powerUps.orb.gun()}, but your equipped ${powerUps.orb.gun()}<br>cycles each level and you can't <strong>switch</strong>`,
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -821,9 +867,9 @@ const tech = {
         isInstant: true,
         isBadRandomOption: true,
         allowed() {
-            return (b.inventory.length < b.guns.length - 5) && (b.inventory.length > 1)
+            return (b.inventory.length < b.guns.length - 5) && b.inventory.length > 1
         },
-        requires: "at least 2 guns, at least 5 unclaimed guns",
+        requires: "you have at least 2 guns and 5 unclaimed guns",
         effect() {
             tech.isGunCycle = true;
             for (let i = 0; i < 7; i++) powerUps.spawn(m.pos.x + 10 * Math.random(), m.pos.y + 10 * Math.random(), "gun");
@@ -867,7 +913,7 @@ const tech = {
     },
     {
         name: "applied science",
-        description: `get a random ${powerUps.orb.gunTech()}<br>for each ${powerUps.orb.gun()} in your inventory`, //spawn ${powerUps.orb.research(1)} and
+        description: `get a random ${powerUps.orb.gunTech()}<br>for each ${powerUps.orb.gun()} in your inventory`,
         maxCount: 1,
         count: 0,
         isInstant: true,
@@ -878,7 +924,7 @@ const tech = {
         },
         requires: "at least 2 guns",
         effect() {
-            const delay = 20
+            const delay = 30
             let i = (b.inventory.length) * delay
             let gunIndex = -1
             let cycle = () => {
@@ -912,7 +958,7 @@ const tech = {
                             //give the tech that was found for this gun
                             if (gunTechPool.length) {
                                 const index = Math.floor(Math.random() * gunTechPool.length)
-                                simulation.inGameConsole(`<span class='color-var'>tech</span>.giveTech("<span class='color-text'>${tech.tech[gunTechPool[index]].name}</span>")`, 360)
+                                simulation.inGameConsole(`<span class='color-var'>tech</span>.giveTech("<strong class='color-text'>${tech.tech[gunTechPool[index]].name}</strong>")`, 360)
                                 tech.giveTech(gunTechPool[index]) // choose from the gun pool
                                 simulation.boldActiveGunHUD();
                             }
@@ -988,7 +1034,7 @@ const tech = {
             if (this.count === 0) this.gun = Math.floor(Math.random() * (b.guns.length - 1)) //don't pick laser
             return `<strong>2x</strong> <strong class='color-ammo'>ammo</strong> per ${powerUps.orb.ammo(1)} for <strong class='color-g'>${b.guns[this.gun].name}</strong>`
         },
-        maxCount: 9,
+        maxCount: 1,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -1013,7 +1059,7 @@ const tech = {
     {
         name: "Pareto efficiency",
         descriptionFunction() {
-            return `for each ${powerUps.orb.gun()} in your inventory<br>randomly get <strong>5x</strong> or <strong>0.2x</strong> <strong class='color-ammo'>ammo</strong> per ${powerUps.orb.ammo(1)}`
+            return `all your ${powerUps.orb.gun()} randomly get<br><strong>5x</strong> or <strong>0.2x</strong> <strong class='color-ammo'>ammo</strong> per ${powerUps.orb.ammo(1)}`
         },
         maxCount: 1,
         count: 0,
@@ -1028,7 +1074,7 @@ const tech = {
 
             let options = []
             for (let i = 0; i < b.inventory.length; i++) options.push(b.inventory[i])
-            options = shuffle(options)
+            options.sort(() => Math.random() - 0.5);
             for (let i = 0; i < options.length; i++) {
                 const index = options[i]
                 const scale = (i < options.length / 2) ? 4 : 0.25
@@ -1059,7 +1105,7 @@ const tech = {
     {
         name: "cache",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Cache_(computing)' class="link">cache</a>`,
-        description: `<strong>17x</strong> <strong class='color-ammo'>ammo</strong> per ${powerUps.orb.ammo()}, but<br>you can't <strong>store</strong> additional <strong class='color-ammo'>ammo</strong>`,
+        description: `<strong>15x</strong> <strong class='color-ammo'>ammo</strong> per ${powerUps.orb.ammo()}, but<br>you can't <strong>store</strong> additional <strong class='color-ammo'>ammo</strong>`,
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -1069,7 +1115,7 @@ const tech = {
         },
         requires: "not non-renewables",
         effect() {
-            tech.ammoCap = 17;
+            tech.ammoCap = 15;
             powerUps.ammo.effect()
         },
         remove() {
@@ -1098,7 +1144,7 @@ const tech = {
     },
     {
         name: "non-renewables",
-        description: `<strong>2x</strong> <strong class='color-d'>damage</strong><br>${powerUps.orb.ammo()} can't <strong>spawn</strong>`,
+        description: `<strong>2x</strong> <strong class='color-d'>damage</strong><br>you can't pickup ${powerUps.orb.ammo()}`,
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -1109,17 +1155,27 @@ const tech = {
         requires: "not catabolism, quasiparticles",
         damage: 2,
         effect() {
-            tech.damage *= this.damage
+            m.damageDone *= this.damage
             tech.isEnergyNoAmmo = true;
+            powerUps.ammo.color = "#c1c6c9"//"#abb3b8"// "#535e63"
+
+            for (let i = 0; i < powerUp.length; i++) {
+                if (powerUp[i].name === "ammo") powerUp[i].color = powerUps.ammo.color
+            }
+
         },
         remove() {
-            if (this.count && m.alive) tech.damage /= this.damage
+            if (this.count && m.alive) m.damageDone /= this.damage
             tech.isEnergyNoAmmo = false;
+            powerUps.ammo.color = "#467"
+            for (let i = 0; i < powerUp.length; i++) {
+                if (powerUp[i].name === "ammo") powerUp[i].color = powerUps.ammo.color
+            }
         }
     },
     {
         name: "desublimated ammunition",
-        description: `if <strong>crouching</strong><br>alternating shots use no <strong class='color-ammo'>ammo</strong>`,
+        description: `if <strong>crouching</strong><br>alternating shots cost no <strong class='color-ammo'>ammo</strong>`,
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -1170,6 +1226,28 @@ const tech = {
         }
     },
     {
+        name: "aerostat",
+        descriptionFunction() {
+            const damage = (tech.isOffGroundDamage && !m.onGround && m.cycle - m.lastOnGroundCycle > 65) ? 2.5 : 1
+            const infoText = this.count ? `<em style ="float: right;">(${damage.toFixed(0)}x)</em>` : ""
+            return `<strong>2.5x</strong> <strong class='color-d'>damage</strong> while <strong>off</strong> the <strong>ground</strong><br>for more than <strong>1</strong> second${infoText}`
+        },
+        maxCount: 1,
+        count: 0,
+        frequency: 1,
+        frequencyDefault: 1,
+        allowed() {
+            return true
+        },
+        requires: "",
+        effect() {
+            tech.isOffGroundDamage = true
+        },
+        remove() {
+            tech.isOffGroundDamage = false
+        }
+    },
+    {
         name: "kinetic bombardment",
         description: "far away mobs take more <strong class='color-d'>damage</strong><br>up to <strong>1.3x</strong> <strong class='color-d'>damage</strong> at <strong>3000</strong> displacement",
         maxCount: 1,
@@ -1191,7 +1269,7 @@ const tech = {
         name: "microstates",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Microstate_(statistical_mechanics)' class="link">microstates</a>`,
         descriptionFunction() {
-            return `use ${powerUps.orb.research(3)}<br><strong>1.01x</strong> <strong class='color-d'>damage</strong> per <strong>bullet</strong> or <strong class='color-bot'>bot</strong> <em style ="float: right;">(${(1 + bullet.length * 0.01).toFixed(2)}x)</em>`
+            return `<strong>1.01x</strong> <strong class='color-d'>damage</strong><span style ="float: right;"><span class="underline">expend</span> ${powerUps.orb.research(3)}</span><br>per <strong>bullet</strong> or <strong class='color-bot'>bot</strong> <em style ="float: right;">(${(1 + bullet.length * 0.01).toFixed(2)}x)</em>`
         },
         maxCount: 1,
         count: 0,
@@ -1203,9 +1281,7 @@ const tech = {
         requires: "",
         effect() {
             tech.isDamageFromBulletCount = true
-            for (let i = 0; i < 3; i++) {
-                if (powerUps.research.count > 0) powerUps.research.changeRerolls(-1)
-            }
+            powerUps.research.expend(3)
         },
         remove() {
             tech.isDamageFromBulletCount = false
@@ -1239,18 +1315,44 @@ const tech = {
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
-        allowed() {
-            return true
-        },
+        allowed() { return true },
+        requires: "",
         damage: 1.2,
         effect() {
-            tech.damage *= this.damage
+            m.damageDone *= this.damage
             tech.slowFire = 1.25
             b.setFireCD();
         },
         remove() {
-            if (this.count && m.alive) tech.damage /= this.damage
+            if (this.count && m.alive) m.damageDone /= this.damage
             tech.slowFire = 1;
+            b.setFireCD();
+        }
+    },
+    {
+        name: "combinatorial optimization",
+        description: `<strong>1.4x</strong> <strong class='color-d'>damage</strong><span style="float:right;"><span class="underline">expend</span> ${powerUps.orb.research(2)}</span><br><strong>0.7x</strong> <em>fire rate</em>`,
+        maxCount: 1,
+        count: 0,
+        frequency: 1,
+        frequencyDefault: 1,
+        allowed() {
+            return powerUps.research.count > 1 || build.isExperimentSelection
+        },
+        requires: "",
+        damage: 1.4,
+        effect() {
+            m.damageDone *= this.damage
+            tech.slowFireDamage = 1.42
+            b.setFireCD();
+            powerUps.research.expend(2)
+        },
+        remove() {
+            if (this.count && m.alive) {
+                m.damageDone /= this.damage
+                powerUps.research.changeRerolls(2)
+            }
+            tech.slowFireDamage = 1
             b.setFireCD();
         }
     },
@@ -1261,7 +1363,7 @@ const tech = {
             for (let i = 0; i < this.totalRate.length; i++) totalRate *= this.totalRate[i]
             let currentRate = ""
             if (this.count) currentRate = `<em style ="float: right;">(${(totalRate).toFixed(2)}x)</em>`
-            return `randomly gain between <strong>1x</strong> and <strong>2x</strong> <em>fire rate</em><br><strong>+5%</strong> <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>` + currentRate
+            return `randomly gain between <strong>1x</strong> and <strong>2x</strong> <em>fire rate</em><br><strong>+5%</strong> chance for <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>` + currentRate
         },
         maxCount: 9,
         count: 0,
@@ -1282,13 +1384,14 @@ const tech = {
         },
         refundAmount: 0,
         remove() {
-            if (this.count && m.alive) {
-                for (let i = 0; i < this.totalRate.length; i++) tech.fireRate *= this.totalRate[i]
+            if (this.count) {
+                // for (let i = 0; i < this.totalRate.length; i++) tech.fireRate *= this.totalRate[i]
                 if (this.refundAmount > 0) {
                     tech.removeJunkTechFromPool(this.refundAmount)
                     this.refundAmount = 0
                 }
             }
+            tech.fireRate = 1
             this.totalRate.length = 0
             b.setFireCD();
         }
@@ -1311,18 +1414,18 @@ const tech = {
         damageSoFar: [], //tracks the random damage upgrades so it can be removed and in descriptionFunction
         effect() {
             const damage = (Math.floor((Math.random() * 0.3 + 1) * 100)) / 100
-            tech.damage *= damage
+            m.damageDone *= damage
             this.damageSoFar.push(damage)
             simulation.inGameConsole(`<span class='color-var'>tech</span>.damage *= ${damage} //mechatronics`);
         },
         remove() {
-            if (this.count && m.alive) for (let i = 0; i < this.damageSoFar.length; i++) tech.damage /= this.damageSoFar[i]
+            if (this.count && m.alive) for (let i = 0; i < this.damageSoFar.length; i++) m.damageDone /= this.damageSoFar[i]
             this.damageSoFar.length = 0
         }
     },
     {
         name: "dynamical systems",
-        description: `use ${powerUps.orb.research(2)}<br><strong>1.3x</strong> <strong class='color-d'>damage</strong>`,
+        description: `<strong>1.3x</strong> <strong class='color-d'>damage</strong> <span style ="float: right;"><span class="underline">expend</span> ${powerUps.orb.research(2)}</span>`,
         // isFieldTech: true,
         maxCount: 1,
         count: 0,
@@ -1338,16 +1441,14 @@ const tech = {
         // requires: "cloaking, pilot wave, or plasma torch",
         damage: 1.3,
         effect() {
-            tech.damage *= this.damage
+            m.damageDone *= this.damage
             tech.isCloakingDamage = true
-            for (let i = 0; i < 2; i++) {
-                if (powerUps.research.count > 0) powerUps.research.changeRerolls(-1)
-            }
+            powerUps.research.expend(2)
         },
         remove() {
             tech.isCloakingDamage = false
             if (this.count && m.alive) {
-                tech.damage /= this.damage
+                m.damageDone /= this.damage
                 powerUps.research.changeRerolls(2)
             }
         }
@@ -1388,6 +1489,64 @@ const tech = {
         }
     },
     {
+        name: "remineralization",
+        descriptionFunction() {
+            //reduce mineral percent based on time since last check
+            const seconds = (simulation.cycle - tech.mineralLastCheck) / 60
+            tech.mineralLastCheck = simulation.cycle
+            tech.mineralDamage = 1 + (tech.mineralDamage - 1) * Math.pow(0.9, seconds);
+            tech.mineralDamageReduction = 1 - (1 - tech.mineralDamageReduction) * Math.pow(0.9, seconds);
+
+            return `after <strong>mobs</strong> <strong>die</strong> gain <strong>0.85x</strong> <strong class='color-defense'>damage taken</strong><br>effects stack, but fade <strong>10%</strong> every second<em style ="float: right;">(${tech.mineralDamageReduction.toFixed(2)}x)</em>`
+        },
+        maxCount: 1,
+        count: 0,
+        frequency: 1,
+        frequencyDefault: 1,
+        allowed() { return true },
+        requires: "",
+        effect() {
+            tech.isRemineralize = true
+            tech.mineralDamageReduction = 1
+            tech.mineralLastCheck = simulation.cycle
+        },
+        remove() {
+            tech.isRemineralize = false
+            tech.mineralDamageReduction = 1
+            tech.mineralLastCheck = simulation.cycle
+        }
+    },
+    {
+        name: "demineralization",
+        descriptionFunction() {
+            //reduce mineral percent based on time since last check
+            const seconds = (simulation.cycle - tech.mineralLastCheck) / 60
+            tech.mineralLastCheck = simulation.cycle
+            tech.mineralDamage = 1 + (tech.mineralDamage - 1) * Math.pow(0.9, seconds);
+            tech.mineralDamageReduction = 1 - (1 - tech.mineralDamageReduction) * Math.pow(0.9, seconds);
+
+            return `after <strong>mobs</strong> <strong>die</strong> gain <strong>1.08x</strong> <strong class='color-d'>damage</strong><br>effects stack, but fade <strong>10%</strong> every second<em style ="float: right;">(${tech.mineralDamage.toFixed(2)}x)</em>`
+        },
+        maxCount: 1,
+        count: 0,
+        frequency: 2,
+        frequencyDefault: 2,
+        allowed() {
+            return true
+        },
+        requires: "",
+        effect() {
+            tech.isDemineralize = true
+            tech.mineralDamage = 1
+            tech.mineralLastCheck = simulation.cycle
+        },
+        remove() {
+            tech.isDemineralize = false
+            tech.mineralDamage = 1
+            tech.mineralLastCheck = simulation.cycle
+        }
+    },
+    {
         name: "shear stress",
         description: "after mobs <strong>die</strong><br>they fire a <strong>nail</strong> at nearby mobs",
         maxCount: 9,
@@ -1395,9 +1554,9 @@ const tech = {
         frequency: 1,
         frequencyDefault: 1,
         allowed() {
-            return !tech.sporesOnDeath && !tech.isExplodeMob && !tech.botSpawner && !tech.isMobBlockFling && !tech.iceIXOnDeath
+            return true
         },
-        requires: "no other mob death tech",
+        requires: "",
         effect() {
             tech.nailsDeathMob++
         },
@@ -1413,9 +1572,9 @@ const tech = {
         frequency: 1,
         frequencyDefault: 1,
         allowed() {
-            return !tech.sporesOnDeath && !tech.nailsDeathMob && !tech.botSpawner && !tech.isMobBlockFling && !tech.iceIXOnDeath
+            return true
         },
-        requires: "no other mob death tech",
+        requires: "",
         effect() {
             tech.isExplodeMob = true;
         },
@@ -1427,24 +1586,18 @@ const tech = {
         name: "zoospore vector",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Disease_vector' class="link">zoospore vector</a>`,
         descriptionFunction() {
-            return `after mobs <strong>die</strong> there is a <strong>10%</strong> chance<br>they grow ${b.guns[6].nameString('s')}`
+            return `after mobs <strong>die</strong> there is a <strong>13%</strong> chance<br>they grow ${b.guns[6].nameString('s')}`
         },
-        // description: "after mobs <strong>die</strong><br>they have a <strong>+10%</strong> chance to grow <strong class='color-p' style='letter-spacing: 2px;'>spores</strong>",
         maxCount: 9,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
         allowed() {
-            return !tech.nailsDeathMob && !tech.isExplodeMob && !tech.botSpawner && !tech.isMobBlockFling && !tech.iceIXOnDeath
+            return true
         },
-        requires: "no other mob death tech",
+        requires: "",
         effect() {
-            tech.sporesOnDeath += 0.1;
-            // if (tech.isSporeWorm) {
-            //     for (let i = 0; i < 4; i++) b.worm(m.pos)
-            // } else {
-            //     for (let i = 0; i < 8; i++) b.spore(m.pos)
-            // }
+            tech.sporesOnDeath += 0.13;
         },
         remove() {
             tech.sporesOnDeath = 0;
@@ -1480,9 +1633,9 @@ const tech = {
         frequency: 2,
         frequencyDefault: 2,
         allowed() {
-            return tech.isBoostPowerUps || tech.isBoostReplaceAmmo
+            return tech.isBoostPowerUps || tech.isBoostReplaceAmmo || tech.isPlasmaBoost
         },
-        requires: "exciton, quasiparticles",
+        requires: "exciton, quasiparticles, dielectric",
         effect() {
             powerUps.boost.duration -= 60
             powerUps.boost.damage += 0.75
@@ -1497,14 +1650,14 @@ const tech = {
         descriptionFunction() {
             return `${powerUps.orb.boost(1)} also give <strong>0.3x</strong> <strong class='color-defense'>damage taken</strong><br>for <strong>${(powerUps.boost.duration / 60).toFixed(0)}</strong> seconds</span>`
         },
-        maxCount: 9,
+        maxCount: 1,
         count: 1,
         frequency: 2,
         frequencyDefault: 2,
         allowed() {
-            return tech.isBoostPowerUps || tech.isBoostReplaceAmmo
+            return tech.isBoostPowerUps || tech.isBoostReplaceAmmo || tech.isPlasmaBoost
         },
-        requires: "exciton, quasiparticles",
+        requires: "exciton, quasiparticles, dielectric",
         effect() {
             powerUps.boost.isDefense = true
         },
@@ -1555,7 +1708,7 @@ const tech = {
     {
         name: "enthalpy",
         descriptionFunction() {
-            return `after mobs <strong>die</strong><br>they have an <strong>8%</strong> chance to spawn ${powerUps.orb.heal(1)}`
+            return `<strong>8%</strong> chance to spawn ${powerUps.orb.heal(1)} after mobs <strong>die</strong>`
         },
         maxCount: 9,
         count: 0,
@@ -1617,7 +1770,7 @@ const tech = {
     {
         name: "scrap bots",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Scrap' class="link">scrap bots</a>`,
-        description: "after mobs <strong>die</strong> you have a <strong>33%</strong> chance<br>to construct scrap <strong class='color-bot'>bots</strong> that operate for <strong>15</strong> seconds",
+        description: "after mobs <strong>die</strong> you have a <strong>33%</strong> chance to<br>construct scrap <strong class='color-bot'>bots</strong> that operate for <strong>15</strong> seconds",
         maxCount: 3,
         count: 0,
         frequency: 1,
@@ -1637,7 +1790,7 @@ const tech = {
     {
         name: "scrap refit",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Scrap' class="link">scrap refit</a>`,
-        description: "after mobs <strong>die</strong><br>reset scrap <strong class='color-bot'>bots</strong> to <strong>15</strong> seconds of operation",
+        description: "after mobs <strong>die</strong> reset scrap <strong class='color-bot'>bots</strong><br>to <strong>15</strong> seconds of operation",
         maxCount: 1,
         count: 0,
         frequency: 3,
@@ -1657,7 +1810,7 @@ const tech = {
     {
         name: "nail-bot",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Robot' class="link">nail-bot</a>`,
-        description: "construct a <strong class='color-bot'>bot</strong> fires <strong>nails</strong> at mobs in line of sight",
+        description: "construct a <strong class='color-bot'>bot</strong> that fires <strong>nails</strong> at mobs",
         maxCount: 9,
         count: 0,
         frequency: 1,
@@ -1715,7 +1868,7 @@ const tech = {
     {
         name: "foam-bot",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Robot' class="link">foam-bot</a>`,
-        description: "construct a <strong class='color-bot'>bot</strong> sprays sticky <strong>foam</strong> at nearby mobs",
+        description: "construct a <strong class='color-bot'>bot</strong> that sprays sticky <strong>foam</strong> at mobs",
         maxCount: 9,
         count: 0,
         frequency: 1,
@@ -1773,7 +1926,7 @@ const tech = {
     {
         name: "sound-bot",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Robot' class="link">sound-bot</a>`,
-        description: "construct a <strong class='color-bot'>bot</strong> emits expanding<br>arcs of <strong>sound</strong> aimed towards nearby mobs",
+        description: "construct a <strong class='color-bot'>bot</strong> that emits expanding<br>arcs of <strong>sound</strong> aimed towards nearby mobs",
         maxCount: 9,
         count: 0,
         frequency: 1,
@@ -1829,7 +1982,7 @@ const tech = {
     {
         name: "boom-bot",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Robot' class="link">boom-bot</a>`,
-        description: "construct a <strong class='color-bot'>bot</strong> <strong>defends</strong> the space around you<br>ignites an <strong class='color-e'>explosion</strong> after hitting a mob",
+        description: "construct a <strong class='color-bot'>bot</strong> that <strong class='color-e'>explodes</strong> nearby mobs",
         maxCount: 9,
         count: 0,
         frequency: 1,
@@ -1887,7 +2040,7 @@ const tech = {
     {
         name: "laser-bot",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Robot' class="link">laser-bot</a>`,
-        description: "construct a <strong class='color-bot'>bot</strong> uses <strong class='color-f'>energy</strong> to emit a <strong class='color-laser'>laser</strong><br>that targets nearby mobs",
+        description: "construct a <strong class='color-bot'>bot</strong> that uses <strong class='color-f'>energy</strong> to emit<br>a <strong class='color-laser'>laser</strong> that targets mobs",
         maxCount: 9,
         count: 0,
         frequency: 1,
@@ -1945,7 +2098,7 @@ const tech = {
     {
         name: "orbital-bot",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Robot' class="link">orbital-bot</a>`,
-        description: "construct a <strong class='color-bot'>bot</strong> is locked in <strong>orbit</strong> around you<br><strong>stuns</strong> and <strong class='color-d'>damages</strong> mobs on <strong>contact</strong>",
+        description: "construct a <strong class='color-bot'>bot</strong> locked in <strong>orbit</strong> around you<br>that <strong>stuns</strong> and <strong class='color-d'>damages</strong> mobs",
         maxCount: 9,
         count: 0,
         frequency: 1,
@@ -2012,7 +2165,7 @@ const tech = {
     {
         name: "dynamo-bot",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Robot' class="link">dynamo-bot</a>`,
-        description: "construct a <strong class='color-bot'>bot</strong> <strong class='color-d'>damages</strong> mobs it touches<br><strong>+8</strong> <strong class='color-f'>energy</strong> per second when nearby",
+        description: "construct a <strong class='color-bot'>bot</strong> that <strong class='color-d'>damages</strong> mobs and<br>generates <strong>+8</strong> <strong class='color-f'>energy</strong> per second when nearby",
         maxCount: 9,
         count: 0,
         frequency: 1,
@@ -2113,18 +2266,17 @@ const tech = {
         name: "bot fabrication",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Robot' class="link">bot fabrication</a>`,
         descriptionFunction() {
-            return `after you collect ${powerUps.orb.research(2 + Math.floor(0.25 * b.totalBots()))}use them<br>to construct a random <strong class='color-bot'>bot</strong> <em style ="float: right;">(+1 cost every 4 bots)</em>`
+            const cost = 2 + Math.floor(b.totalBots() * 2 / 5)
+            return `after you collect ${powerUps.orb.research(cost)}<span class="underline">expend</span> them<br>to construct a random <strong class='color-bot'>bot</strong> <em style ="float: right;">(+2 cost every 5 bots)</em>`
         },
         // description: `if you collect ${powerUps.orb.research(2)}use them to build a<br>random <strong class='color-bot'>bot</strong> <em>(+1 cost every 5 bots)</em>`,
         maxCount: 1,
         count: 0,
-        frequency: 2,
-        frequencyDefault: 2,
+        frequency: 1,
+        frequencyDefault: 1,
         isBotTech: true,
-        allowed() {
-            return powerUps.research.count > 1 || build.isExperimentSelection
-        },
-        requires: "at least 2 research",
+        allowed() { return true },
+        requires: "",
         effect() {
             tech.isRerollBots = true;
             powerUps.research.changeRerolls(0)
@@ -2165,7 +2317,7 @@ const tech = {
     {
         name: "ersatz bots",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Ersatz_good' class="link">ersatz bots</a>`,
-        description: `<strong>double</strong> your current permanent <strong class='color-bot'>bots</strong><br>remove <strong>all</strong> ${powerUps.orb.gun()} in your inventory`,
+        description: `<strong>double</strong> your <strong class='color-bot'>bots</strong><br>remove <strong>all</strong> ${powerUps.orb.gun()} in your inventory`,
         maxCount: 1,
         count: 0,
         frequency: 2,
@@ -2254,7 +2406,7 @@ const tech = {
     },
     {
         name: "bot manufacturing",
-        description: `use ${powerUps.orb.research(2)} to construct<br><strong>3</strong> random <strong class='color-bot'>bots</strong>`,
+        description: `construct <strong>3</strong> random <strong class='color-bot'>bots</strong> <span style ="float: right;"><span class="underline">expend</span> ${powerUps.orb.research(2)}</span>`,
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -2266,9 +2418,7 @@ const tech = {
         },
         requires: "at least 4 bots",
         effect() {
-            for (let i = 0; i < 2; i++) {
-                if (powerUps.research.count > 0) powerUps.research.changeRerolls(-1)
-            }
+            powerUps.research.expend(2)
             // m.energy = 0.01;
             b.randomBot()
             b.randomBot()
@@ -2278,7 +2428,7 @@ const tech = {
     },
     {
         name: "bot prototypes",
-        description: `use ${powerUps.orb.research(3)}to build <strong>2</strong> random <strong class='color-bot'>bots</strong><br>and <strong>upgrade</strong> all <strong class='color-bot'>bots</strong> to a random type`,
+        description: `build <strong>2</strong> random <strong class='color-bot'>bots</strong><span style ="float: right;"><span class="underline">expend</span> ${powerUps.orb.research(3)}</span><br>and <strong>upgrade</strong> all <strong class='color-bot'>bots</strong> to a random type`,
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -2291,9 +2441,7 @@ const tech = {
         requires: "at least 6 bots",
         effect() {
             requestAnimationFrame(() => {
-                for (let i = 0; i < 3; i++) {
-                    if (powerUps.research.count > 0) powerUps.research.changeRerolls(-1)
-                }
+                powerUps.research.expend(3)
                 //fill array of available bots
                 const notUpgradedBots = []
                 const num = 2
@@ -2367,9 +2515,9 @@ const tech = {
         frequency: 1,
         frequencyDefault: 1,
         allowed() {
-            return !tech.isRewindField
+            return true
         },
-        requires: "not retrocausality",
+        requires: "",
         effect() {
             tech.isNoFireDefense = true
         },
@@ -2385,9 +2533,9 @@ const tech = {
         frequency: 1,
         frequencyDefault: 1,
         allowed() {
-            return !tech.isRewindField
+            return true
         },
-        requires: "not retrocausality",
+        requires: "",
         effect() {
             tech.isNoFireDamage = true
         },
@@ -2414,6 +2562,24 @@ const tech = {
         }
     },
     {
+        name: "Halbach array",
+        description: "throwing a <strong class='color-block'>block</strong> will<br>also throw other nearby <strong class='color-block'>blocks</strong>",
+        maxCount: 1,
+        count: 0,
+        frequency: 1,
+        frequencyDefault: 1,
+        allowed() {
+            return (tech.blockDamage > 0.075 || tech.isPrinter) && m.fieldMode !== 8 && m.fieldMode !== 9 && !tech.isTokamak
+        },
+        requires: "mass driver, printer, not wormhole, pilot wave, tokamak",
+        effect() {
+            tech.isGroupThrow = true
+        },
+        remove() {
+            tech.isGroupThrow = false
+        }
+    },
+    {
         name: "inflation",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Inflation_(cosmology)' class="link">inflation</a>`,
         description: "if <strong>holding</strong> a <strong class='color-block'>block</strong> <strong>0.1x</strong> <strong class='color-defense'>damage taken</strong><br>after <strong>throwing</strong> a <strong class='color-block'>block</strong> it expands <strong>3x</strong>",
@@ -2424,7 +2590,7 @@ const tech = {
         allowed() {
             return (tech.blockDamage > 0.075 || tech.isPrinter) && m.fieldMode !== 8 && m.fieldMode !== 9 && !tech.isTokamak
         },
-        requires: "mass driver, not pilot wave, tokamak, wormhole",
+        requires: "mass driver, printer, not pilot wave, tokamak, wormhole",
         effect() {
             tech.isAddBlockMass = true
         },
@@ -2442,7 +2608,7 @@ const tech = {
         allowed() {
             return (tech.blockDamage > 0.075 || tech.isPrinter) && m.fieldUpgrades[m.fieldMode].name !== "pilot wave" && m.fieldUpgrades[m.fieldMode].name !== "wormhole" && !tech.isTokamak
         },
-        requires: "mass driver, not pilot wave, tokamak, wormhole",
+        requires: "mass driver, printer, not pilot wave, tokamak, wormhole",
         effect() {
             tech.isBlockRestitution = true
         },
@@ -2458,9 +2624,9 @@ const tech = {
         frequency: 3,
         frequencyDefault: 3,
         allowed() {
-            return (tech.blockDamage > 0.075 || tech.isPrinter) && !tech.nailsDeathMob && !tech.sporesOnDeath && !tech.isExplodeMob && !tech.botSpawner && !tech.iceIXOnDeath
+            return (tech.blockDamage > 0.075 || tech.isPrinter)
         },
-        requires: "mass driver, no other mob death tech",
+        requires: "mass driver, printer",
         effect() {
             tech.isMobBlockFling = true
         },
@@ -2478,9 +2644,9 @@ const tech = {
         frequency: 3,
         frequencyDefault: 3,
         allowed() {
-            return (tech.blockDamage > 0.075 || tech.isPrinter) && m.fieldUpgrades[m.fieldMode].name !== "pilot wave" && !tech.isTokamak
+            return (tech.blockDamage > 0.075 || tech.isPrinter) && !tech.isTokamak
         },
-        requires: "mass driver, not pilot wave, tokamak",
+        requires: "mass driver, printer, not pilot wave, tokamak",
         effect() {
             tech.isBlockPowerUps = true
         },
@@ -2630,28 +2796,9 @@ const tech = {
         }
     },
     {
-        name: "ablative drones",
-        descriptionFunction() {
-            return `after losing ${tech.isEnergyHealth ? "<strong class='color-f'>energy</strong>" : "<strong class='color-h'>health</strong>"} there is a chance<br>to rebuild your broken parts as <strong>drones</strong>`
-        },
-        maxCount: 1,
-        count: 0,
-        frequency: 1,
-        frequencyDefault: 1,
-        allowed: () => true,
-        requires: "",
-        effect() {
-            tech.isDroneOnDamage = true;
-            // for (let i = 0; i < 4; i++) b.drone()
-        },
-        remove() {
-            tech.isDroneOnDamage = false;
-        }
-    },
-    {
         name: "non-Newtonian armor",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Non-Newtonian_fluid' class="link">non-Newtonian armor</a>`,
-        description: "after mob <strong>collisions</strong><br><strong>0.3x</strong> <strong class='color-defense'>damage taken</strong> for <strong>10</strong> seconds",
+        description: "after mob <strong>collisions</strong><br><strong>0.4x</strong> <strong class='color-defense'>damage taken</strong> for <strong>10</strong> seconds",
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -2669,7 +2816,7 @@ const tech = {
     },
     {
         name: "tessellation",
-        description: `use ${powerUps.orb.research(2)}<br><strong>0.6x</strong> <strong class='color-defense'>damage taken</strong>`,
+        description: `<strong>0.6x</strong> <strong class='color-defense'>damage taken</strong><span style ="float: right;"><span class="underline">expend</span> ${powerUps.orb.research(2)}</span>`,
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -2680,18 +2827,20 @@ const tech = {
         requires: "",
         effect() {
             tech.isFieldHarmReduction = true
-            for (let i = 0; i < 2; i++) {
-                if (powerUps.research.count > 0) powerUps.research.changeRerolls(-1)
-            }
+            m.damageReduction *= 0.6
+            powerUps.research.expend(2)
         },
         remove() {
             tech.isFieldHarmReduction = false
-            if (this.count > 0) powerUps.research.changeRerolls(2)
+            if (this.count > 0) {
+                m.damageReduction /= 0.6
+                powerUps.research.changeRerolls(2)
+            }
         }
     },
     {
         name: "Pauli exclusion",
-        description: `for <strong>7</strong> seconds after mob <strong>collisions</strong><br>become <strong class="color-invulnerable">invulnerable</strong> and <em style="opacity: 0.3;">inhibit <strong class='color-f'>energy</strong> regen</em>`,
+        description: `for <strong>7</strong> seconds after mob <strong>collisions</strong><br>gain <strong class="color-invulnerable">invulnerability</strong> and <em style="opacity: 0.3;">blocked <strong class='color-f'>energy</strong> regen</em>`,
         maxCount: 9,
         count: 0,
         frequency: 1,
@@ -2701,7 +2850,7 @@ const tech = {
         },
         requires: "",
         effect() {
-            m.collisionImmuneCycles += 480;
+            m.collisionImmuneCycles += 420;
             if (m.immuneCycle < m.cycle + m.collisionImmuneCycles) m.immuneCycle = m.cycle + m.collisionImmuneCycles; //player is immune to damage
         },
         remove() {
@@ -2710,7 +2859,7 @@ const tech = {
     },
     {
         name: "spin-statistics theorem",
-        description: `for <strong>1.9</strong> seconds out of every <strong>7</strong> seconds<br>become <strong class="color-invulnerable">invulnerable</strong> and <em style="opacity: 0.3;">inhibit <strong class='color-f'>energy</strong> regen</em>`,
+        description: `for <strong>1.9</strong> seconds out of every <strong>7</strong> seconds<br>gain <strong class="color-invulnerable">invulnerability</strong> and <em style="opacity: 0.3;">blocked <strong class='color-f'>energy</strong> regen</em>`,
         maxCount: 3,
         count: 0,
         frequency: 1,
@@ -2728,7 +2877,7 @@ const tech = {
     },
     {
         name: "fermion",
-        description: `for <strong>6</strong> seconds after mobs <strong>die</strong><br>become <strong class="color-invulnerable">invulnerable</strong> and <em style="opacity: 0.3;">inhibit <strong class='color-f'>energy</strong> regen</em>`,
+        description: `if a mob has <strong>died</strong> in the last <strong>5</strong> seconds<br>gain <strong class="color-invulnerable">invulnerability</strong> and <em style="opacity: 0.3;">blocked <strong class='color-f'>energy</strong> regen</em>`,
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -2752,7 +2901,7 @@ const tech = {
         frequency: 2,
         frequencyDefault: 2,
         allowed() {
-            return tech.isMobDeathImmunity || tech.cyclicImmunity || m.collisionImmuneCycles > 30
+            return tech.isMobDeathImmunity || tech.cyclicImmunity || m.collisionImmuneCycles > 30 || tech.isShotgunImmune
         },
         requires: "invincibility tech",
         effect() {
@@ -2833,19 +2982,19 @@ const tech = {
         requires: "not CPT",
         damage: 1.4,
         effect() {
-            tech.damage *= this.damage
+            m.damageDone *= this.damage
             tech.isMaxEnergyTech = true;
             m.setMaxEnergy()
         },
         remove() {
-            if (this.count && m.alive) tech.damage /= this.damage
+            if (this.count && m.alive) m.damageDone /= this.damage
             tech.isMaxEnergyTech = false;
             m.setMaxEnergy()
         }
     },
     {
         name: "exothermic process",
-        description: "<strong>1.6x</strong> <strong class='color-d'>damage</strong><br>after mobs <strong>die</strong> <strong>–5</strong> <strong class='color-f'>energy</strong>",
+        description: "<strong>1.6x</strong> <strong class='color-d'>damage</strong><br><strong>–5</strong> <strong class='color-f'>energy</strong> after mobs <strong>die</strong>",
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -2856,18 +3005,18 @@ const tech = {
         requires: "",
         damage: 1.6,
         effect() {
-            tech.damage *= this.damage
+            m.damageDone *= this.damage
             tech.isEnergyLoss = true;
         },
         remove() {
-            if (this.count && m.alive) tech.damage /= this.damage
+            if (this.count && m.alive) m.damageDone /= this.damage
             tech.isEnergyLoss = false;
         }
     },
     {
         name: "Gibbs free energy",
         descriptionFunction() {
-            return `<strong>1.005x</strong> <strong class='color-d'>damage</strong> for each missing <strong class='color-f'>energy</strong><br><em style ="float: right;">(${(1 + 0.5 * Math.max(0, m.maxEnergy - m.energy)).toFixed(2)}x)</em>`
+            return `<strong>1.007x</strong> <strong class='color-d'>damage</strong> for each missing <strong class='color-f'>energy</strong><br><strong>+6%</strong> chance for <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong><em style ="float: right;">(${(1 + 0.5 * Math.max(0, m.maxEnergy - m.energy)).toFixed(2)}x)</em>`
         },
         maxCount: 1,
         count: 0,
@@ -2879,14 +3028,20 @@ const tech = {
         requires: "",
         effect() {
             tech.isLowEnergyDamage = true;
+            this.refundAmount += tech.addJunkTechToPool(0.06)
+
         },
         remove() {
             tech.isLowEnergyDamage = false;
+            if (this.count > 0 && this.refundAmount > 0) {
+                tech.removeJunkTechFromPool(this.refundAmount)
+                this.refundAmount = 0
+            }
         }
     },
     {
         name: "overcharge",
-        description: "<strong>+88</strong> maximum <strong class='color-f'>energy</strong><br><strong>+4%</strong> <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>",
+        description: "<strong>+100</strong> maximum <strong class='color-f'>energy</strong><br><strong>+5%</strong> chance for <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>",
         maxCount: 9,
         count: 0,
         frequency: 1,
@@ -2896,9 +3051,9 @@ const tech = {
         },
         requires: "",
         effect() {
-            tech.bonusEnergy += 0.88
+            tech.bonusEnergy += 1
             m.setMaxEnergy()
-            this.refundAmount += tech.addJunkTechToPool(0.04)
+            this.refundAmount += tech.addJunkTechToPool(0.05)
         },
         refundAmount: 0,
         remove() {
@@ -2912,7 +3067,7 @@ const tech = {
     },
     {
         name: "Maxwells demon",
-        description: "<strong class='color-f'>energy</strong> above maximum decays <strong>30x</strong> slower<br><strong>+5%</strong> <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>",
+        description: "<strong class='color-f'>energy</strong> above maximum decays <strong>30x</strong> slower<br><strong>+5%</strong> chance for <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>",
         maxCount: 1,
         count: 0,
         frequency: 2,
@@ -2942,9 +3097,9 @@ const tech = {
         frequency: 1,
         frequencyDefault: 1,
         allowed() {
-            return !tech.isDamageAfterKillNoRegen
+            return true
         },
-        requires: "not parasitism",
+        requires: "",
         effect() {
             tech.isCrouchRegen = true; //only used to check for requirements
             m.regenEnergy = function () {
@@ -2973,29 +3128,6 @@ const tech = {
         },
         remove() {
             tech.energySiphon = 0;
-        }
-    },
-    {
-        name: "parasitism",
-        description: "if a mob has <strong>died</strong> in the last <strong>5</strong> seconds<br><strong>2x</strong> <strong class='color-d'>damage</strong>, no passive <strong class='color-f'>energy</strong> generation",
-        maxCount: 1,
-        count: 0,
-        frequency: 1,
-        frequencyDefault: 1,
-        allowed() {
-            return !tech.isCrouchRegen
-        },
-        requires: "not inductive charging",
-        effect() {
-            tech.isDamageAfterKillNoRegen = true;
-            m.regenEnergy = function () {
-                if (m.immuneCycle < m.cycle && (m.lastKillCycle + 300 < m.cycle) && m.fieldCDcycle < m.cycle) m.energy += m.fieldRegen * level.isReducedRegen;
-                if (m.energy < 0) m.energy = 0
-            }
-        },
-        remove() {
-            if (this.count) m.regenEnergy = m.regenEnergyDefault
-            tech.isDamageAfterKillNoRegen = false;
         }
     },
     {
@@ -3039,8 +3171,30 @@ const tech = {
         }
     },
     {
-        name: "torpor",
-        description: "if a mob has <strong>not died</strong> in the last <strong>5</strong> seconds<br><strong>0.3x</strong> <strong class='color-defense'>damage taken</strong>",
+        name: "fluoroantimonic acid",
+        descriptionFunction() {
+            return `if your ${tech.isEnergyHealth ? "<strong class='color-f'>energy</strong>" : "<strong class='color-h'>health</strong>"} is above <strong>100</strong><br><strong>1.35x</strong> <strong class='color-d'>damage</strong>`
+        },
+        maxCount: 1,
+        count: 0,
+        frequency: 2,
+        frequencyDefault: 2,
+        allowed() {
+            return m.maxHealth > 1 || tech.isEnergyHealth;
+        },
+        requires: "maximum health above 100",
+        effect() {
+            tech.isAcidDmg = true;
+        },
+        remove() {
+            tech.isAcidDmg = false;
+        }
+    },
+    {
+        name: "control theory",
+        descriptionFunction() {
+            return `<strong>2x</strong> <strong class='color-d'>damage</strong><br>while your ${tech.isEnergyHealth ? "<strong class='color-f'>energy</strong>" : "<strong class='color-h'>health</strong>"} is at maximum`
+        },
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -3050,16 +3204,16 @@ const tech = {
         },
         requires: "",
         effect() {
-            tech.isHarmReduceNoKill = true;
+            tech.isMaxHealthDamage = true;
         },
         remove() {
-            tech.isHarmReduceNoKill = false;
+            tech.isMaxHealthDamage = false;
         }
     },
     {
         name: "stability",
         descriptionFunction() {
-            return `<strong>0.3x</strong> <strong class='color-defense'>damage taken</strong><br>while your <strong class='color-h'>health</strong> is at maximum`
+            return `<strong>0.1x</strong> <strong class='color-defense'>damage taken</strong><br>while your ${tech.isEnergyHealth ? "<strong class='color-f'>energy</strong>" : "<strong class='color-h'>health</strong>"} is full`
         },
         maxCount: 1,
         count: 0,
@@ -3079,7 +3233,7 @@ const tech = {
     {
         name: "instability",
         descriptionFunction() {
-            return `<strong>2x</strong> <strong class='color-d'>damage</strong> while your <strong class='color-defense'>damage taken</strong> is <strong>1.00x</strong><br><em style ="float: right;">(current damage taken = ${(m.defense()).toFixed(2)}x)</em>`
+            return `<strong>2.5x</strong> <strong class='color-d'>damage</strong> while your <strong class='color-defense'>damage taken</strong> is <strong>1.00x</strong><br><em style ="float: right;">(current damage taken = ${(m.defense()).toFixed(2)}x)</em>`
         },
         maxCount: 1,
         count: 0,
@@ -3097,10 +3251,8 @@ const tech = {
         }
     },
     {
-        name: "control theory",
-        descriptionFunction() {
-            return `<strong>1.5x</strong> <strong class='color-d'>damage</strong><br>while your <strong class='color-h'>health</strong> is at maximum`
-        },
+        name: "torpor",
+        description: "if a mob has <strong>not died</strong> in the last <strong>5</strong> seconds<br><strong>0.3x</strong> <strong class='color-defense'>damage taken</strong>",
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -3110,10 +3262,10 @@ const tech = {
         },
         requires: "",
         effect() {
-            tech.isMaxHealthDamage = true;
+            tech.isHarmReduceNoKill = true;
         },
         remove() {
-            tech.isMaxHealthDamage = false;
+            tech.isHarmReduceNoKill = false;
         }
     },
     {
@@ -3121,7 +3273,7 @@ const tech = {
         descriptionFunction() {
             // return `<strong>0.9x</strong> <strong class='color-defense'>damage taken</strong> for each ${name} missing<br><em>(${(Math.pow(0.1 * max, Math.max(0, max - h))).toFixed(2)}x)</em>`
             const scale = 0.2 //adjust this to control the strength of this effect
-            return `missing ${tech.isEnergyHealth ? "<strong class='color-f'>energy</strong>" : "<strong class='color-h'>health</strong>"} reduces <strong class='color-defense'>damage taken</strong><br>down to a limit of <strong>${scale}x</strong> at <strong>0</strong> ${tech.isEnergyHealth ? "<strong class='color-f'>energy</strong>" : "<strong class='color-h'>health</strong>"}<em style ="float: right;">(${(Math.pow(scale, Math.max(0, 1 - (tech.isEnergyHealth ? m.energy / m.maxEnergy : m.health / m.maxHealth)))).toFixed(2)}x)</em>`
+            return `missing ${tech.isEnergyHealth ? "<strong class='color-f'>energy</strong>" : "<strong class='color-h'>health</strong>"} reduces <strong class='color-defense'>damage taken</strong><br>down to <strong>${scale}x</strong> at <strong>0</strong> ${tech.isEnergyHealth ? "<strong class='color-f'>energy</strong>" : "<strong class='color-h'>health</strong>"}<em style ="float: right;">(${(Math.pow(scale, Math.max(0, 1 - (tech.isEnergyHealth ? m.energy / m.maxEnergy : m.health / m.maxHealth)))).toFixed(2)}x)</em>`
         },
         maxCount: 1,
         count: 0,
@@ -3161,7 +3313,7 @@ const tech = {
     {
         name: "Zenos paradox",
         descriptionFunction() {
-            return `<strong>0.15x</strong> <strong class='color-defense'>damage taken</strong><br><strong>–5%</strong> of current ${tech.isEnergyHealth ? "<strong class='color-f'>energy</strong>" : "<strong class='color-h'>health</strong>"} every <strong>5</strong> seconds`
+            return `<strong>0.3x</strong> <strong class='color-defense'>damage taken</strong><br><strong>–5%</strong> of current ${tech.isEnergyHealth ? "<strong class='color-f'>energy</strong>" : "<strong class='color-h'>health</strong>"} every <strong>5</strong> seconds`
         },
         maxCount: 1,
         count: 0,
@@ -3173,9 +3325,57 @@ const tech = {
         requires: "",
         effect() {
             tech.isZeno = true;
+            m.damageReduction *= 0.3
         },
         remove() {
             tech.isZeno = false;
+            if (this.count > 0) {
+                m.damageReduction /= 0.3
+            }
+        }
+    },
+    {
+        name: "quantum Zeno effect",
+        descriptionFunction() {
+            return `you can only <strong>die</strong> if you <strong>end</strong> a level with <strong class='color-h'>health</strong> < <strong>0</strong><br><strong>3x</strong> <strong class='color-d'>damage</strong> while <strong class='color-h'>health</strong> < <strong>0</strong>`
+            // return `you don't <strong>die</strong> when you go below <strong>0</strong> <strong class='color-h'>health</strong>, but<br>you need <strong class='color-h'>health</strong> above <strong>0</strong> to <strong>exit</strong> the level`
+            // return `you can't <strong>die</strong> if <strong class='color-h'>health</strong> < <strong>0</strong>, but<br>you need <strong class='color-h'>health</strong> > <strong>0</strong> to <strong>exit</strong> the level`
+        },
+        maxCount: 1,
+        count: 0,
+        frequency: 1,
+        frequencyDefault: 1,
+        allowed() {
+            return !tech.isEnergyHealth
+        },
+        requires: "not mass-energy",
+        effect() {
+            tech.isNoDeath = true;
+        },
+        remove() {
+            tech.isNoDeath = false;
+        }
+    },
+    {
+        name: "quantum Darwinism",
+        descriptionFunction() {
+            return `once per level if <strong class='color-h'>health</strong> < <strong>0</strong><br>spawn ${powerUps.orb.tech()} and <strong>+2%</strong> chance for <strong class='color-junk'>JUNK</strong>`
+        },
+        maxCount: 1,
+        count: 0,
+        frequency: 3,
+        frequencyDefault: 3,
+        allowed() {
+            return tech.isNoDeath
+        },
+        requires: "quantum Zeno effect",
+        effect() {
+            tech.isDeathTech = true;
+            tech.isDeathTechTriggered = false
+        },
+        remove() {
+            tech.isDeathTech = false;
+            tech.isDeathTechTriggered = false
         }
     },
     {
@@ -3194,18 +3394,18 @@ const tech = {
         requires: "",
         damage: 1.7,
         effect() {
-            tech.damage *= this.damage
+            m.damageDone *= this.damage
             tech.isTechDamage = true;
         },
         remove() {
-            if (this.count && m.alive) tech.damage /= this.damage
+            if (this.count && m.alive) m.damageDone /= this.damage
             tech.isTechDamage = false;
         }
     },
     {
         name: "ergodicity",
         descriptionFunction() {
-            return `<strong>0.50x</strong> <strong class='color-h'>healing</strong> from ${powerUps.orb.heal()}<br><strong>1.7x</strong> <strong class='color-d'>damage</strong>`
+            return `<strong>0.5x</strong> <strong class='color-h'>healing</strong> from ${powerUps.orb.heal()}<br><strong>1.7x</strong> <strong class='color-d'>damage</strong>`
         },
         maxCount: 1,
         count: 0,
@@ -3217,7 +3417,7 @@ const tech = {
         requires: "",
         damage: 1.7,
         effect() {
-            tech.damage *= this.damage
+            m.damageDone *= this.damage
             tech.isHalfHeals = true;
             for (let i = 0; i < powerUp.length; i++) {
                 if (powerUp[i].name === "heal") {
@@ -3229,7 +3429,7 @@ const tech = {
         },
         remove() {
             if (this.count && m.alive) {
-                tech.damage /= this.damage
+                m.damageDone /= this.damage
                 for (let i = 0; i < powerUp.length; i++) {
                     if (powerUp[i].name === "heal") {
                         const scale = 1 / Math.sqrt(0.5)
@@ -3239,24 +3439,6 @@ const tech = {
                 }
             }
             tech.isHalfHeals = false;
-        }
-    },
-    {
-        name: "fluoroantimonic acid",
-        description: "if your <strong class='color-h'>health</strong> is above <strong>100</strong><br><strong>1.35x</strong> <strong class='color-d'>damage</strong>",
-        maxCount: 1,
-        count: 0,
-        frequency: 2,
-        frequencyDefault: 2,
-        allowed() {
-            return m.maxHealth > 1;
-        },
-        requires: "maximum health above 100",
-        effect() {
-            tech.isAcidDmg = true;
-        },
-        remove() {
-            tech.isAcidDmg = false;
         }
     },
     {
@@ -3282,7 +3464,7 @@ const tech = {
     {
         name: "adiabatic healing",
         descriptionFunction() {
-            return `<strong>2x</strong> <strong class='color-h'>healing</strong> from ${powerUps.orb.heal()}<br><strong>+4%</strong> <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>`
+            return `<strong>2x</strong> <strong class='color-h'>healing</strong> from ${powerUps.orb.heal()}<br><strong>+4%</strong> chance for <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>`
         },
         maxCount: 3,
         count: 0,
@@ -3325,7 +3507,7 @@ const tech = {
     {
         name: "quenching",
         descriptionFunction() {
-            return `<strong>0.3x</strong> of ${powerUps.orb.heal()} over<strong class='color-h'>healing</strong><br>is added to <strong>maximum</strong> <strong class='color-h'>health</strong>`
+            return `<strong>0.5x</strong> of ${powerUps.orb.heal()} over<strong class='color-h'>healing</strong><br>is added to <strong>maximum</strong> <strong class='color-h'>health</strong>`
         },
         maxCount: 1,
         count: 0,
@@ -3370,7 +3552,7 @@ const tech = {
     {
         name: "accretion disk",
         descriptionFunction() {
-            return `<strong>1.07x</strong> <strong class='color-d'>damage</strong> for each <strong>power up</strong> on this <strong>level</strong><br><strong>+5%</strong> <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong> <em style ="float: right;">(${(1 + 0.07 * powerUp.length).toFixed(2)}x)</em>`
+            return `<strong>1.07x</strong> <strong class='color-d'>damage</strong> for each <strong>power up</strong> on this <strong>level</strong><br><strong>+5%</strong> chance for <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong> <em style ="float: right;">(${(1 + 0.07 * powerUp.length).toFixed(2)}x)</em>`
         },
         maxCount: 1,
         count: 0,
@@ -3441,7 +3623,9 @@ const tech = {
     {
         name: "interest",
         descriptionFunction() {
-            return `at the start of each <strong>level</strong> spawn<br><strong>${(100 * this.rate).toFixed(0)}%</strong> of your ${powerUps.orb.research(1)}, ${powerUps.orb.ammo(1)}, ${powerUps.orb.coupling(1)}, and ${powerUps.orb.heal(1)} <em>(rounded up)</em>`
+            const r = Math.ceil(this.rate * powerUps.research.count)
+            const c = Math.ceil(this.rate * m.coupling)
+            return `at the start of each <strong>level</strong> <em style ="float: right;">(get ${r} ${powerUps.orb.research(1)}, ${c} ${powerUps.orb.coupling(1)})</em><br>spawn <strong>${(100 * this.rate).toFixed(0)}%</strong> of your ${powerUps.orb.research(1)} and <strong>${(100 * this.rate / 3).toFixed(0)}%</strong> of your ${powerUps.orb.coupling(1)}`
         },
         maxCount: 9,
         count: 0,
@@ -3451,7 +3635,7 @@ const tech = {
             return true
         },
         requires: "",
-        rate: 0.06,
+        rate: 0.18,
         effect() {
             tech.interestRate += this.rate;
         },
@@ -3468,7 +3652,8 @@ const tech = {
         //     }, 1000);
         // },
         descriptionFunction() {
-            return `once per level, instead of <strong>dying</strong> use ${powerUps.orb.research(1)} and<br>spawn ${powerUps.orb.heal(22)}`
+            return `if <strong class='color-h'>health</strong> < <strong>0</strong> <span class="underline">expend</span> ${powerUps.orb.research(1)} to heal <span style ="float: right;">(once per level)</span><br>and spawn ${powerUps.orb.heal(22)}<em style ="float: right;">(${(!tech.isDeathAvoidedThisLevel && powerUps.research.count > 0) ? "on" : "off"})</em>`
+
         },
         maxCount: 1,
         count: 0,
@@ -3535,20 +3720,23 @@ const tech = {
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
+        isAltRealityTech: true,
         allowed() {
             return true
         },
         requires: "",
         effect() {
             tech.isImmortal = true;
+            m.damageReduction *= 0.7
         },
         remove() {
             tech.isImmortal = false;
+            if (this.count > 0) m.damageReduction /= 0.7
         }
     },
     {
         name: "many-worlds",
-        description: `at the start of each <strong>level</strong> spawn ${powerUps.orb.tech()} ${powerUps.orb.coupling(3)}<br>and enter an <strong class='alt'>alternate reality</strong>`,
+        description: `at the start of each <strong>level</strong> spawn ${powerUps.orb.tech()}<br>and enter an <strong class='alt'>alternate reality</strong>`,
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -3568,7 +3756,7 @@ const tech = {
     {
         name: "Ψ(t) collapse",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Wave_function_collapse' class="link">Ψ(t) collapse</a>`,
-        description: `after a <strong>boss</strong> <strong>dies</strong> spawn ${powerUps.orb.research(6)}<br>if you <strong class='color-r'>research</strong> enter an <strong class='alt'>alternate reality</strong>`,
+        description: `after a <strong>boss</strong> <strong>dies</strong> spawn ${powerUps.orb.research(4)}<br>if you <strong class='color-r'>research</strong> enter an <strong class='alt'>alternate reality</strong>`,
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -3590,7 +3778,7 @@ const tech = {
     },
     {
         name: "decoherence",
-        description: `after a <strong>boss</strong> <strong>dies</strong> spawn ${powerUps.orb.research(2)}<br>${powerUps.orb.tech()} options you don't <strong class='color-choice'><span>ch</span><span>oo</span><span>se</span></strong> won't <strong>reoccur</strong>`,
+        description: `after a <strong>boss</strong> <strong>dies</strong> spawn ${powerUps.orb.research(3)}<br>${powerUps.orb.tech()} options you don't <strong class='color-choice'><span>ch</span><span>oo</span><span>se</span></strong> won't <strong>reoccur</strong>`,
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -3598,8 +3786,7 @@ const tech = {
         allowed() {
             return !tech.isSuperDeterminism
         },
-        requires: "not superdeterminism",
-        bonusResearch: 7,
+        requires: "not, superdeterminism",
         effect() {
             tech.isBanish = true
         },
@@ -3615,8 +3802,76 @@ const tech = {
         }
     },
     {
+        name: "coherence",
+        description: `after observing a ${powerUps.orb.tech()} <strong class='color-choice'><span>ch</span><span>oi</span><span>ce</span></strong><br>that <strong class='color-choice'><span>ch</span><span>oi</span><span>ce</span></strong> is available for all <strong>all</strong> future ${powerUps.orb.tech()}`,
+        maxCount: 1,
+        count: 0,
+        frequency: 3,
+        frequencyDefault: 3,
+        allowed() {
+            return tech.isBanish
+        },
+        requires: "decoherence",
+        effect() {
+            tech.isRetain = true
+        },
+        remove() {
+            tech.isRetain = false
+        }
+    },
+    {
+        name: "counterfactual conditional",
+        description: `add a <strong>30x</strong> <em class='flicker'>frequency</em> ${powerUps.orb.tech()} to the possible <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong><br>when chosen it <strong>randomizes</strong> current ${powerUps.orb.tech()} <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>`,
+        maxCount: 1,
+        count: 0,
+        frequency: 1,
+        frequencyDefault: 1,
+        isInstant: true,
+        allowed() { return true },
+        requires: "",
+        effect() {
+            for (let i = 0, len = tech.tech.length; i < len; i++) {
+                if (tech.tech[i].name === "counterfactual") tech.tech[i].frequency = 40
+            }
+        },
+        remove() { }
+    },
+    {
+        name: "counterfactual",
+        description: `<strong>randomize</strong> ${powerUps.orb.tech()} <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong><br><strong>10%</strong> chance to <span class='color-remove'>eject</span> this as a ${powerUps.orb.tech()}`,
+        maxCount: 9,
+        count: 0,
+        frequency: 0,
+        frequencyDefault: 0,
+        isInstant: true,
+        allowed() { return !build.isExperimentSelection },
+        requires: "not experiment mode",
+        effect() {
+            if (Math.random() < 0.1) { //chance to remove this
+                this.frequency = 0
+                powerUps.spawnDelay("tech", 1);
+                simulation.inGameConsole(`<span class='color-var'>this</span>.frequency = 0  <em>//counterfactual removed</em>`, 360)
+            } else {
+                requestAnimationFrame(() => { //need a 2 cycle wait because of -> search for this:   tech.tech.unshift(item); // Add the element to the front of the array
+                    requestAnimationFrame(() => { // generates new choices
+                        this.count--
+                        powerUps.tech.effect(); //generates new tech options
+                        // tech.isBrainstormActive = false //this prevents a potential infinite loop with brainstorm
+                        // if (document.fullscreenElement) mouseMove.isLockPointer = false//this interacts with the mousedown event listener to exit pointer lock
+                    })
+                })
+            }
+        },
+        remove() {
+            requestAnimationFrame(() => { //need a 2 cycle wait because of -> search for this:   tech.tech.unshift(item); // Add the element to the front of the array
+                this.frequency = 0
+            })
+        }
+    },
+    {
         name: "peer review",
-        description: `after you <strong class='color-r'>research</strong> gain <strong>1.05x</strong> <strong class='color-d'>damage</strong><br>and <strong>+1%</strong> <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>`,
+        description: `after <strong class='color-r'>researching</strong> or <span class="underline">expending</span> ${powerUps.orb.research(1)}<br>gain <strong>1.03x</strong> <strong class='color-d'>damage</strong>`,
+        // <br>and <strong>+1%</strong> chance for <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -3633,8 +3888,28 @@ const tech = {
         }
     },
     {
+        name: "clinical peer review",
+        descriptionFunction() {
+            return `after <strong class='color-r'>researching</strong> or <span class="underline">expending</span> ${powerUps.orb.research(1)}<br>spawn ${powerUps.orb.heal()}`
+        },
+        maxCount: 1,
+        count: 0,
+        frequency: 1,
+        frequencyDefault: 1,
+        allowed() {
+            return (powerUps.research.count > 0 || build.isExperimentSelection) && !tech.isSuperDeterminism
+        },
+        requires: "at least 1 research, not superdeterminism",
+        effect() {
+            tech.isResearchHeal = true;
+        },
+        remove() {
+            tech.isResearchHeal = false;
+        }
+    },
+    {
         name: "pseudoscience",
-        description: "<strong class='color-r'>research</strong> <strong>2</strong> times</span> for <strong>free</strong>, but<br><strong>+1%</strong> <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong> each time",
+        description: "<strong class='color-r'>research</strong> <strong>2</strong> times</span> for <strong>free</strong>, but<br><strong>+1%</strong> chance for <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong> each time",
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -3652,7 +3927,7 @@ const tech = {
     },
     {
         name: "renormalization",
-        description: `<strong>47%</strong> chance to spawn ${powerUps.orb.research(1)} after consuming ${powerUps.orb.research(1)}<br><strong>+5%</strong> <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>`,
+        description: `<strong>47%</strong> chance to spawn ${powerUps.orb.research(1)} after <span class="underline">expending</span> ${powerUps.orb.research(1)}<br><strong>+5%</strong> chance for <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>`,
         maxCount: 1,
         count: 0,
         frequency: 2,
@@ -3743,9 +4018,9 @@ const tech = {
         frequency: 1,
         frequencyDefault: 1,
         allowed() {
-            return !tech.isSuperDeterminism && !tech.isNoDraftPause
+            return !tech.isSuperDeterminism
         },
-        requires: "not superdeterminism, eternalism",
+        requires: "not superdeterminism",
         effect() {
             tech.isPauseSwitchField = true;
             for (let i = 0, len = tech.tech.length; i < len; i++) {
@@ -3759,27 +4034,6 @@ const tech = {
                     if (tech.tech[i].isFieldTech) tech.tech[i].frequency /= 2
                 }
             }
-        }
-    },
-    {
-        name: "eternalism",
-        description: `<strong>1.25x</strong> <strong class='color-d'>damage</strong><br><strong>time</strong> can't be <strong>paused</strong> <em style ="float: right;">(time can still be dilated)</em>`,
-        maxCount: 1,
-        count: 0,
-        frequency: 1,
-        frequencyDefault: 1,
-        allowed() {
-            return !tech.isPauseSwitchField && !tech.isPauseEjectTech && !tech.isWormHolePause
-        },
-        requires: "not unified field theory, paradigm shift, invariant",
-        damage: 1.25,
-        effect() {
-            tech.damage *= this.damage
-            tech.isNoDraftPause = true
-        },
-        remove() {
-            if (this.count && m.alive) tech.damage /= this.damage
-            tech.isNoDraftPause = false
         }
     },
     {
@@ -3838,18 +4092,18 @@ const tech = {
         damage: 1.1,
         effect() {
             tech.extraChoices += 1;
-            tech.damage *= this.damage
+            m.damageDone *= this.damage
         },
         refundAmount: 0,
         remove() {
             tech.extraChoices = 0;
-            if (this.count && m.alive) tech.damage /= this.damage
+            if (this.count && m.alive) m.damageDone /= this.damage
         }
     },
     {
         name: "path integral",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Path_integral_formulation' class="link">path integral</a>`,
-        description: `your next ${powerUps.orb.tech()} has all possible <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong><br><strong>+4%</strong> <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>`,
+        description: `your next ${powerUps.orb.tech()} has all possible <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong><br><strong>+4%</strong> chance for <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>`,
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -3876,7 +4130,7 @@ const tech = {
     },
     {
         name: "determinism",
-        description: `spawn ${powerUps.orb.tech()}${powerUps.orb.tech()}${powerUps.orb.tech()}${powerUps.orb.tech()}${powerUps.orb.tech()}<br>${powerUps.orb.field()}, ${powerUps.orb.tech()}, and ${powerUps.orb.gun()} have only <strong>1</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ce</span></strong>`,
+        description: `spawn ${powerUps.orb.tech()}${powerUps.orb.tech()}${powerUps.orb.tech()}${powerUps.orb.tech()}<br>${powerUps.orb.field()}, ${powerUps.orb.tech()}, and ${powerUps.orb.gun()} have only <strong>1</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ce</span></strong>`,
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -3890,7 +4144,7 @@ const tech = {
         effect() {
             tech.isDeterminism = true;
             //if you change the number spawned also change it in Born rule
-            for (let i = 0; i < 5; i++) powerUps.spawn(m.pos.x + 60 * (Math.random() - 0.5), m.pos.y + 60 * (Math.random() - 0.5), "tech");
+            for (let i = 0; i < 4; i++) powerUps.spawn(m.pos.x + 60 * (Math.random() - 0.5), m.pos.y + 60 * (Math.random() - 0.5), "tech");
         },
         remove() {
             tech.isDeterminism = false;
@@ -3898,7 +4152,7 @@ const tech = {
     },
     {
         name: "superdeterminism",
-        description: `spawn ${powerUps.orb.tech()}${powerUps.orb.tech()}${powerUps.orb.tech()}${powerUps.orb.tech()}${powerUps.orb.tech()}<br>you can't <strong class='color-cancel'>cancel</strong> and ${powerUps.orb.research(1)} no longer <strong>spawn</strong>`,
+        description: `spawn ${powerUps.orb.tech()}${powerUps.orb.tech()}${powerUps.orb.tech()}${powerUps.orb.tech()}<br>you can't <strong class='color-cancel'>cancel</strong> and ${powerUps.orb.research(1)} no longer <strong>spawn</strong>`,
         maxCount: 1,
         count: 0,
         frequency: 3,
@@ -3912,7 +4166,7 @@ const tech = {
         effect() {
             tech.isSuperDeterminism = true;
             //if you change the number spawned also change it in Born rule
-            for (let i = 0; i < 5; i++) powerUps.spawn(m.pos.x + 60 * (Math.random() - 0.5), m.pos.y + 60 * (Math.random() - 0.5), "tech");
+            for (let i = 0; i < 4; i++) powerUps.spawn(m.pos.x + 60 * (Math.random() - 0.5), m.pos.y + 60 * (Math.random() - 0.5), "tech");
         },
         remove() {
             tech.isSuperDeterminism = false;
@@ -3959,8 +4213,8 @@ const tech = {
     },
     {
         name: "dark patterns",
-        description: "<strong>1.3x</strong> <strong class='color-d'>damage</strong><br><strong>+15%</strong> <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>",
-        maxCount: 9,
+        description: "<strong>1.3x</strong> <strong class='color-d'>damage</strong><br><strong>+15%</strong> chance for <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>",
+        maxCount: 3,
         count: 0,
         frequency: 1,
         frequencyDefault: 1,
@@ -3970,13 +4224,13 @@ const tech = {
         requires: "",
         damage: 1.3,
         effect() {
-            tech.damage *= this.damage
+            m.damageDone *= this.damage
             this.refundAmount += tech.addJunkTechToPool(0.15)
         },
         refundAmount: 0,
         remove() {
             if (this.count && m.alive) {
-                tech.damage /= this.damage
+                m.damageDone /= this.damage
                 if (this.refundAmount > 0) tech.removeJunkTechFromPool(this.refundAmount)
             }
         }
@@ -3984,7 +4238,7 @@ const tech = {
     {
         name: "junk DNA",
         descriptionFunction() {
-            return `increase <strong class='color-d'>damage</strong> by twice the<br><strong class='color-junk'>JUNK</strong> chance <em style ="float: right;">(${(1 + 2 * (tech.junkChance + level.junkAdded)).toFixed(2)}x)</em>`
+            return `increase <strong class='color-d'>damage</strong> by twice your<br><strong class='color-junk'>JUNK</strong> chance <em style ="float: right;">(${(1 + 2 * (tech.junkChance + level.junkAdded)).toFixed(2)}x)</em>`
         },
         maxCount: 1,
         count: 0,
@@ -4026,7 +4280,7 @@ const tech = {
     {
         name: "research",
         descriptionFunction() {
-            return `spawn ${this.value > 36 ? this.value + powerUps.orb.research(1) : powerUps.orb.research(this.value)} <br>next time increase amount spawned by +5${powerUps.orb.research(1)}`
+            return `spawn ${this.value > 36 ? this.value + powerUps.orb.research(1) : powerUps.orb.research(this.value)} <br>next time increase amount spawned by +4${powerUps.orb.research(1)}`
         },
         maxCount: 9,
         count: 0,
@@ -4040,7 +4294,7 @@ const tech = {
         defaultValue: 8,
         effect() {
             powerUps.spawnDelay("research", this.value);
-            this.value += 5
+            this.value += 4
         },
         remove() { }
     },
@@ -4216,7 +4470,7 @@ const tech = {
     {
         name: "residual dipolar coupling",
         descriptionFunction() {
-            return `clicking <strong class='color-cancel'>cancel</strong> spawns ${powerUps.orb.coupling(8)}<br><em>${m.couplingDescription(1)} per ${powerUps.orb.coupling(1)}</em>`
+            return `clicking <strong class='color-cancel'>cancel</strong> spawns ${powerUps.orb.coupling(10)}<br><em>${m.couplingDescription(1)} per ${powerUps.orb.coupling(1)}</em>`
         },
         maxCount: 1,
         count: 0,
@@ -4236,7 +4490,7 @@ const tech = {
     {
         name: "commodities exchange",
         descriptionFunction() {
-            return `clicking <strong class='color-cancel'>cancel</strong> for ${powerUps.orb.field()}, ${powerUps.orb.tech()}, or ${powerUps.orb.gun()}<br>spawns <strong>8-12</strong> ${powerUps.orb.heal()}, ${powerUps.orb.ammo()}, or ${powerUps.orb.research(1)}`
+            return `clicking <strong class='color-cancel'>cancel</strong> for ${powerUps.orb.field()}, ${powerUps.orb.tech()}, or ${powerUps.orb.gun()}<br>spawns <strong>10-14</strong> ${powerUps.orb.heal()}, ${powerUps.orb.ammo()}, or ${powerUps.orb.research(1)}`
         },
         maxCount: 1,
         count: 0,
@@ -4256,7 +4510,9 @@ const tech = {
     {
         name: "options exchange",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Option_(finance)' class="link">options exchange</a>`,
-        description: `clicking <strong class='color-cancel'>cancel</strong> for ${powerUps.orb.field()}, ${powerUps.orb.tech()}, or ${powerUps.orb.gun()}<br>will <strong>randomize</strong> with <strong>3x</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>, once a level`,
+        description: `clicking <strong class='color-cancel'>cancel</strong> for ${powerUps.orb.field()}, ${powerUps.orb.tech()}, or ${powerUps.orb.gun()}<br>
+        <strong>randomizes</strong> and <strong>3x</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>, once a level`,
+        // will <strong>randomize</strong> with <strong>3x</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>, once a level`,
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -4276,7 +4532,7 @@ const tech = {
     },
     {
         name: "futures exchange",
-        description: `clicking <strong class='color-cancel'>cancel</strong> for ${powerUps.orb.field()}, ${powerUps.orb.tech()}, or ${powerUps.orb.gun()}<br>gives <strong>+5%</strong> power up <strong class='color-dup'>duplication</strong> chance`,
+        description: `clicking <strong class='color-cancel'>cancel</strong> for ${powerUps.orb.field()}, ${powerUps.orb.tech()}, or ${powerUps.orb.gun()}<br>gives <strong>+7%</strong> power up <strong class='color-dup'>duplication</strong> chance`,
         maxCount: 1,
         count: 0,
         frequency: 1,
@@ -4296,7 +4552,7 @@ const tech = {
     },
     {
         name: "replication",
-        description: "<strong>+10%</strong> chance to <strong class='color-dup'>duplicate</strong> spawned <strong>power ups</strong><br><strong>+15%</strong> <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>",
+        description: "<strong>+10%</strong> chance to <strong class='color-dup'>duplicate</strong> spawned <strong>power ups</strong><br><strong>+10%</strong> chance for <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>",
         maxCount: 9,
         count: 0,
         frequency: 1,
@@ -4309,7 +4565,7 @@ const tech = {
             tech.duplicateChance += 0.1
             powerUps.setPowerUpMode(); //needed after adjusting duplication chance
             if (!build.isExperimentSelection && !simulation.isTextLogOpen) simulation.circleFlare(0.1);
-            this.refundAmount += tech.addJunkTechToPool(0.15)
+            this.refundAmount += tech.addJunkTechToPool(0.10)
         },
         refundAmount: 0,
         remove() {
@@ -4420,7 +4676,7 @@ const tech = {
         requires: "",
         damage: 1.1,
         effect() {
-            tech.damage *= this.damage
+            m.damageDone *= this.damage
         },
         isRemoveBenefit: true,
         remove() {
@@ -4428,7 +4684,7 @@ const tech = {
                 tech.duplication += 0.11
                 powerUps.setPowerUpMode(); //needed after adjusting duplication chance
                 if (!build.isExperimentSelection && !simulation.isTextLogOpen) simulation.circleFlare(0.11);
-                tech.damage /= this.damage
+                m.damageDone /= this.damage
                 this.frequency = 0
             }
         }
@@ -4447,12 +4703,12 @@ const tech = {
         requires: "",
         damage: 1.1,
         effect() {
-            tech.damage *= this.damage
+            m.damageDone *= this.damage
         },
         isRemoveBenefit: true,
         remove() {
             if (this.count > 0 && m.alive) {
-                tech.damage /= this.damage
+                m.damageDone /= this.damage
                 this.frequency = 0
 
                 requestAnimationFrame(() => {
@@ -4478,12 +4734,12 @@ const tech = {
         requires: "",
         damage: 1.1,
         effect() {
-            tech.damage *= this.damage
+            m.damageDone *= this.damage
         },
         isRemoveBenefit: true,
         remove() {
             if (this.count > 0 && m.alive) {
-                tech.damage /= this.damage
+                m.damageDone /= this.damage
                 requestAnimationFrame(() => { powerUps.spawnDelay("research", 15) });
                 this.frequency = 0
             }
@@ -4505,12 +4761,12 @@ const tech = {
         requires: "",
         damage: 0.1,
         effect() {
-            tech.damage *= 1 + this.damage
+            m.damageDone *= 1 + this.damage
         },
         isRemoveBenefit: true,
         remove() {
             if (this.count > 0 && m.alive) {
-                tech.damage /= 1 + this.damage
+                m.damageDone /= 1 + this.damage
                 if (Math.random() < 0.5) {
                     this.damage *= 2
                     requestAnimationFrame(() => { tech.giveTech("martingale") });
@@ -4536,12 +4792,12 @@ const tech = {
         damage: 1.1,
         ammo: 50,
         effect() {
-            tech.damage *= this.damage
+            m.damageDone *= this.damage
         },
         isRemoveBenefit: true,
         remove() {
             if (this.count > 0 && m.alive) {
-                tech.damage /= this.damage
+                m.damageDone /= this.damage
                 this.frequency = 0
                 requestAnimationFrame(() => { powerUps.spawnDelay("ammo", this.ammo) });
             }
@@ -4551,7 +4807,7 @@ const tech = {
         name: "deprecated",
         scale: 0.08,
         descriptionFunction() {
-            return `after <span class='color-remove'>removing</span> this gain<br><strong>${1 + this.scale}x</strong> <strong class='color-d'>damage</strong> per <span class='color-remove'>removed</span> ${powerUps.orb.tech()}<em style ="float: right;">(${(1 + this.scale * ((this.frequency === 0 ? 0 : 1) + tech.removeCount)).toFixed(2)}x)</em>`
+            return `after <span class='color-remove'>removing</span> this gain <strong>${1 + this.scale}x</strong> <strong class='color-d'>damage</strong><br>per ${powerUps.orb.tech()} <span class='color-remove'>removed</span> this game<em style ="float: right;">(${(1 + this.scale * ((this.frequency === 0 ? 0 : 1) + tech.removeCount)).toFixed(2)}x)</em>`
         },
         maxCount: 1,
         count: 0,
@@ -4568,7 +4824,7 @@ const tech = {
         isRemoveBenefit: true,
         remove() {
             if (this.count > 0 && m.alive) {
-                tech.damage *= 1 + this.scale * (1 + tech.removeCount)
+                m.damageDone *= 1 + this.scale * (1 + tech.removeCount)
                 this.frequency = 0
             }
         }
@@ -4604,9 +4860,9 @@ const tech = {
         frequency: 1,
         frequencyDefault: 1,
         allowed() {
-            return !tech.isSuperDeterminism && !tech.isNoDraftPause
+            return !tech.isSuperDeterminism
         },
-        requires: "not superdeterminism, eternalism",
+        requires: "not superdeterminism",
         effect() {
             tech.isPauseEjectTech = true;
         },
@@ -4629,25 +4885,6 @@ const tech = {
         },
         requires: "more than 6 tech",
         effect() {
-            // //remove active bullets  //to get rid of bots
-            // for (let i = 0; i < bullet.length; ++i) Matter.Composite.remove(engine.world, bullet[i]);
-            // bullet = [];
-            // let count = 1 //count tech
-            // for (let i = 0, len = tech.tech.length; i < len; i++) { // spawn new tech power ups
-            //     if (!tech.tech[i].isInstant) count += tech.tech[i].count
-            // }
-            // if (tech.isDeterminism) count -= 4 //remove the bonus tech
-            // if (tech.isSuperDeterminism) count -= 4 //remove the bonus tech
-            // const removeCount = tech.removeCount
-            // tech.setupAllTech(); // remove all tech
-            // tech.removeCount = removeCount
-            // if (simulation.isCheating) tech.setCheating();
-            // lore.techCount = 0;
-            // // tech.addLoreTechToPool();
-            // for (let i = 0; i < count; i++) powerUps.spawn(m.pos.x + 100 * (Math.random() - 0.5), m.pos.y + 100 * (Math.random() - 0.5), "tech"); // spawn new tech power ups
-            // //have state is checked in m.death()
-
-
             let count = 0 //count tech
             for (let i = 0, len = tech.tech.length; i < len; i++) { // spawn new tech power ups
                 if (!tech.tech[i].isInstant && tech.tech[i].count) {
@@ -4684,15 +4921,15 @@ const tech = {
             for (let i = 0, len = tech.tech.length; i < len; i++) { // spawn new tech power ups
                 if (tech.tech[i].count && !tech.tech[i].isInstant) pool.push(i)
             }
-            pool = shuffle(pool); //shuffles order of maps
+            pool.sort(() => Math.random() - 0.5);
             let removeCount = 0
             for (let i = 0, len = pool.length * 0.5; i < len; i++) removeCount += tech.removeTech(pool[i])
             this.damage = this.damagePerRemoved * removeCount
-            tech.damage *= (1 + this.damage)
+            m.damageDone *= (1 + this.damage)
             simulation.inGameConsole(`<span class='color-var'>tech</span>.damage *= ${(1 + this.damage).toFixed(2)} <em>//from Occam's razor</em>`);
         },
         remove() {
-            if (this.count && m.alive) tech.damage /= (1 + this.damage)
+            if (this.count && m.alive) m.damageDone /= (1 + this.damage)
         }
     },
     {
@@ -4785,7 +5022,9 @@ const tech = {
     },
     {
         name: "ceramics",
-        description: `<strong>needles</strong> and <strong>harpoons</strong> pierce <strong>shields</strong><br>directly <strong class='color-d'>damaging</strong> shielded mobs`,
+        descriptionFunction() {
+            return `<strong>needles</strong> and ${b.guns[9].harpoonName()} pierce <strong>shields</strong><br>directly <strong class='color-d'>damaging</strong> shielded mobs`
+        },
         isGunTech: true,
         maxCount: 1,
         count: 0,
@@ -4828,18 +5067,19 @@ const tech = {
         },
         ammoScale: 3,
         remove() {
-            if (tech.isNeedles) {
+            if (this.count > 0) {
                 tech.isNeedles = false
                 for (i = 0, len = b.guns.length; i < len; i++) { //find which gun 
                     if (b.guns[i].name === "nail gun") {
-                        b.guns[i].chooseFireMethod()
                         b.guns[i].ammo = Math.ceil(b.guns[i].ammo * this.ammoScale);
-                        b.guns[i].ammoPack = b.guns[i].ammo * this.ammoScale;
+                        b.guns[i].ammoPack = b.guns[i].ammoPack * this.ammoScale;
+                        b.guns[i].chooseFireMethod()
                         simulation.updateGunHUD();
                         break
                     }
                 }
             }
+            tech.isNeedles = false
         }
     },
     {
@@ -5082,7 +5322,7 @@ const tech = {
     {
         name: "spin-statistics",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Spin%E2%80%93statistics_theorem' class="link">spin-statistics</a>`,
-        description: `after firing the <strong>shotgun</strong> you are <strong class="color-invulnerable">invulnerable</strong><br>shotgun has <strong>0.7x</strong> bullets per ${powerUps.orb.ammo(1)}`,
+        description: `after firing the <strong>shotgun</strong> you are <strong class="color-invulnerable">invulnerable</strong><br>shotgun has <strong>0.6x</strong> bullets per ${powerUps.orb.ammo(1)}`,
         isGunTech: true,
         maxCount: 1,
         count: 0,
@@ -5098,8 +5338,8 @@ const tech = {
             //cut current ammo by 1/2
             for (i = 0, len = b.guns.length; i < len; i++) { //find which gun 
                 if (b.guns[i].name === "shotgun") {
-                    b.guns[i].ammo = Math.ceil(b.guns[i].ammo * 0.7);
-                    b.guns[i].ammoPack *= 0.7
+                    b.guns[i].ammo = Math.ceil(b.guns[i].ammo * 0.6);
+                    b.guns[i].ammoPack *= 0.6
                     break;
                 }
             }
@@ -5110,8 +5350,8 @@ const tech = {
             if (this.count > 0) {
                 for (i = 0, len = b.guns.length; i < len; i++) { //find which gun 
                     if (b.guns[i].name === "shotgun") {
-                        b.guns[i].ammoPack /= 0.7
-                        b.guns[i].ammo = Math.ceil(b.guns[i].ammo / 0.7);
+                        b.guns[i].ammoPack /= 0.6
+                        b.guns[i].ammo = Math.ceil(b.guns[i].ammo / 0.6);
                         simulation.updateGunHUD();
                         break;
                     }
@@ -5418,7 +5658,9 @@ const tech = {
     },
     {
         name: "polyurethane foam",
-        description: "<strong>super balls</strong> and <strong>harpoons</strong> colliding with <strong>mobs</strong><br>catalyzes a reaction that yields <strong>foam</strong> bubbles",
+        descriptionFunction() {
+            return `<strong>super balls</strong> and ${b.guns[9].harpoonName()} colliding with <strong>mobs</strong><br>catalyzes a reaction that yields <strong>foam</strong> bubbles`
+        },
         isGunTech: true,
         maxCount: 1,
         count: 0,
@@ -5483,7 +5725,7 @@ const tech = {
     },
     {
         name: "super ball",
-        description: "fire just <strong>1 large</strong> super <strong>ball</strong><br>that <strong>stuns</strong> mobs for <strong>2</strong> second",
+        description: "fire just <strong>1 large</strong> super <strong>ball</strong><br>that <strong>stuns</strong> mobs for <strong>2</strong> seconds",
         isGunTech: true,
         maxCount: 1,
         count: 0,
@@ -5510,7 +5752,7 @@ const tech = {
     },
     {
         name: "phase velocity",
-        description: "wave particles <strong>propagate</strong> faster as <strong>solids</strong><br><strong>1.4x</strong> wave <strong class='color-d'>damage</strong>",
+        description: "wave particles <strong>propagate</strong> faster as <strong>solids</strong><br><strong>1.5x</strong> wave <strong class='color-d'>damage</strong>",
         isGunTech: true,
         maxCount: 1,
         count: 0,
@@ -5562,11 +5804,11 @@ const tech = {
         requires: "wave",
         effect() {
             tech.waveBeamSpeed *= 0.75;
-            tech.waveBeamDamage += 0.3 * 0.4 //this sets base  wave damage
+            tech.waveBeamDamage *= 1.4 //this sets base  wave damage
         },
         remove() {
             tech.waveBeamSpeed = 11;
-            tech.waveBeamDamage = 0.3 //this sets base  wave damage
+            tech.waveBeamDamage = 0.4 //this sets base  wave damage
         }
     },
     {
@@ -5715,7 +5957,7 @@ const tech = {
     {
         name: "missile-bot",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Robot' class="link">missile-bot</a>`,
-        description: `use ${powerUps.orb.research(1)}to trade your <strong>missile</strong> ${powerUps.orb.gun()}<br>for a <strong class='color-bot'>bot</strong> that fires <strong>missiles</strong>`,
+        description: `trade your <strong>missile</strong> ${powerUps.orb.gun()}<span style ="float: right;"><span class="underline">expend</span> ${powerUps.orb.research(1)}</span><br>for a <strong class='color-bot'>bot</strong> that fires <strong>missiles</strong>`,
         // isGunTech: true,
         isRemoveGun: true,
         maxCount: 1,
@@ -5733,9 +5975,7 @@ const tech = {
             tech.missileBotCount++;
             b.missileBot();
             if (tech.haveGunCheck("missiles", false)) b.removeGun("missiles") //remove your last gun
-            for (let i = 0; i < 1; i++) {
-                if (powerUps.research.count > 0) powerUps.research.changeRerolls(-1)
-            }
+            powerUps.research.expend(1)
         },
         remove() {
             // if (this.count) {
@@ -5748,17 +5988,55 @@ const tech = {
         }
     },
     {
-        name: "cruise missile",
-        description: "<strong>2x</strong> <strong>missile</strong> <strong class='color-e'>explosive</strong> <strong class='color-d'>damage</strong>, radius<br><strong>0.5x</strong> <strong>missile</strong> speed",
+        name: "liquid-propellant",
+        description: "after <strong>1</strong> second, <strong>missiles</strong> rapidly accelerate<br><strong>missiles</strong> <strong class='color-e'>explode</strong> again at <strong>0.8x</strong> radius and <strong class='color-d'>damage</strong>",
         isGunTech: true,
         maxCount: 1,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
         allowed() {
-            return (tech.haveGunCheck("missiles") && tech.missileFireCD === 45) || (m.fieldMode === 4 && simulation.molecularMode === 1) || tech.missileBotCount
+            return (tech.haveGunCheck("missiles") || (m.fieldMode === 4 && simulation.molecularMode === 1) || tech.missileBotCount) && !tech.isMissileBig
         },
-        requires: "missiles, not launch system",
+        requires: "missiles, not cruise missile",
+        effect() {
+            tech.isMissileFast = true
+        },
+        remove() {
+            tech.isMissileFast = false
+        }
+    },
+    {
+        name: "hypergolic propellant",
+        description: `the 2nd <strong class='color-e'>explosion</strong> from <strong>liquid-propellant</strong><br>is increased from <strong style="text-decoration: line-through;">0.8x</strong> to <strong>1.7x</strong> radius and <strong class='color-d'>damage</strong>`,
+        isGunTech: true,
+        maxCount: 1,
+        count: 0,
+        frequency: 2,
+        frequencyDefault: 2,
+        allowed() {
+            return (tech.haveGunCheck("missiles") || (m.fieldMode === 4 && simulation.molecularMode === 1) || tech.missileBotCount) && tech.isMissileFast
+        },
+        requires: "missiles, liquid-propellant",
+        effect() {
+            tech.isMissile2ndExplode = true
+        },
+        remove() {
+            tech.isMissile2ndExplode = false
+        }
+    },
+    {
+        name: "cruise missile",
+        description: "<strong>1.75x</strong> <strong>missile</strong> <strong class='color-e'>explosive</strong> <strong class='color-d'>damage</strong>, radius<br><strong>0.5x</strong> <strong>missile</strong> speed",
+        isGunTech: true,
+        maxCount: 1,
+        count: 0,
+        frequency: 2,
+        frequencyDefault: 2,
+        allowed() {
+            return (tech.haveGunCheck("missiles") || (m.fieldMode === 4 && simulation.molecularMode === 1) || tech.missileBotCount) && !tech.isMissileFast
+        },
+        requires: "missiles, not liquid-propellant",
         effect() {
             tech.isMissileBig = true
         },
@@ -5787,17 +6065,17 @@ const tech = {
     },
     {
         name: "launch system",
-        description: `<strong>5x</strong> <strong>missile</strong> <em>fire rate</em><br><strong>1.2x</strong> missile <strong class='color-ammo'>ammo</strong> per ${powerUps.orb.ammo(1)}`,
+        description: `<strong>5x</strong> <strong>missile</strong> <em>fire rate</em><br><strong>1.3x</strong> missile <strong class='color-ammo'>ammo</strong> per ${powerUps.orb.ammo(1)}`,
         isGunTech: true,
         maxCount: 1,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
         allowed() {
-            return tech.haveGunCheck("missiles") && !tech.isMissileBig
+            return tech.haveGunCheck("missiles")
         },
-        requires: "missiles, not cruise missile",
-        ammoBonus: 1.2,
+        requires: "missiles",
+        ammoBonus: 1.3,
         effect() {
             tech.missileFireCD = 10
             for (i = 0, len = b.guns.length; i < len; i++) { //find which gun 
@@ -5811,6 +6089,44 @@ const tech = {
         },
         remove() {
             tech.missileFireCD = 45;
+            if (this.count > 0) {
+                for (i = 0, len = b.guns.length; i < len; i++) { //find which gun 
+                    if (b.guns[i].name === "missiles") {
+                        b.guns[i].ammoPack /= this.ammoBonus;
+                        b.guns[i].ammo = Math.ceil(b.guns[i].ammo / this.ammoBonus);
+                        simulation.updateGunHUD();
+                        break
+                    }
+                }
+            }
+        }
+    },
+    {
+        name: "missile guidance",
+        description: `while <strong>crouching</strong> your <strong>missiles</strong> target your mouse<br><strong>1.5x</strong> missile <strong class='color-ammo'>ammo</strong> per ${powerUps.orb.ammo(1)}`,
+        isGunTech: true,
+        maxCount: 1,
+        count: 0,
+        frequency: 2,
+        frequencyDefault: 2,
+        allowed() {
+            return tech.haveGunCheck("missiles")
+        },
+        requires: "missiles",
+        ammoBonus: 1.5,
+        effect() {
+            tech.isTargeting = true
+            for (i = 0, len = b.guns.length; i < len; i++) { //find which gun 
+                if (b.guns[i].name === "missiles") {
+                    b.guns[i].ammoPack *= this.ammoBonus;
+                    b.guns[i].ammo = Math.ceil(b.guns[i].ammo * this.ammoBonus);
+                    simulation.updateGunHUD();
+                    break
+                }
+            }
+        },
+        remove() {
+            tech.isTargeting = false;
             if (this.count > 0) {
                 for (i = 0, len = b.guns.length; i < len; i++) { //find which gun 
                     if (b.guns[i].name === "missiles") {
@@ -5940,7 +6256,7 @@ const tech = {
     },
     {
         name: "shaped charge",
-        description: `use ${powerUps.orb.research(2)} to dynamically <strong>reduce</strong><br>all <strong class='color-e'>explosions</strong> to prevent <strong class='color-h'>health</strong> loss`,
+        description: `prevent <strong class='color-h'>health</strong> loss by<span style ="float: right;"><span class="underline">expend</span> ${powerUps.orb.research(2)}</span><br>dynamically <strong>reducing</strong> your <strong class='color-e'>explosions</strong>`,
         isGunTech: true,
         maxCount: 1,
         count: 0,
@@ -5952,9 +6268,7 @@ const tech = {
         requires: "an explosive damage source, not rocket propelled grenade",
         effect() {
             tech.isSmartRadius = true;
-            for (let i = 0; i < 2; i++) {
-                if (powerUps.research.count > 0) powerUps.research.changeRerolls(-1)
-            }
+            powerUps.research.expend(2)
         },
         remove() {
             tech.isSmartRadius = false;
@@ -5989,9 +6303,9 @@ const tech = {
         frequency: 2,
         frequencyDefault: 2,
         allowed() {
-            return tech.haveGunCheck("grenades") && !tech.isVacuumBomb && !tech.isSmartRadius
+            return tech.haveGunCheck("grenades") && !tech.isVacuumBomb && !tech.isSmartRadius && !tech.isEnergyHealth
         },
-        requires: "grenades, not vacuum bomb, shaped charges",
+        requires: "grenades, not vacuum bomb, shaped charges, mass-energy",
         effect() {
             tech.isImmuneExplosion = true;
             tech.isRPG = true;
@@ -6022,6 +6336,25 @@ const tech = {
         remove() {
             tech.isVacuumBomb = false;
             b.setGrenadeMode()
+        }
+    },
+    {
+        name: "precision bombing",
+        description: "if your <strong>grenades</strong> are directly <strong>above</strong> a mob<br>the <strong>grenade</strong> will <strong>fall</strong> on them",
+        isGunTech: true,
+        maxCount: 1,
+        count: 0,
+        frequency: 2,
+        frequencyDefault: 2,
+        allowed() {
+            return tech.haveGunCheck("grenades")
+        },
+        requires: "grenades",
+        effect() {
+            tech.isPrecision = true;
+        },
+        remove() {
+            tech.isPrecision = false;
         }
     },
     {
@@ -6181,14 +6514,14 @@ const tech = {
     {
         name: "water shielding",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Radiation_protection#Radiation_shielding' class="link">water shielding</a>`,
-        description: "reduce <strong class='color-p'>radioactive</strong> effects on you by <strong>0.8x</strong><br><em>neutron bomb, drones, explosions, slime</em>",
+        description: "reduce <strong class='color-p'>radioactive</strong> effects on you by <strong>0.2x</strong><br><em>neutron bomb, drones, explosions, slime</em>",
         isGunTech: true,
         maxCount: 1,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
         allowed() {
-            return tech.isNeutronBomb || tech.isDroneRadioactive || tech.isExplodeRadio
+            return (tech.isNeutronBomb && tech.haveGunCheck("grenades")) || (tech.isDroneRadioactive && tech.haveGunCheck("drones")) || tech.isExplodeRadio
         },
         requires: "neutron bomb, irradiated drones, iridium-192",
         effect() {
@@ -6200,7 +6533,7 @@ const tech = {
     },
     {
         name: "ricochet",
-        description: "after <strong>nails</strong> hit a mob they <strong>rebound</strong> towards<br>a new mob with <strong>2.8x</strong> <strong class='color-d'>damage</strong> per bounce",
+        description: "after <strong>nails</strong> or <strong>super balls</strong> hit mobs they<br><strong>rebound</strong> towards a mob with <strong>2x</strong> <strong class='color-d'>damage</strong>",
         isGunTech: true,
         maxCount: 1,
         count: 0,
@@ -6208,10 +6541,10 @@ const tech = {
         frequencyDefault: 2,
         allowed() {
             // return (tech.haveGunCheck("nail gun") && !tech.isRivets && !tech.isNeedles) || (tech.haveGunCheck("mines"))
-            return tech.isMineDrop || tech.isNailBotUpgrade || tech.hookNails || tech.fragments || tech.nailsDeathMob || (tech.haveGunCheck("mine") && !(tech.isLaserMine || tech.isFoamMine || tech.isSuperMine)) || (tech.haveGunCheck("nail gun") && !tech.isRivets && !tech.isNeedles) || (tech.haveGunCheck("shotgun") && (tech.isNeedles || tech.isNailShot) && !tech.isRivets && !tech.isNeedles)
+            return tech.isMineDrop || tech.isNailBotUpgrade || tech.hookNails || tech.fragments || tech.nailsDeathMob || (tech.haveGunCheck("mine") && !(tech.isLaserMine || tech.isFoamMine)) || (tech.haveGunCheck("nail gun") && !tech.isRivets && !tech.isNeedles) || (tech.haveGunCheck("shotgun") && (tech.isNeedles || tech.isNailShot) && !tech.isRivets && !tech.isNeedles) || (tech.haveGunCheck("super balls") && !tech.isIncendiary)
         },
         //
-        requires: "nail gun, not rotary cannon, rivets, or needles",
+        requires: "super balls, nail gun, not rotary cannon, rivets, or needles",
         effect() {
             tech.isRicochet = true
         },
@@ -6221,7 +6554,7 @@ const tech = {
     },
     {
         name: "booby trap",
-        description: "<strong>50%</strong> chance to drop a <strong>mine</strong> from <strong>power ups</strong><br><strong>+15%</strong> <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>",
+        description: "<strong>50%</strong> chance to drop a <strong>mine</strong> from <strong>power ups</strong><br><strong>+15%</strong> chance for <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>",
         isGunTech: true,
         maxCount: 1,
         count: 0,
@@ -6275,7 +6608,7 @@ const tech = {
         frequency: 2,
         frequencyDefault: 2,
         allowed() {
-            return tech.haveGunCheck("mine") && !tech.isFoamMine && !tech.isRicochet && !tech.isNailRadiation && !tech.isNailCrit
+            return tech.haveGunCheck("mine") && !tech.isFoamMine && !tech.isNailRadiation && !tech.isNailCrit
         },
         requires: "mines, not elephants toothpaste, ricochet, irradiated nails, supercritical fission",
         effect() {
@@ -6308,7 +6641,7 @@ const tech = {
     {
         name: "sentry",
         descriptionFunction() {
-            return `<strong>mines</strong> fire one ${b.guns[10].nameString()} at a time<br><strong>mines</strong> fire <strong>1.5x</strong> more ${b.guns[10].nameString('s')}`
+            return `<strong>mines</strong> fire one ${b.guns[10].nameString()} at a time<br><strong>mines</strong> fire <strong>2x</strong> more ${b.guns[10].nameString('s')}`
         },
         isGunTech: true,
         maxCount: 1,
@@ -6329,7 +6662,7 @@ const tech = {
     {
         name: "extended magazine",
         descriptionFunction() {
-            return `sentry <strong>mines</strong> fire <strong>1.5x</strong> more ${b.guns[10].nameString('s')}`
+            return `sentry <strong>mines</strong> fire <strong>2x</strong> more ${b.guns[10].nameString('s')}`
         },
         isGunTech: true,
         maxCount: 9,
@@ -6341,10 +6674,10 @@ const tech = {
         },
         requires: "mines, sentry",
         effect() {
-            tech.sentryAmmo += 17;
+            tech.sentryAmmo += 22;
         },
         remove() {
-            tech.sentryAmmo = 33;
+            tech.sentryAmmo = 44;
         }
     },
     {
@@ -6572,8 +6905,32 @@ const tech = {
         }
     },
     {
+        name: "exponential growth",
+        descriptionFunction() {
+            return `every second <strong>drones</strong> gain<span style ="float: right;"><span class="underline">expend</span> ${powerUps.orb.research(this.cost)}</span><br><strong>1.03x</strong> <strong>size</strong> and <strong class='color-d'>damage</strong>`
+        },
+        cost: 2,
+        isGunTech: true,
+        maxCount: 1,
+        count: 0,
+        frequency: 2,
+        frequencyDefault: 2,
+        allowed() {
+            return !tech.isForeverDrones && (tech.haveGunCheck("drones") || (m.fieldMode === 4 && simulation.molecularMode === 3)) && (build.isExperimentSelection || powerUps.research.count > this.cost - 1)
+        },
+        requires: "drones, not fault tolerance",
+        effect() {
+            tech.isExponential = true
+            powerUps.research.expend(this.cost)
+        },
+        remove() {
+            if (this.count > 0) powerUps.research.changeRerolls(this.cost)
+            tech.isExponential = false
+        }
+    },
+    {
         name: "fault tolerance",
-        description: `use ${powerUps.orb.research(2)}to trade your <strong>drone</strong> ${powerUps.orb.gun()}<br>for <strong>5</strong> <strong>drones</strong> that last <strong>forever</strong>`,
+        description: `trade your <strong>drone</strong> ${powerUps.orb.gun()}<span style ="float: right;"><span class="underline">expend</span> ${powerUps.orb.research(2)}</span><br>for <strong>5</strong> <strong>drones</strong> that last <strong>forever</strong>`,
         // isGunTech: true,
         isRemoveGun: true,
         maxCount: 1,
@@ -6582,9 +6939,9 @@ const tech = {
         frequencyDefault: 1,
         isInstant: true,
         allowed() {
-            return tech.haveGunCheck("drones", false) && !tech.isDroneRespawn && tech.bulletsLastLonger === 1 && !tech.isDronesTravel && (build.isExperimentSelection || powerUps.research.count > 1)
+            return tech.haveGunCheck("drones", false) && !tech.isDroneRespawn && !tech.isExponential && tech.bulletsLastLonger === 1 && !tech.isDronesTravel && (build.isExperimentSelection || powerUps.research.count > 1)
         },
-        requires: "drones, not drone repair, anti-shear topology, autonomous navigation",
+        requires: "drones, not exponential growth, drone repair, anti-shear topology, autonomous navigation, ",
         effect() {
             const num = 5
             tech.isForeverDrones += num
@@ -6607,9 +6964,7 @@ const tech = {
                     bullet[bullet.length - 1].endCycle = Infinity
                 }
             }
-            for (let i = 0; i < 2; i++) {
-                if (powerUps.research.count > 0) powerUps.research.changeRerolls(-1)
-            }
+            powerUps.research.expend(2)
         },
         remove() {
             tech.isForeverDrones = 0
@@ -6618,8 +6973,28 @@ const tech = {
         }
     },
     {
-        name: "reduced tolerances",
-        link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Engineering_tolerance' class="link">reduced tolerances</a>`,
+        name: "ablative drones",
+        descriptionFunction() {
+            return `after losing ${tech.isEnergyHealth ? "<strong class='color-f'>energy</strong>" : "<strong class='color-h'>health</strong>"} there is a chance<br>to use your broken parts to <strong class='color-print'>print</strong> <strong>drones</strong>`
+        },
+        isGunTech: true,
+        maxCount: 1,
+        count: 0,
+        frequency: 1,
+        frequencyDefault: 1,
+        allowed() {
+            return (tech.haveGunCheck("drones") && !tech.isForeverDrones && !tech.isDroneRadioactive) || (m.fieldMode === 4 && simulation.molecularMode === 3)
+        },
+        requires: "drones, not fault tolerance, irradiated drones",
+        effect() {
+            tech.isDroneOnDamage = true;
+        },
+        remove() {
+            tech.isDroneOnDamage = false;
+        }
+    },
+    {
+        name: "standardization",
         description: `<strong>2x</strong> <strong>drones</strong> per ${powerUps.orb.ammo()} and <strong class='color-f'>energy</strong><br><strong>0.6x</strong> drone <strong>duration</strong>`,
         isGunTech: true,
         maxCount: 1,
@@ -6649,7 +7024,7 @@ const tech = {
     },
     {
         name: "delivery drone",
-        description: "if a <strong>drone</strong> picks up a <strong>power up</strong>,<br>it becomes <strong>larger</strong>, <strong>faster</strong>, and more <strong>durable</strong>",
+        description: "after a <strong>drone</strong> picks up a <strong>power up</strong>,<br>it gains <strong>2.25x</strong> <strong>size</strong> and <strong>50</strong> seconds of <strong>durability</strong>",
         isGunTech: true,
         maxCount: 1,
         count: 0,
@@ -6667,8 +7042,8 @@ const tech = {
         }
     },
     {
-        name: "von Neumann probe",  //"drone repair",
-        description: "after a <strong>drone</strong> expires it will use <strong>-4</strong> <strong class='color-f'>energy</strong><br>and a nearby <strong class='color-block'>block</strong> to <strong>replicate</strong> itself",
+        name: "von Neumann probe",  //"drone repair", 
+        description: "after a <strong>drone</strong> expires it will use <strong>-4</strong> <strong class='color-f'>energy</strong><br>and a nearby <strong class='color-block'>block</strong> to <strong class='color-print'>reprint</strong> itself",
         isGunTech: true,
         maxCount: 1,
         count: 0,
@@ -6713,7 +7088,7 @@ const tech = {
         frequency: 2,
         frequencyDefault: 2,
         allowed() {
-            return tech.isDroneTeleport
+            return tech.isDroneTeleport && (tech.haveGunCheck("drones") || tech.isForeverDrones || (m.fieldMode === 4 && simulation.molecularMode === 3))
         },
         requires: "drones, brushless motor",
         effect() {
@@ -6733,9 +7108,9 @@ const tech = {
         frequency: 2,
         frequencyDefault: 2,
         allowed() {
-            return tech.droneCycleReduction === 1 && !tech.isIncendiary && !tech.isDroneTeleport && (tech.haveGunCheck("drones") || tech.isForeverDrones || (m.fieldMode === 4 && simulation.molecularMode === 3))
+            return tech.droneCycleReduction === 1 && !tech.isDroneOnDamage && !tech.isIncendiary && !tech.isDroneTeleport && (tech.haveGunCheck("drones") || tech.isForeverDrones || (m.fieldMode === 4 && simulation.molecularMode === 3))
         },
-        requires: "drones, not reduced tolerances, incendiary, torque bursts",
+        requires: "drones, not reduced tolerances, incendiary, torque bursts, ablative drones",
         effect() {
             tech.isDroneRadioactive = true
             for (i = 0, len = b.guns.length; i < len; i++) { //find which gun 
@@ -6768,7 +7143,7 @@ const tech = {
         frequency: 2,
         frequencyDefault: 2,
         allowed() {
-            return tech.isDroneRadioactive
+            return tech.isDroneRadioactive && (tech.haveGunCheck("drones") || tech.isForeverDrones || (m.fieldMode === 4 && simulation.molecularMode === 3))
         },
         requires: "drones, irradiated drones",
         effect() {
@@ -6788,7 +7163,7 @@ const tech = {
         frequency: 2,
         frequencyDefault: 2,
         allowed() {
-            return tech.isDroneRadioactive
+            return tech.isDroneRadioactive && (tech.haveGunCheck("drones") || tech.isForeverDrones || (m.fieldMode === 4 && simulation.molecularMode === 3))
         },
         requires: "drones, irradiated drones",
         effect() {
@@ -6838,7 +7213,7 @@ const tech = {
     },
     {
         name: "surfactant",
-        description: `use ${powerUps.orb.research(2)}to trade your <strong>foam</strong> ${powerUps.orb.gun()}<br>for <strong>2</strong> <strong class='color-bot'>foam-bots</strong> and <strong class='color-bot'>foam-bot upgrade</strong>`,
+        description: `trade your <strong>foam</strong> ${powerUps.orb.gun()}<span style ="float: right;"><span class="underline">expend</span> ${powerUps.orb.research(2)}</span><br>for <strong>2</strong> <strong class='color-bot'>foam-bots</strong> and <strong class='color-bot'>foam-bot upgrade</strong>`,
         // isGunTech: true,
         isRemoveGun: true,
         maxCount: 1,
@@ -6861,9 +7236,7 @@ const tech = {
             }
             simulation.inGameConsole(`tech.isFoamBotUpgrade = true`)
             if (tech.haveGunCheck("foam", false)) b.removeGun("foam")
-            for (let i = 0; i < 2; i++) {
-                if (powerUps.research.count > 0) powerUps.research.changeRerolls(-1)
-            }
+            powerUps.research.expend(2)
         },
         remove() {
             // if (this.count) {
@@ -7004,7 +7377,6 @@ const tech = {
     },
     {
         name: "capacitor bank",
-        // description: "<strong>charge</strong> effects build up almost <strong>instantly</strong><br><em style = 'font-size:97%;'>throwing <strong class='color-block'>blocks</strong>, foam, railgun, pulse, tokamak</em>",
         descriptionFunction() {
             return `<strong>charge</strong> effects build up almost <strong>instantly</strong><br><em style = 'font-size:93%;'><strong class='color-block'>blocks</strong>, ${tech.haveGunCheck("foam", false) ? "<strong>foam</strong>" : "foam"}, ${tech.isPlasmaBall ? "<strong>plasma ball</strong>" : "plasma ball"}, ${tech.isRailGun ? "<strong>railgun</strong>" : "railgun"}, ${tech.isPulseLaser ? "<strong>pulse</strong>" : "pulse"}, ${tech.isTokamak ? "<strong>tokamak</strong>" : "tokamak"}</em>`
         },
@@ -7027,7 +7399,7 @@ const tech = {
     {
         name: "Bitter electromagnet",
         descriptionFunction() {
-            return `<strong>0.66x</strong> <strong>railgun</strong> charge rate<br><strong>2x</strong> <strong>harpoon</strong> density and <strong class='color-d'>damage</strong>`
+            return `<strong>0.66x</strong> <strong>railgun</strong> charge rate<br><strong>2x</strong> ${b.guns[9].harpoonName()} density and <strong class='color-d'>damage</strong>`
         },
         isGunTech: true,
         maxCount: 3,
@@ -7049,17 +7421,18 @@ const tech = {
     },
     {
         name: "railgun",
-        description: `<strong>hold</strong> and <strong>release</strong> fire to launch <strong>harpoons</strong><br>but, <strong>harpoons</strong> can't <strong>retract</strong>`,
-        // description: `<strong>+900%</strong> <strong>harpoon</strong> <strong class='color-ammo'>ammo</strong>, but it can't <strong>retract</strong><br><strong>+50%</strong> <strong>harpoon</strong> density and <strong class='color-d'>damage</strong>`,
+        descriptionFunction() {
+            return `<strong>hold</strong> and <strong>release</strong> fire to launch ${b.guns[9].harpoonName()}<br>but, ${b.guns[9].harpoonName()} can't <strong>retract</strong>`
+        },
         isGunTech: true,
         maxCount: 1,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
         allowed() {
-            return tech.haveGunCheck("harpoon") && !tech.isFilament && !tech.isHarpoonPowerUp && !tech.isBoostReplaceAmmo
+            return tech.haveGunCheck("harpoon") && !tech.isFilament && !tech.isHarpoonPowerUp && !tech.isBoostReplaceAmmo && !tech.isBreakHarpoon
         },
-        requires: "harpoon, not UHMWPE, induction furnace, quasiparticles",
+        requires: "harpoon, not UHMWPE, induction furnace, quasiparticles, wear",
         ammoBonus: 9,
         effect() {
             tech.isRailGun = true;
@@ -7082,7 +7455,9 @@ const tech = {
     },
     {
         name: "alternator",
-        description: "<strong>0.05x</strong> <strong>harpoon</strong> <strong class='color-f'>energy</strong> cost",
+        descriptionFunction() {
+            return `<strong>0.05x</strong> ${b.guns[9].harpoonName()} <strong class='color-f'>energy</strong> cost`
+        },
         isGunTech: true,
         maxCount: 1,
         count: 0,
@@ -7101,7 +7476,9 @@ const tech = {
     },
     {
         name: "autonomous defense",
-        description: "if you <strong>collide</strong> with a <strong>mob</strong><br>fire <strong>harpoons</strong> at nearby <strong>mobs</strong>",
+        descriptionFunction() {
+            return `if you <strong>collide</strong> with a <strong>mob</strong><br>fire ${b.guns[9].harpoonName()} at nearby <strong>mobs</strong>`
+        },
         isGunTech: true,
         maxCount: 1,
         count: 0,
@@ -7119,9 +7496,130 @@ const tech = {
         }
     },
     {
+        name: "rebar",
+        descriptionFunction() {
+            return `use ${this.removeAmmo} <strong class='color-ammo'>ammo</strong> to forge your <strong>harpoon</strong> into <strong>rebar</strong><br><strong>2x</strong> <strong class='color-d'>damage</strong> and mass`
+        },
+        isGunTech: true,
+        maxCount: 1,
+        count: 0,
+        frequency: 3,
+        frequencyDefault: 3,
+        removeAmmo: 30,
+        allowed() {
+            return tech.haveGunCheck("harpoon") && (build.isExperimentSelection || b.guns[9].ammo >= this.removeAmmo)
+        },
+        requires: "harpoon",
+        effect() {
+            tech.isRebar = true;
+            for (i = 0, len = b.guns.length; i < len; i++) { //find which gun 
+                if (b.guns[i].name === "harpoon") {
+                    b.guns[i].ammo -= this.removeAmmo
+                    if (b.guns[i].ammo < 0) b.guns[i].ammo = 0
+                    simulation.updateGunHUD();
+                    break
+                }
+            }
+        },
+        remove() {
+            tech.isRebar = false;
+            if (this.count) {
+                for (i = 0, len = b.guns.length; i < len; i++) { //find which gun 
+                    if (b.guns[i].name === "harpoon") {
+                        b.guns[i].ammo += this.removeAmmo
+                        simulation.updateGunHUD();
+                        break
+                    }
+                }
+            }
+        }
+    },
+    {
+        name: "maul",
+        descriptionFunction() {
+            return `use ${this.removeAmmo} <strong class='color-ammo'>ammo</strong> to forge <strong>rebar</strong> into a <strong>maul</strong><br><strong>2x</strong> <strong class='color-d'>damage</strong> and mass`
+        },
+        isGunTech: true,
+        maxCount: 1,
+        count: 0,
+        frequency: 4,
+        frequencyDefault: 4,
+        removeAmmo: 30,
+        allowed() {
+            return tech.haveGunCheck("harpoon") && (build.isExperimentSelection || b.guns[9].ammo >= this.removeAmmo) && tech.isRebar
+        },
+        requires: "harpoon, rebar",
+        effect() {
+            tech.isMaul = true;
+            for (i = 0, len = b.guns.length; i < len; i++) { //find which gun 
+                if (b.guns[i].name === "harpoon") {
+                    b.guns[i].ammo -= this.removeAmmo
+                    if (b.guns[i].ammo < 0) b.guns[i].ammo = 0
+                    simulation.updateGunHUD();
+                    break
+                }
+            }
+        },
+        remove() {
+            tech.isMaul = false;
+            if (this.count) {
+                for (i = 0, len = b.guns.length; i < len; i++) { //find which gun 
+                    if (b.guns[i].name === "harpoon") {
+                        b.guns[i].ammo += this.removeAmmo
+                        simulation.updateGunHUD();
+                        break
+                    }
+                }
+            }
+        }
+    },
+    {
+        name: "wear",
+        descriptionFunction() {
+            //<strong>2x</strong> ${b.guns[9].harpoonName()} <strong class='color-d'>damage</strong>
+            return `<strong>2x</strong> ${b.guns[9].harpoonName()} <em>fire rate</em><br><strong>10%</strong> chance to <strong>break</strong> on hitting mobs, <strong>-1</strong> <strong class='color-ammo'>ammo</strong>`
+        },
+        isGunTech: true,
+        maxCount: 1,
+        count: 0,
+        frequency: 2,
+        frequencyDefault: 2,
+        allowed() {
+            return tech.haveGunCheck("harpoon") && !tech.isRailGun
+        },
+        requires: "harpoon, not railgun",
+        effect() {
+            tech.isBreakHarpoon = true;
+        },
+        remove() {
+            tech.isBreakHarpoon = false;
+        }
+    },
+    {
+        name: "spalling",
+        descriptionFunction() {
+            return `if your ${b.guns[9].harpoonName()} <strong>breaks</strong> after hitting mobs<br>spawn metal <strong>fragments</strong> and ${powerUps.orb.research(2)}${powerUps.orb.boost(1)}`
+        },
+        isGunTech: true,
+        maxCount: 1,
+        count: 0,
+        frequency: 4,
+        frequencyDefault: 4,
+        allowed() {
+            return tech.haveGunCheck("harpoon") && tech.isBreakHarpoon
+        },
+        requires: "harpoon, wear",
+        effect() {
+            tech.isBreakHarpoonGain = true;
+        },
+        remove() {
+            tech.isBreakHarpoonGain = false;
+        }
+    },
+    {
         name: "Bessemer process",
         descriptionFunction() {
-            return `<strong>${(1 + 0.1 * Math.sqrt(b.guns[9].ammo)).toFixed(2)}x</strong> <strong>harpoon</strong> size and <strong class='color-d'>damage</strong><br><em>(effect scales by 1/10 √ harpoon <strong class='color-ammo'>ammo</strong>)</em>`
+            return `<strong>${(1 + 0.1 * Math.sqrt(b.guns[9].ammo)).toFixed(2)}x</strong> ${b.guns[9].harpoonName()} size and <strong class='color-d'>damage</strong><br><em>(effect scales by 1/10 √<strong class='color-ammo'>ammo</strong>)</em>`
         },
         isGunTech: true,
         maxCount: 1,
@@ -7142,7 +7640,7 @@ const tech = {
     {
         name: "smelting",
         descriptionFunction() {
-            return `forge <strong>${this.removeAmmo()}</strong> <strong class='color-ammo'>ammo</strong> into a new harpoon<br>fire <strong>+1</strong> <strong>harpoon</strong> with each shot`
+            return `forge <strong>${this.removeAmmo()}</strong> <strong class='color-ammo'>ammo</strong> into a new ${b.guns[9].harpoonName()}<br>fire <strong>+1</strong> ${b.guns[9].harpoonName()} with each shot`
         },
         isGunTech: true,
         maxCount: 9,
@@ -7187,7 +7685,7 @@ const tech = {
     {
         name: "UHMWPE",
         descriptionFunction() {
-            return `<strong>${(1 + b.guns[9].ammo * 0.0125).toFixed(2)}x</strong> <strong>harpoon</strong> rope length<br><em>(effect scales by 1/80 of harpoon <strong class='color-ammo'>ammo</strong>)</em>`
+            return `<strong>${(1 + b.guns[9].ammo * 0.0125).toFixed(2)}x</strong> ${b.guns[9].harpoonName()} rope length<br><em>(effect scales by 1/80 of <strong class='color-ammo'>ammo</strong>)</em>`
         },
         isGunTech: true,
         maxCount: 1,
@@ -7207,7 +7705,9 @@ const tech = {
     },
     {
         name: "induction furnace",
-        description: "after using <strong>harpoon</strong>/<strong>grapple</strong> to collect <strong>power ups</strong><br><strong>1.8x</strong> <strong>harpoon</strong> or <strong>grapple</strong> <strong class='color-d'>damage</strong> for <strong>8</strong> seconds",
+        descriptionFunction() {
+            return `after using ${b.guns[9].harpoonName()}/<strong>grapple</strong> to collect <strong>power ups</strong><br><strong>1.8x</strong> ${b.guns[9].harpoonName()} or <strong>grapple</strong> <strong class='color-d'>damage</strong> for <strong>8</strong> seconds`
+        },
         isGunTech: true,
         maxCount: 1,
         count: 0,
@@ -7227,7 +7727,9 @@ const tech = {
     },
     {
         name: "brittle",
-        description: "<strong>2.2x</strong> <strong>harpoon</strong>/<strong>grapple</strong> <strong class='color-d'>damage</strong><br>to <strong>mobs</strong> at maximum <strong>durability</strong>",
+        descriptionFunction() {
+            return `<strong>2.2x</strong> ${b.guns[9].harpoonName()}/<strong>grapple</strong> <strong class='color-d'>damage</strong><br>to <strong>mobs</strong> at maximum <strong>durability</strong>`
+        },
         isGunTech: true,
         maxCount: 1,
         count: 0,
@@ -7255,7 +7757,7 @@ const tech = {
         frequency: 1,
         frequencyDefault: 1,
         allowed() {
-            return ((tech.haveGunCheck("wave") && tech.isInfiniteWaveAmmo) || tech.haveGunCheck("laser") || (tech.haveGunCheck("harpoon") && !tech.isRailGun)) && !tech.isEnergyNoAmmo
+            return ((tech.haveGunCheck("wave") && tech.isInfiniteWaveAmmo) || tech.haveGunCheck("laser") || (tech.haveGunCheck("harpoon") && !tech.isRailGun))
         },
         requires: "harpoon, laser, wave, frequency, not railgun, non-renewables",
         effect() {
@@ -7290,7 +7792,7 @@ const tech = {
             requestAnimationFrame(() => {
                 let techGiven = 0
                 for (let j = 0; j < 3; j++) {
-                    const names = ["quasiparticles", "lens", "compound lens", "arc length", "infrared diode", "free-electron laser", "dye laser", "relativistic momentum", "specular reflection", "diffraction grating", "diffuse beam", "output coupler", "slow light", "laser-bot", "laser-bot upgrade"]
+                    const names = ["quasiparticles", "lens", "compound lens", "arc length", "infrared diode", "free-electron laser", "dye laser", "relativistic momentum", "specular reflection", "diffraction grating", "diffuse beam", "output coupler", "slow light", "laser-bot", "laser-bot upgrade", "collimator"]
                     //convert names into indexes
                     const options = []
                     for (let i = 0; i < names.length; i++) {
@@ -7402,7 +7904,7 @@ const tech = {
     },
     {
         name: "compound lens",
-        description: "<strong>1.4x</strong> <strong class='color-laser'>laser</strong> lens <strong class='color-d'>damage</strong><br><strong>+25°</strong> lens arc",
+        description: "<strong>1.4x</strong> <strong class='color-laser'>laser</strong> lens <strong class='color-d'>damage</strong><br><strong>+30°</strong> lens arc",
         isGunTech: true,
         maxCount: 9,
         count: 0,
@@ -7413,7 +7915,7 @@ const tech = {
         },
         requires: "lens",
         effect() {
-            b.guns[11].arcRange += 25 * Math.PI / 180 / 2
+            b.guns[11].arcRange += 30 * Math.PI / 180 / 2
             b.guns[11].lensDamageOn += 0.4
         },
         remove() {
@@ -7432,7 +7934,7 @@ const tech = {
         allowed() {
             return (tech.haveGunCheck("laser") || tech.isLaserMine || tech.isLaserBotUpgrade || tech.isLaserField) && !tech.isWideLaser && !tech.isPulseLaser && !tech.historyLaser
         },
-        requires: "laser, not diffuse beam, pulse, or slow light",
+        requires: "laser, not diffuse beam, pulse, slow light",
         effect() {
             tech.laserReflections += 2;
         },
@@ -7451,7 +7953,7 @@ const tech = {
         allowed() {
             return tech.haveGunCheck("laser") && !tech.isWideLaser && !tech.historyLaser
         },
-        requires: "laser gun, diffuse beam, or slow light",
+        requires: "laser gun, not diffuse beam, slow light",
         effect() {
             tech.beamSplitter++
             b.guns[11].chooseFireMethod()
@@ -7461,6 +7963,29 @@ const tech = {
                 tech.beamSplitter = 0
                 b.guns[11].chooseFireMethod()
             }
+        }
+    },
+    {
+        name: "collimator",
+        description: `<strong>+1</strong> <strong class='color-laser'>laser</strong> beam<br>align your diverging <strong class='color-laser'>laser</strong> beams to be <strong>parallel</strong>`,
+        isGunTech: true,
+        maxCount: 1,
+        count: 0,
+        frequency: 1,
+        frequencyDefault: 1,
+        allowed() {
+            return tech.haveGunCheck("laser") && !tech.isWideLaser && !tech.historyLaser && tech.beamSplitter > 0 && !tech.isPulseLaser
+        },
+        requires: "laser gun, diffraction, not diffuse beam, slow light, pulse",
+        effect() {
+            tech.beamSplitter++
+            tech.beamCollimator = true
+            b.guns[11].chooseFireMethod()
+        },
+        remove() {
+            tech.beamCollimator = false
+            if (tech.beamSplitter > 0) tech.beamSplitter--
+            b.guns[11].chooseFireMethod()
         }
     },
     {
@@ -7525,7 +8050,7 @@ const tech = {
         allowed() {
             return tech.haveGunCheck("laser") && !tech.beamSplitter && !tech.isWideLaser
         },
-        requires: "laser gun, diffraction grating, diffuse beam",
+        requires: "laser gun, not diffraction grating, diffuse beam",
         effect() {
             tech.historyLaser++
             b.guns[11].chooseFireMethod()
@@ -7575,8 +8100,8 @@ const tech = {
         effect() {
             tech.laserDrain *= 0.75
             tech.laserDamage *= 1.25
-            tech.laserColor = "rgb(0, 11, 255)"
-            tech.laserColorAlpha = "rgba(0, 11, 255,0.5)"
+            tech.laserColor = "rgb(0, 40, 255)"
+            tech.laserColorAlpha = "rgba(0, 40, 255,0.5)"
         },
         remove() {
             tech.laserDrain = 0.003;
@@ -7619,9 +8144,9 @@ const tech = {
         frequency: 2,
         frequencyDefault: 2,
         allowed() {
-            return tech.haveGunCheck("laser") && tech.laserReflections < 3 && !tech.isWideLaser && tech.laserDrain === 0.003 && !tech.isStuckOn
+            return tech.haveGunCheck("laser") && tech.laserReflections < 3 && !tech.isWideLaser && tech.laserDrain === 0.003 && !tech.isStuckOn && !tech.beamCollimator
         },
-        requires: "laser gun, not specular reflection, diffuse, free-electron laser, optical amplifier",
+        requires: "laser gun, not specular reflection, diffuse, free-electron laser, optical amplifier, collimator",
         effect() {
             tech.isPulseLaser = true;
             b.guns[11].chooseFireMethod()
@@ -7661,6 +8186,27 @@ const tech = {
         }
     },
     {
+        name: "superposition",
+        descriptionFunction() {
+            return `<strong>0.1x</strong> <strong class='color-defense'>damage taken</strong><br>while you have above <strong>200</strong> <strong class='color-f'>energy</strong>`
+        },
+        isFieldTech: true,
+        maxCount: 1,
+        count: 0,
+        frequency: 2,
+        frequencyDefault: 2,
+        allowed() {
+            return m.fieldMode === 1
+        },
+        requires: "standing wave",
+        effect() {
+            tech.energyDefense = true
+        },
+        remove() {
+            tech.energyDefense = false
+        }
+    },
+    {
         name: "surface plasmons",
         description: "if <strong>deflecting</strong> drains all your <strong class='color-f'>energy</strong><br>emit <strong class='color-laser'>laser</strong> beams that scale with max <strong class='color-f'>energy</strong>",
         isFieldTech: true,
@@ -7681,22 +8227,20 @@ const tech = {
     },
     {
         name: "zero point energy",
-        description: `use ${powerUps.orb.research(2)}<br><strong>+166</strong> maximum <strong class='color-f'>energy</strong>`,
+        description: `<strong>+166</strong> maximum <strong class='color-f'>energy</strong><span style ="float: right;"><span class="underline">expend</span> ${powerUps.orb.research(2)}</span>`,
         isFieldTech: true,
         maxCount: 1,
         count: 0,
         frequency: 3,
         frequencyDefault: 3,
         allowed() {
-            return (m.fieldMode === 1 || m.fieldMode === 8 || m.fieldMode === 6) && (build.isExperimentSelection || powerUps.research.count > 1)
+            return (m.fieldMode === 1 || m.fieldMode === 8) && (build.isExperimentSelection || powerUps.research.count > 1)
         },
-        requires: "standing wave, pilot wave, time dilation",
+        requires: "standing wave, pilot wave",
         effect() {
             tech.harmonicEnergy = 1.66
             m.setMaxEnergy()
-            for (let i = 0; i < 2; i++) {
-                if (powerUps.research.count > 0) powerUps.research.changeRerolls(-1)
-            }
+            powerUps.research.expend(2)
         },
         remove() {
             tech.harmonicEnergy = 0;
@@ -7729,13 +8273,9 @@ const tech = {
         }
     },
     {
-
-        // descriptionFunction() {
-        //     return `use ${powerUps.orb.research(2)}<br><span style = 'font-size:94%;'><strong>1.01x</strong> <strong class='color-d'>damage</strong> per <strong class='color-f'>energy</strong> below <strong>maximum</strong> <em style ="float: right;">(${(1 + Math.max(0, m.maxEnergy - m.energy)).toFixed(2)}x)</em></span>`
-        // },
         name: "electronegativity",
         descriptionFunction() {
-            return `<strong>1.0023x</strong> <strong class='color-d'>damage</strong> per <strong class='color-f'>energy</strong><br><em style ="float: right;">(${(1 + 0.23 * m.energy).toFixed(2)} at current energy, ${(1 + 0.23 * m.maxEnergy).toFixed(2)}x at maximum energy)</em>`
+            return `<strong>1.0023x</strong> <strong class='color-d'>damage</strong> per <strong class='color-f'>energy</strong><br><em style ="float: right;">(${(1 + 0.23 * m.energy).toFixed(2)}x, ${(1 + 0.23 * m.maxEnergy).toFixed(2)}x at max energy)</em>`
         },
         // description: "<strong>+1%</strong> <strong class='color-d'>damage</strong> per <strong>8</strong> stored <strong class='color-f'>energy</strong>",
         isFieldTech: true,
@@ -7756,7 +8296,7 @@ const tech = {
     },
     {
         name: "bremsstrahlung",
-        description: "<strong>deflecting</strong> and thrown <strong class='color-block'>blocks</strong><br>do braking <strong class='color-d'>damage</strong> to mobs",
+        description: "<strong>deflecting</strong> with your <strong class='color-f'>field</strong> and thrown <strong class='color-block'>blocks</strong><br>do extra <strong class='color-d'>damage</strong> to mobs",
         isFieldTech: true,
         maxCount: 9,
         count: 0,
@@ -7852,7 +8392,7 @@ const tech = {
     {
         name: "radiative equilibrium",
         descriptionFunction() {
-            return `after losing ${tech.isEnergyHealth ? "<strong class='color-f'>energy</strong>" : "<strong class='color-h'>health</strong>"}<br><strong>3x</strong> <strong class='color-d'>damage</strong> for <strong>8</strong> seconds`
+            return `after losing ${tech.isEnergyHealth ? "<strong class='color-f'>energy</strong> from collisions" : "<strong class='color-h'>health</strong>"}<br><strong>4x</strong> <strong class='color-d'>damage</strong> for <strong>4</strong> seconds`
         },
         isFieldTech: true,
         maxCount: 1,
@@ -7879,13 +8419,13 @@ const tech = {
         maxCount: 3,
         count: 0,
         frequency: 2,
-        frequencyDefault: 200,
+        frequencyDefault: 2,
         allowed() {
             return m.fieldMode === 8 || m.fieldMode === 3
         },
         requires: "negative mass, pilot wave",
         effect() {
-            tech.lastHitDamage += 6;
+            tech.lastHitDamage += 8;
         },
         remove() {
             tech.lastHitDamage = 0;
@@ -7900,9 +8440,9 @@ const tech = {
         frequency: 2,
         frequencyDefault: 2,
         allowed() {
-            return m.fieldMode === 3
+            return m.fieldMode === 3 && tech.negativeMassCost !== 0
         },
-        requires: "negative mass",
+        requires: "negative mass, not equivalence principle",
         effect() {
             tech.isNeutronium = true
             tech.baseFx *= 0.86
@@ -7920,43 +8460,23 @@ const tech = {
         }
     },
     {
-        name: "aerostat",
-        descriptionFunction() {
-            return `<strong>2x</strong> <strong class='color-d'>damage</strong> while <strong>off</strong> the <strong>ground</strong><br><strong>0.9x</strong> <strong class='color-d'>damage</strong> while <strong>on</strong> the <strong>ground</strong><em style ="float: right;">(${(m.onGround ? 0.9 : 2).toFixed(1)}x)</em>`
-        },
+        name: "equivalence principle",
+        description: `<strong>negative mass</strong> field doesn't cost <strong class='color-f'>energy</strong><br>`,
         isFieldTech: true,
         maxCount: 1,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
         allowed() {
-            return m.fieldMode === 3 || m.fieldMode === 10
+            return m.fieldMode === 3 && !tech.isNeutronium
         },
-        requires: "negative mass, grappling hook",
+        requires: "negative mass, not neutronium",
         effect() {
-            tech.isNoGroundDamage = true
+            tech.negativeMassCost = 0
         },
+        //also removed in m.setHoldDefaults() if player switches into a bad field
         remove() {
-            tech.isNoGroundDamage = false
-        }
-    },
-    {
-        name: "annihilation",
-        description: "after <strong>colliding</strong> with non-boss mobs<br>they are <strong>annihilated</strong> and <strong>–10</strong> <strong class='color-f'>energy</strong>",
-        isFieldTech: true,
-        maxCount: 1,
-        count: 0,
-        frequency: 2,
-        frequencyDefault: 2,
-        allowed() {
-            return m.fieldMode === 3 && !tech.isEnergyHealth
-        },
-        requires: "negative mass, not mass-energy",
-        effect() {
-            tech.isAnnihilation = true
-        },
-        remove() {
-            tech.isAnnihilation = false;
+            tech.negativeMassCost = 0.00035
         }
     },
     {
@@ -7977,7 +8497,27 @@ const tech = {
         remove() {
             tech.isFlyFaster = false;
         }
-    }, {
+    },
+    {
+        name: "annihilation",
+        description: "<strong>mobs</strong> you <strong>collide</strong> with are <strong>annihilated</strong><br><strong>–8</strong> <strong class='color-f'>energy</strong> each time",
+        isFieldTech: true,
+        maxCount: 1,
+        count: 0,
+        frequency: 2,
+        frequencyDefault: 2,
+        allowed() {
+            return m.fieldMode === 3 && !tech.isEnergyHealth
+        },
+        requires: "negative mass, not mass-energy",
+        effect() {
+            tech.isAnnihilation = true
+        },
+        remove() {
+            tech.isAnnihilation = false;
+        }
+    },
+    {
         name: "Newtons 1st law",
         descriptionFunction() {
             return `<strong class='color-defense'>damage taken</strong> reduces as your <strong class="color-speed">speed</strong> increases<br>up to <strong>0.05x</strong> <strong class='color-defense'>damage taken</strong> at <strong>60</strong> <strong class="color-speed">speed</strong> <em style ="float: right;">(${(1 - Math.min((tech.speedAdded + player.speed) * 0.01583, 0.95)).toFixed(2)}x)</em>`
@@ -8129,15 +8669,17 @@ const tech = {
                             expand(block, Math.min(20, block.mass * 3))
                         }
                         //jump
+                        m.lastOnGroundCycle = m.cycle;
                         m.buttonCD_jump = m.cycle; //can't jump again until 20 cycles pass
                         Matter.Body.setVelocity(player, { x: player.velocity.x + horizontalVelocity, y: -7.5 + 0.25 * player.velocity.y });
                         player.force.y = -m.jumpForce; //player jump force
+                        m.fieldUpgrades[4].endoThermic(0.3)
                     }
                 },
             })
         },
         remove() {
-            if (this.count) simulation.removeEphemera("blockJump")
+            if (this.count) simulation.removeEphemera("blockJump", true)
         }
     },
     {
@@ -8161,6 +8703,25 @@ const tech = {
         }
     },
     {
+        name: "endothermic",
+        description: `each time you <strong class='color-print'>print</strong> something also<br><strong class='color-print'>print</strong> <strong class='color-s'>ice IX</strong> crystals for <strong>0</strong> <strong class='color-f'>energy</strong>`,
+        isFieldTech: true,
+        maxCount: 1,
+        count: 0,
+        frequency: 2,
+        frequencyDefault: 2,
+        allowed() {
+            return m.fieldMode === 4
+        },
+        requires: "molecular assembler, pilot wave, standing wave",
+        effect() {
+            tech.isEndothermic = true
+        },
+        remove() {
+            tech.isEndothermic = false
+        }
+    },
+    {
         name: "electric generator",
         description: "after <strong>deflecting</strong> mobs<br><strong>molecular assembler</strong> generates <strong>+50</strong> <strong class='color-f'>energy</strong>",
         isFieldTech: true,
@@ -8177,30 +8738,6 @@ const tech = {
         },
         remove() {
             tech.deflectEnergy = 0;
-        }
-    },
-    {
-        name: "combinatorial optimization",
-        description: "<strong>1.4x</strong> <strong class='color-d'>damage</strong><br><strong>0.7x</strong> <em>fire rate</em>",
-        isFieldTech: true,
-        maxCount: 1,
-        count: 0,
-        frequency: 2,
-        frequencyDefault: 2,
-        allowed() {
-            return m.fieldMode === 6 || m.fieldMode === 7 || m.fieldMode === 8
-        },
-        requires: "time dilation, cloaking, pilot wave",
-        damage: 1.4,
-        effect() {
-            tech.damage *= this.damage
-            tech.aimDamage = 1.42
-            b.setFireCD();
-        },
-        remove() {
-            if (this.count && m.alive) tech.damage /= this.damage
-            tech.aimDamage = 1
-            b.setFireCD();
         }
     },
     {
@@ -8272,9 +8809,9 @@ const tech = {
         frequency: 2,
         frequencyDefault: 2,
         allowed() {
-            return (m.fieldMode === 10 || m.fieldMode === 5 || m.fieldMode === 8)
+            return (m.fieldMode === 10 || m.fieldMode === 5 || m.fieldMode === 8) && !tech.isNoPilotCost
         },
-        requires: "plasma torch, grappling hook, pilot wave",
+        requires: "plasma torch, grappling hook, pilot wave, not Bells theorem",
         effect() {
             tech.isHarmReduce = true
         },
@@ -8285,7 +8822,7 @@ const tech = {
     {
         name: "plasma-bot",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Robot' class="link">plasma-bot</a>`,
-        description: `use ${powerUps.orb.research(2)}to trade your ${powerUps.orb.field()}<br>for a <strong class='color-bot'>bot</strong> that uses <strong class='color-f'>energy</strong> to emit <strong class='color-plasma'>plasma</strong>`,
+        description: `trade your ${powerUps.orb.field()}<span style ="float: right;"><span class="underline">expend</span> ${powerUps.orb.research(2)}</span><br>for a <strong class='color-bot'>bot</strong> that uses <strong class='color-f'>energy</strong> to emit <strong class='color-plasma'>plasma</strong>`,
         // isFieldTech: true,
         isInstant: true,
         maxCount: 1,
@@ -8306,9 +8843,7 @@ const tech = {
                 document.getElementById("field-0").classList.add("build-field-selected");
             }
             m.setField("field emitter")
-            for (let i = 0; i < 2; i++) {
-                if (powerUps.research.count > 0) powerUps.research.changeRerolls(-1)
-            }
+            powerUps.research.expend(2)
         },
         remove() {
             if (this.count > 0) {
@@ -8327,23 +8862,50 @@ const tech = {
         }
     },
     {
+        name: "dielectric",
+        descriptionFunction() {
+            return `while <strong class='color-plasma'>plasma</strong> ${powerUps.orb.field()} is active<span style ="float: right;"><span class="underline">expend</span> ${powerUps.orb.research(2)}</span><br>activate ${powerUps.orb.boost(1)} for ${(1 + powerUps.boost.damage).toFixed(2)}x</strong> <strong class='color-d'>damage</strong>`
+        },
+        isFieldTech: true,
+        maxCount: 1,
+        count: 0,
+        frequency: 3,
+        frequencyDefault: 3,
+        allowed() {
+            return (m.fieldMode === 5) && (build.isExperimentSelection || powerUps.research.count > 1)
+        },
+        requires: "plasma torch",
+        effect() {
+            tech.isPlasmaBoost = true;
+            powerUps.research.expend(2)
+        },
+        remove() {
+            tech.isPlasmaBoost = false;
+            if (this.count > 0) powerUps.research.changeRerolls(2)
+        }
+    },
+    {
         name: "plasma jet",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Plasma_(physics)' class="link">plasma jet</a>`,
-        description: `use ${powerUps.orb.research(1)}<br><strong>1.5x</strong> <strong class='color-plasma'>plasma</strong> <strong>torch</strong> range`,
+        descriptionFunction() {
+            if (tech.isPlasmaBall) {
+                return `<strong>1.5x</strong> <strong class='color-plasma'>plasma</strong> <strong>ball</strong> radius<span style ="float: right;"><span class="underline">expend</span> ${powerUps.orb.research(1)}</span>`
+            } else {
+                return `<strong>1.5x</strong> <strong class='color-plasma'>plasma</strong> <strong>torch</strong> range<span style ="float: right;"><span class="underline">expend</span> ${powerUps.orb.research(1)}</span>`
+            }
+        },
         isFieldTech: true,
         maxCount: 3,
         count: 0,
-        frequency: 2,
-        frequencyDefault: 2,
+        frequency: 3,
+        frequencyDefault: 3,
         allowed() {
-            return (tech.plasmaBotCount || m.fieldMode === 5) && (build.isExperimentSelection || powerUps.research.count > 0) && !tech.isPlasmaBall
+            return (tech.plasmaBotCount || m.fieldMode === 5) && (build.isExperimentSelection || powerUps.research.count > 0)
         },
-        requires: "plasma torch, not plasma ball",
+        requires: "plasma torch",
         effect() {
             tech.isPlasmaRange += 0.5;
-            for (let i = 0; i < 1; i++) {
-                if (powerUps.research.count > 0) powerUps.research.changeRerolls(-1)
-            }
+            powerUps.research.expend(1)
         },
         remove() {
             tech.isPlasmaRange = 1;
@@ -8364,11 +8926,15 @@ const tech = {
         requires: "plasma torch, not plasma ball",
         effect() {
             tech.isExtruder = true;
+            window.removeEventListener("keydown", m.fieldEvent);
             m.fieldUpgrades[m.fieldMode].set()
         },
         remove() {
             tech.isExtruder = false;
-            if (this.count && m.fieldMode === 5) m.fieldUpgrades[m.fieldMode].set()
+            if (this.count && m.fieldMode === 5) {
+                window.removeEventListener("keydown", m.fieldEvent);
+                m.fieldUpgrades[m.fieldMode].set()
+            }
         }
     },
     {
@@ -8392,23 +8958,27 @@ const tech = {
     },
     {
         name: "plasma ball",
-        description: "<strong>grow</strong> an expanding <strong>ball</strong> of <strong class='color-plasma'>plasma</strong><br>increases <strong class='color-d'>damage</strong> and <strong class='color-f'>energy</strong> cost",
+        description: "<strong>grow</strong> an expanding <strong>ball</strong> of <strong class='color-plasma'>plasma</strong><br>increases <strong>buoyancy</strong>, <strong class='color-d'>damage</strong>, and <strong class='color-f'>energy</strong> cost",
         isFieldTech: true,
         maxCount: 1,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
         allowed() {
-            return m.fieldMode === 5 && !tech.isExtruder && tech.isPlasmaRange === 1
+            return m.fieldMode === 5 && !tech.isExtruder
         },
-        requires: "plasma torch, not extruder, plasma jet",
+        requires: "plasma torch, not extruder",
         effect() {
             tech.isPlasmaBall = true;
+            window.removeEventListener("keydown", m.fieldEvent);
             m.fieldUpgrades[m.fieldMode].set()
         },
         remove() {
             tech.isPlasmaBall = false;
-            if (this.count && m.fieldMode === 5) m.fieldUpgrades[m.fieldMode].set()
+            if (this.count && m.fieldMode === 5) {
+                window.removeEventListener("keydown", m.fieldEvent);
+                m.fieldUpgrades[m.fieldMode].set()
+            }
         }
     },
     {
@@ -8431,25 +9001,22 @@ const tech = {
         }
     },
     {
-        name: "retrocausality",
-        description: "<strong>time dilation</strong> uses <strong class='color-f'>energy</strong> to <strong>rewind</strong> your<br><strong class='color-h'>health</strong>, <strong>velocity</strong>, and <strong>position</strong> up to <strong>10</strong> seconds",
+        name: "cyclotron",
+        description: "<strong class='color-plasma'>plasma</strong> ball curves towards your mouse<br><strong>2x</strong> <strong class='color-plasma'>plasma</strong> ball <strong class='color-d'>damage</strong> after you <strong>release</strong> it.",
         isFieldTech: true,
         maxCount: 1,
         count: 0,
-        frequency: 1,
-        frequencyDefault: 1,
+        frequency: 2,
+        frequencyDefault: 2,
         allowed() {
-            return m.fieldMode === 6 && !m.isShipMode && !tech.isRewindAvoidDeath && !tech.isTimeSkip
+            return m.fieldMode === 5 && tech.isPlasmaBall
         },
-        requires: "time dilation, not CPT symmetry",
+        requires: "plasma ball",
         effect() {
-            tech.isRewindField = true;
-            m.fieldUpgrades[6].set()
-            m.wakeCheck();
+            tech.isControlPlasma = true
         },
         remove() {
-            tech.isRewindField = false;
-            if (this.count) m.fieldUpgrades[6].set()
+            tech.isControlPlasma = false;
         }
     },
     {
@@ -8475,7 +9042,7 @@ const tech = {
     },
     {
         name: "Lorentz transformation",
-        description: `use ${powerUps.orb.research(3)}<br><strong>1.5x</strong> movement, jumping, and <em>fire rate</em>`,
+        description: `<span style ="float: right;"><span class="underline">expend</span> ${powerUps.orb.research(3)}</span><strong>1.5x</strong> movement and jumping<br><strong>1.5x</strong> <em>fire rate</em>`,
         isFieldTech: true,
         maxCount: 1,
         count: 0,
@@ -8489,9 +9056,7 @@ const tech = {
             tech.isFastTime = true
             m.setMovement();
             b.setFireCD();
-            for (let i = 0; i < 3; i++) {
-                if (powerUps.research.count > 0) powerUps.research.changeRerolls(-1)
-            }
+            powerUps.research.expend(3)
         },
         remove() {
             tech.isFastTime = false
@@ -8554,7 +9119,7 @@ const tech = {
     {
         name: "metamaterial absorber",  //quantum eraser
         descriptionFunction() {
-            return `for each mob left <strong>alive</strong> after you exit a <strong>level</strong><br>there is a <strong>30%</strong> chance to spawn a random <strong>power up</strong>`
+            return `for each mob left <strong>alive</strong> after you exit a <strong>level</strong><br>there is a <strong>40%</strong> chance to spawn a random <strong>power up</strong>`
         },
         isFieldTech: true,
         maxCount: 1,
@@ -8677,12 +9242,12 @@ const tech = {
     },
     {
         name: "hidden-variable theory",
-        description: `<strong>1.15x</strong> <strong class='color-d'>damage</strong> each time you <strong class='color-choice'><span>ch</span><span>oo</span><span>se</span></strong> ${powerUps.orb.fieldTech()}`,
+        description: `<strong>1.3x</strong> <strong class='color-d'>damage</strong> after you <strong class='color-choice'><span>ch</span><span>oo</span><span>se</span></strong> ${powerUps.orb.fieldTech()}`,
         isFieldTech: true,
         maxCount: 1,
         count: 0,
-        frequency: 1,
-        frequencyDefault: 1,
+        frequency: 4,
+        frequencyDefault: 4,
         allowed() {
             return m.fieldMode === 8
         },
@@ -8695,8 +9260,51 @@ const tech = {
         }
     },
     {
+        name: "Bells theorem",
+        description: `<strong>pilot wave</strong> is always <strong>on</strong><br>and has no <strong class='color-f'>energy</strong> cost`,
+        isFieldTech: true,
+        maxCount: 1,
+        count: 0,
+        frequency: 4,
+        frequencyDefault: 4,
+        allowed() {
+            return m.fieldMode === 8 && !tech.isHarmReduce
+        },
+        requires: "pilot wave, not degenerate matter",
+        effect() {
+            tech.isNoPilotCost = true
+            m.fieldUpgrades[8].drain = 0
+            if (m.fieldMode === 8) m.fieldFire = true;
+
+        },
+        remove() {
+            tech.isNoPilotCost = false
+            m.fieldUpgrades[8].drain = 1
+            if (m.fieldMode === 8) m.fieldFire = false
+        }
+    },
+    {
+        name: "principle of locality",
+        description: `<strong>0.1x</strong> <strong class='color-defense'>damage taken</strong> while inside <strong>pilot wave</strong><br><div class="circle-grid tech"></div>, <div class="circle-grid gun"></div>, and <div class="circle-grid field"></div> have <strong>-2</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>`,
+        isFieldTech: true,
+        maxCount: 1,
+        count: 0,
+        frequency: 4,
+        frequencyDefault: 4,
+        allowed() {
+            return m.fieldMode === 8
+        },
+        requires: "pilot wave",
+        effect() {
+            tech.isInPilot = true
+        },
+        remove() {
+            tech.isInPilot = false
+        }
+    },
+    {
         name: "WIMPs",
-        description: `at each <strong>level's</strong> exit, spawn ${powerUps.orb.research(4)}<br> and a dangerous particle that slowly <strong>chases</strong> you`,
+        description: `at the exit to each <strong>level</strong> spawn ${powerUps.orb.research(7)}<br>and a dangerous particle that slowly <strong>chases</strong> you`,
         isFieldTech: true,
         maxCount: 9,
         count: 0,
@@ -8709,7 +9317,7 @@ const tech = {
         effect() {
             tech.wimpCount++
             spawn.WIMP()
-            for (let j = 0, len = 4; j < len; j++) powerUps.spawn(level.exit.x + 100 * (Math.random() - 0.5), level.exit.y - 100 + 100 * (Math.random() - 0.5), "research", false)
+            for (let j = 0, len = 7; j < len; j++) powerUps.spawn(level.exit.x + 100 * (Math.random() - 0.5), level.exit.y - 100 + 100 * (Math.random() - 0.5), "research", false)
         },
         remove() {
             tech.wimpCount = 0
@@ -8717,34 +9325,57 @@ const tech = {
     },
     {
         name: "vacuum fluctuation",
-        description: `use ${powerUps.orb.research(3)}<br><strong>+11%</strong> chance to <strong class='color-dup'>duplicate</strong> spawned <strong>power ups</strong>`,
+        description: `<span style ="float: right;"><span class="underline">expend</span> ${powerUps.orb.research(2)}</span><strong>+11%</strong> chance to <strong class='color-dup'>duplicate</strong><br>spawned <strong>power ups</strong>`,
         isFieldTech: true,
         maxCount: 1,
         count: 0,
         frequency: 3,
         frequencyDefault: 3,
         allowed() {
-            return (m.fieldMode === 8 || m.fieldMode === 6 || m.fieldMode === 9) && (build.isExperimentSelection || powerUps.research.count > 2)
+            return (m.fieldMode === 8 || m.fieldMode === 9) && (build.isExperimentSelection || powerUps.research.count > 2)
         },
-        requires: "wormhole, time dilation, negative mass, pilot wave",
+        requires: "wormhole, pilot wave",
         effect() {
             tech.fieldDuplicate = 0.11
             powerUps.setPowerUpMode(); //needed after adjusting duplication chance
             if (!build.isExperimentSelection && !simulation.isTextLogOpen) simulation.circleFlare(0.11);
-            for (let i = 0; i < 3; i++) {
-                if (powerUps.research.count > 0) powerUps.research.changeRerolls(-1)
-            }
+            powerUps.research.expend(2)
         },
         remove() {
             tech.fieldDuplicate = 0
-            if (this.count) powerUps.setPowerUpMode(); //needed after adjusting duplication chance
-            if (this.count > 0) powerUps.research.changeRerolls(3)
+            if (this.count) {
+                powerUps.setPowerUpMode(); //needed after adjusting duplication chance
+                powerUps.research.changeRerolls(2)
+            }
+        }
+    },
+    {
+        name: "anyon",
+        descriptionFunction() {
+            return `<strong>+2%</strong> <strong class='color-dup'>duplication</strong> chance until you exit the <strong>level</strong><br>after a <strong class='color-block'>block</strong> falls into a <strong class='color-worm'>wormhole</strong> <em style ="float: right;">(up to 40%)</em>`
+        },
+        isFieldTech: true,
+        maxCount: 1,
+        count: 0,
+        frequency: 2,
+        frequencyDefault: 2,
+        allowed() {
+            return m.fieldMode === 9
+        },
+        requires: "wormhole",
+        effect() {
+            tech.isBlockDup = true
+            tech.blockDupCount = 0
+        },
+        remove() {
+            tech.isBlockDup = false
+            tech.blockDupCount = 0
         }
     },
     {
         name: "transdimensional worms",
         link: `<a target="_blank" href='https://en.wikipedia.org/wiki/Dimension' class="link">transdimensional worms</a>`,
-        description: "after a <strong class='color-block'>block</strong> falls into a <strong class='color-worm'>wormhole</strong><br>spawn a <strong class='color-p' style='letter-spacing: 2px;'>worm</strong>",
+        description: "after a <strong class='color-block'>block</strong> falls into a <strong class='color-worm'>wormhole</strong><br>spawn <strong>1-4</strong> <strong class='color-p' style='letter-spacing: 2px;'>worms</strong>",
         isFieldTech: true,
         maxCount: 1,
         count: 0,
@@ -8762,9 +9393,9 @@ const tech = {
         }
     },
     {
-        name: "anyon",
+        name: "Penrose process",
         descriptionFunction() {
-            return `<strong>2x</strong> <strong class='color-f'>energy</strong> after <strong class='color-dup'>duplicating</strong> a power up<br><strong>+6%</strong> chance to <strong class='color-dup'>duplicate</strong> spawned <strong>power ups</strong>`
+            return `<strong>2x</strong> stored <strong class='color-f'>energy</strong> after <strong class='color-dup'>duplicating</strong> power ups<br><strong>+6%</strong> chance to <strong class='color-dup'>duplicate</strong> spawned <strong>power ups</strong>`
         },
         isFieldTech: true,
         maxCount: 1,
@@ -8786,6 +9417,51 @@ const tech = {
         }
     },
     {
+        name: "holographic principle",
+        cost: 2,
+        descriptionFunction() {
+            return `making <strong class='color-worm'>wormholes</strong> costs <strong>2</strong> <strong class='color-f'>energy</strong><br><em style ="float: right;">(originally 16 energy)</em>`
+        },
+        isFieldTech: true,
+        maxCount: 1,
+        count: 0,
+        frequency: 2,
+        frequencyDefault: 2,
+        allowed() {
+            return m.fieldMode === 9 && (build.isExperimentSelection || powerUps.research.count > this.cost - 1)
+        },
+        requires: "wormhole",
+        effect() {
+            powerUps.research.expend(this.cost)
+            tech.isFreeWormHole = true
+        },
+        remove() {
+            tech.isFreeWormHole = false
+            if (this.count) powerUps.research.changeRerolls(this.cost)
+        }
+    },
+    {
+        name: "manifold",
+        descriptionFunction() {
+            return `after each new <strong class='color-worm'>wormhole</strong><br><strong>1.5x</strong> <strong class='color-d'>damage</strong> for <strong>5</strong> seconds`
+        },
+        isFieldTech: true,
+        maxCount: 1,
+        count: 0,
+        frequency: 2,
+        frequencyDefault: 2,
+        allowed() {
+            return m.fieldMode === 9
+        },
+        requires: "wormhole",
+        effect() {
+            tech.isNewWormHoleDamage = true
+        },
+        remove() {
+            tech.isNewWormHoleDamage = false
+        }
+    },
+    {
         name: "geodesics",
         description: `your <strong>bullets</strong> can traverse <strong class='color-worm'>wormholes</strong><br><strong>1.5x</strong> <strong class='color-d'>damage</strong>`,
         isFieldTech: true,
@@ -8799,7 +9475,7 @@ const tech = {
         requires: "wormhole",
         damage: 1.5,
         effect() {
-            tech.damage *= this.damage
+            m.damageDone *= this.damage
             tech.isWormHoleBullets = true
             // for (let i = 0; i < 2; i++) powerUps.spawn(m.pos.x + 200 * (Math.random() - 0.5), m.pos.y + 200 * (Math.random() - 0.5), "gun");
             // for (let i = 0; i < 4; i++) powerUps.spawn(m.pos.x + 200 * (Math.random() - 0.5), m.pos.y + 200 * (Math.random() - 0.5), "ammo");
@@ -8810,7 +9486,7 @@ const tech = {
             //         if (b.inventory.length) b.removeGun(b.guns[b.inventory[b.inventory.length - 1]].name) //remove your last gun
             //     }
             // }
-            if (this.count && m.alive) tech.damage /= this.damage
+            if (this.count && m.alive) m.damageDone /= this.damage
             tech.isWormHoleBullets = false;
         }
     },
@@ -8835,74 +9511,60 @@ const tech = {
     },
     {
         name: "invariant",
-        description: "while placing your <strong class='color-worm'>wormhole</strong><br>use <strong class='color-f'>energy</strong> to <strong>pause</strong> time",
+        cost: 1,
+        descriptionFunction() {
+            return `<strong>pause</strong> time while<span style ="float: right;"><span class="underline">expend</span> ${powerUps.orb.research(this.cost)}</span><br>placing your <strong class='color-worm'>wormhole</strong>`
+        },
         isFieldTech: true,
         maxCount: 1,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
         allowed() {
-            return m.fieldMode === 9 && !tech.isNoDraftPause
+            return m.fieldMode === 9 && !tech.isNoDraftPause && (build.isExperimentSelection || powerUps.research.count > this.cost - 1)
         },
         requires: "wormhole, not eternalism",
         effect() {
             tech.isWormHolePause = true
+            powerUps.research.expend(this.cost)
         },
         remove() {
-            if (tech.isWormHolePause && m.isBodiesAsleep) m.wakeCheck();
+            if (tech.isWormHolePause && m.isTimeDilated) m.wakeCheck();
             tech.isWormHolePause = false
-        }
-    },
-    {
-        name: "charmed baryons",
-        description: `<strong>0.8x</strong> <strong>movement</strong> and <strong>jumping</strong><br><strong class='color-worm'>wormholes</strong> cost <strong>zero</strong> <strong class='color-f'>energy</strong>`,
-        isFieldTech: true,
-        maxCount: 1,
-        count: 0,
-        frequency: 2,
-        frequencyDefault: 2,
-        allowed() {
-            return m.fieldMode === 9 && !tech.isWormholeMapIgnore
-        },
-        requires: "wormhole, not affine connection",
-        effect() {
-            tech.isFreeWormHole = true
-            tech.baseFx *= 0.8
-            tech.baseJumpForce *= 0.8
-            m.setMovement()
-        },
-        //also removed in m.setHoldDefaults() if player switches into a bad field
-        remove() {
-            tech.isFreeWormHole = false
-            if (!tech.isNeutronium) {
-                tech.baseFx = 0.08
-                tech.baseJumpForce = 10.5
-                m.setMovement()
+            if (this.count) {
+                powerUps.research.changeRerolls(this.cost)
             }
         }
     },
     {
         name: "affine connection",
-        description: "<strong class='color-worm'>wormholes</strong> can tunnel through <strong>anything</strong><br>for <strong>2x</strong> <strong class='color-f'>energy</strong> cost",
+        cost: 2,
+        descriptionFunction() {
+            return `<span style ="float: right;"><span class="underline">expend</span> ${powerUps.orb.research(this.cost)}</span><strong class='color-worm'>wormholes</strong> can tunnel<br>through <strong>anything</strong>`
+        },
         isFieldTech: true,
         maxCount: 1,
         count: 0,
         frequency: 2,
         frequencyDefault: 2,
         allowed() {
-            return m.fieldMode === 9 && !tech.isFreeWormHole
+            return m.fieldMode === 9 && (build.isExperimentSelection || powerUps.research.count > this.cost - 1)
         },
-        requires: "wormhole, not charmed baryons",
+        requires: "wormhole",
         effect() {
+            powerUps.research.expend(this.cost)
             tech.isWormholeMapIgnore = true
         },
         remove() {
             tech.isWormholeMapIgnore = false
+            if (this.count) powerUps.research.changeRerolls(this.cost)
         }
     },
     {
         name: "CIWS",
-        description: "<strong>grappling hook</strong> uses <strong>10</strong> <strong class='color-f'>energy</strong><br> to fire <strong>harpoons</strong> at nearby mobs",
+        descriptionFunction() {
+            return `<strong>grappling hook</strong> uses <strong>10</strong> <strong class='color-f'>energy</strong><br> to fire ${b.guns[9].harpoonName()}<strong>s</strong> at nearby mobs`
+        },
         isFieldTech: true,
         maxCount: 1,
         count: 0,
@@ -8960,194 +9622,6 @@ const tech = {
             tech.isReel = false
         }
     },
-    // {
-    //     name: "CIWS",
-    //     description: "if you <strong>collide</strong> with a mob<br>fire <strong>harpoons</strong> at nearby mobs",
-    //     isFieldTech: true,
-    //     maxCount: 1,
-    //     count: 0,
-    //     frequency: 2,
-    //     frequencyDefault: 2,
-    //     allowed() {
-    //         return m.fieldMode === 10 && !tech.isHookDefense
-    //     },
-    //     requires: "grappling hook, not automatic offense",
-    //     effect() {
-    //         tech.isHookDefense = true
-    //     },
-    //     remove() {
-    //         tech.isHookDefense = false
-    //     }
-    // },
-    //     {
-    //     name: "wire",
-    //     description: "",
-    //     isFieldTech: true,
-    //     maxCount: 1,
-    //     count: 0,
-    //     frequency: 2,
-    //     frequencyDefault: 2,
-    //     allowed() {
-    //         return m.fieldMode === 10
-    //     },
-    //     requires: "grappling hook",
-    //     effect() {
-    //         tech.isHookWire = true
-    //     },
-    //     remove() {
-    //         tech.isHookWire = false
-    //     }
-    // },
-    //************************************************** 
-    //************************************************** experimental
-    //************************************************** modes
-    //************************************************** 
-    // {
-    //     name: "-ship-",
-    //     description: "<strong style='color: #f55;'>experiment:</strong> fly around with no legs<br>aim with the keyboard",
-    //     maxCount: 1,
-    //     count: 0,
-    //     frequency: 0,
-    //     isInstant: true,
-    //     isBadRandomOption: true,
-    //     isExperimentalMode: true,
-    //     allowed() {
-    //         return build.isExperimentSelection && !m.isShipMode && m.fieldUpgrades[m.fieldMode].name !== "negative mass"
-    //     },
-    //     requires: "",
-    //     effect() {
-    //         m.shipMode()
-    //     },
-    //     remove() {}
-    // },
-    // {
-    //     name: "-quantum leap-",
-    //     description: "<strong style='color: #f55;'>experiment:</strong> every 20 seconds<br>become an <strong class='alt'>alternate</strong> version of yourself",
-    //     maxCount: 1,
-    //     count: 0,
-    //     frequency: 0,
-    //     isBadRandomOption: true,
-    //     isExperimentalMode: true,
-    //     allowed() {
-    //         return build.isExperimentSelection
-    //     },
-    //     requires: "",
-    //     interval: undefined,
-    //     effect() {
-    //         this.interval = setInterval(() => {
-    //             if (!build.isExperimentSelection) {
-    //                 m.switchWorlds()
-    //                 simulation.trails()
-    //             }
-    //         }, 20000); //every 20 seconds
-
-    //     },
-    //     remove() {
-    //         if (this.count > 0) clearTimeout(this.interval);
-    //     }
-    // },
-    // {
-    //     name: "-shields-",
-    //     description: "<strong style='color: #f55;'>experiment:</strong> every 5 seconds<br>all mobs gain a shield",
-    //     maxCount: 1,
-    //     count: 0,
-    //     frequency: 0,
-    //     isBadRandomOption: true,
-    //     isExperimentalMode: true,
-    //     allowed() {
-    //         return build.isExperimentSelection
-    //     },
-    //     requires: "",
-    //     effect() {
-    //         this.interval = setInterval(() => {
-    //             if (!build.isExperimentSelection) {
-    //                 for (let i = 0; i < mob.length; i++) {
-    //                     if (!mob[i].isShielded && !mob[i].shield && mob[i].isDropPowerUp) spawn.shield(mob[i], mob[i].position.x, mob[i].position.y, 1, true);
-    //                 }
-    //             }
-    //         }, 5000); //every 5 seconds
-    //     },
-    //     interval: undefined,
-    //     remove() {
-    //         if (this.count > 0) clearTimeout(this.interval);
-    //     }
-    // },
-    // {
-    //     name: "-Fourier analysis-",
-    //     description: "<strong style='color: #f55;'>experiment:</strong> your aiming is random",
-    //     maxCount: 1,
-    //     count: 0,
-    //     frequency: 0,
-    //     isBadRandomOption: true,
-    //     isExperimentalMode: true,
-    //     allowed() {
-    //         return build.isExperimentSelection && !m.isShipMode
-    //     },
-    //     requires: "not ship",
-    //     effect() {
-    //         m.look = () => {
-    //             m.angle = 2 * Math.sin(m.cycle * 0.0133) + Math.sin(m.cycle * 0.013) + 0.5 * Math.sin(m.cycle * 0.031) + 0.33 * Math.sin(m.cycle * 0.03)
-    //             const scale = 0.8;
-    //             m.transSmoothX = canvas.width2 - m.pos.x - (simulation.mouse.x - canvas.width2) * scale;
-    //             m.transSmoothY = canvas.height2 - m.pos.y - (simulation.mouse.y - canvas.height2) * scale;
-    //             m.transX += (m.transSmoothX - m.transX) * 0.07;
-    //             m.transY += (m.transSmoothY - m.transY) * 0.07;
-    //         }
-    //     },
-    //     remove() {
-    //         if (this.count > 0) m.look = m.lookDefault()
-    //     }
-    // },
-    // {
-    //     name: "-panopticon-",
-    //     description: "<strong style='color: #f55;'>experiment:</strong> mobs can always see you",
-    //     maxCount: 1,
-    //     count: 0,
-    //     frequency: 0,
-    //     isBadRandomOption: true,
-    //     isExperimentalMode: true,
-    //     allowed() {
-    //         return build.isExperimentSelection
-    //     },
-    //     requires: "",
-    //     effect() {
-    //         this.interval = setInterval(() => {
-    //             if (!build.isExperimentSelection) {
-    //                 for (let i = 0; i < mob.length; i++) {
-    //                     if (!mob[i].shield && mob[i].isDropPowerUp) {
-    //                         mob[i].locatePlayer()
-    //                         mob[i].seePlayer.yes = true;
-    //                     }
-    //                 }
-    //             }
-    //         }, 1000); //every 1 seconds
-    //     },
-    //     interval: undefined,
-    //     remove() {
-    //         if (this.count > 0) clearTimeout(this.interval);
-    //     }
-    // },
-    // {
-    //     name: "-decomposers-",
-    //     description: "<strong style='color: #f55;'>experiment:</strong> after they die<br>mobs leave behind spawns",
-    //     maxCount: 1,
-    //     count: 0,
-    //     frequency: 0,
-    //     isBadRandomOption: true,
-    //     isExperimentalMode: true,
-    //     allowed() {
-    //         return build.isExperimentSelection
-    //     },
-    //     requires: "",
-    //     effect() {
-    //         tech.deathSpawns = 0.2
-    //     },
-    //     remove() {
-    //         tech.deathSpawns = 0
-    //     }
-    // },
-
-
 
     //************************************************** 
     //************************************************** JUNK
@@ -9246,10 +9720,10 @@ const tech = {
         requires: "NOT EXPERIMENT MODE",
         damage: 0,
         effect() {
-            tech.damage *= this.damage
+            m.damageDone *= this.damage
         },
         remove() {
-            if (this.count && m.alive) tech.damage /= this.damage
+            if (this.count && m.alive) m.damageDone /= this.damage
         }
     },
     {
@@ -9302,7 +9776,7 @@ const tech = {
         allowed: () => true,
         requires: "",
         effect() {
-            if (Math.random() < 0.07) tech.damage *= 7.77
+            if (Math.random() < 0.07) m.damageDone *= 7.77
         },
         remove() { }
     },
@@ -9316,13 +9790,13 @@ const tech = {
         allowed: () => true,
         requires: "",
         effect() {
-            tech.damage *= -1
+            m.damageDone *= -1
         },
         remove() { }
     },
     {
         name: "defunct",
-        description: "build <strong>100</strong> scrap <strong class='color-bot'>bots</strong><br>bots might last for <strong>30</strong> seconds",
+        description: "build <strong>100</strong> scrap <strong class='color-bot'>bots</strong><br><strong class='color-bot'>bots</strong> break after about <strong>30</strong> seconds",
         maxCount: 1,
         count: 0,
         frequency: 0,
@@ -9456,32 +9930,31 @@ const tech = {
             }
         }
     },
-    {
-        name: "startle response",
-        description: `if a threat is nearby, activate a ${powerUps.orb.boost(1)}<br>and lock your mouse until you press escape`,
-        maxCount: 1,
-        count: 0,
-        frequency: 0,
-        isJunk: true,
-        isInstant: true,
-        allowed: () => true,
-        requires: "",
-        effect() {
-            // tech.damage *= 1.33
-            setInterval(() => {
-                if (powerUps.boost.endCycle < simulation.cycle && !simulation.paused && m.alive) {
-                    for (let i = 0; i < mob.length; i++) {
-                        if (mob[i].distanceToPlayer2() < 400000) { //650
-                            canvas.requestPointerLock();
-                            powerUps.boost.effect();
-                            break
-                        }
-                    }
-                }
-            }, 2000);
-        },
-        remove() { }
-    },
+    // {
+    //     name: "startle response",
+    //     description: `if a threat is nearby, activate a ${powerUps.orb.boost(1)}<br>and lock your mouse until you press escape`,
+    //     maxCount: 1,
+    //     count: 0,
+    //     frequency: 0,
+    //     isJunk: true,
+    //     isInstant: true,
+    //     allowed: () => true,
+    //     requires: "",
+    //     effect() {
+    //         setInterval(() => {
+    //             if (powerUps.boost.endCycle < simulation.cycle && !simulation.paused && m.alive) {
+    //                 for (let i = 0; i < mob.length; i++) {
+    //                     if (mob[i].distanceToPlayer2() < 400000) { //650
+    //                         canvas.requestPointerLock();
+    //                         powerUps.boost.effect();
+    //                         break
+    //                     }
+    //                 }
+    //             }
+    //         }, 2000);
+    //     },
+    //     remove() { }
+    // },
     {
         name: "closed timelike curve",
         description: `spawn ${powerUps.orb.field()}${powerUps.orb.field()}${powerUps.orb.field()}${powerUps.orb.field()}${powerUps.orb.field()}, but every 12 seconds<br>teleport a second into your future or past`,
@@ -9622,7 +10095,6 @@ const tech = {
                 // (1-X)^cycles = chance to be removed //Math.random() < 0.000019  10 min
                 if (!simulation.paused && m.alive) {
                     if (Math.random() < 0.000038) {
-                        // m.death();
                         simulation.clearMap();
                         simulation.draw.setPaths();
                         return
@@ -9648,7 +10120,7 @@ const tech = {
         effect() {
             for (let i = 0, len = mob.length; i < len; i++) {
                 if (mob[i].isDropPowerUp) {
-                    powerUps.directSpawn(mob[i].position.x, mob[i].position.y, "ammo");
+                    powerUps.spawn(mob[i].position.x, mob[i].position.y, "ammo");
                     mob[i].death();
                 }
             }
@@ -9673,6 +10145,28 @@ const tech = {
         remove() {
             tech.isBrainstorm = false
             tech.isBrainstormActive = false
+        }
+    },
+    {
+        name: "eternalism",
+        description: `<strong>1.3x</strong> <strong class='color-d'>damage</strong>, but <strong>time</strong> doesn't <strong>pause</strong><br>while <strong class='color-choice'><span>ch</span><span>oos</span><span>ing</span></strong> ${powerUps.orb.field()}, ${powerUps.orb.tech()}, or ${powerUps.orb.gun()}`,
+        maxCount: 1,
+        count: 0,
+        frequency: 0,
+        frequencyDefault: 0,
+        isJunk: true,
+        allowed() {
+            return !tech.isPauseSwitchField && !tech.isPauseEjectTech && !tech.isWormHolePause && !document.fullscreenElement
+        },
+        requires: "not unified field theory, paradigm shift, invariant, fullscreen",
+        damage: 1.3,
+        effect() {
+            m.damageDone *= this.damage
+            tech.isNoDraftPause = true
+        },
+        remove() {
+            if (this.count && m.alive) m.damageDone /= this.damage
+            tech.isNoDraftPause = false
         }
     },
     {
@@ -9759,24 +10253,24 @@ const tech = {
             if (this.count) m.look = m.lookDefault
         }
     },
-    {
-        name: "facsimile",
-        description: `inserts a copy of your current level into the level list`,
-        maxCount: 1,
-        count: 0,
-        frequency: 0,
-        isInstant: true,
-        isJunk: true,
-        allowed() {
-            return true
-        },
-        requires: "",
-        effect() {
-            const index = Math.min(level.levels.length - 1, level.onLevel)
-            level.levels.splice(index, 0, level.levels[index]);
-        },
-        remove() { }
-    },
+    // {
+    //     name: "facsimile",
+    //     description: `inserts a copy of your current level into the level list`,
+    //     maxCount: 1,
+    //     count: 0,
+    //     frequency: 0,
+    //     isInstant: true,
+    //     isJunk: true,
+    //     allowed() {
+    //         return true
+    //     },
+    //     requires: "",
+    //     effect() {
+    //         const index = Math.min(level.levels.length - 1, level.onLevel)
+    //         level.levels.splice(index, 0, level.levels[index]);
+    //     },
+    //     remove() { }
+    // },
     {
         name: "negative friction",
         description: "when you touch walls you speed up instead of slowing down. It's kinda fun.",
@@ -9905,8 +10399,8 @@ const tech = {
         },
         requires: "",
         effect() {
-            // const colors = shuffle(["#f7b", "#0eb", "#467", "#0cf", "hsl(246,100%,77%)", "#26a"])
-            const colors = shuffle([powerUps.research.color, powerUps.heal.color, powerUps.ammo.color, powerUps.ammo.color, powerUps.field.color, powerUps.gun.color])
+            const colors = [powerUps.research.color, powerUps.heal.color, powerUps.ammo.color, powerUps.ammo.color, powerUps.field.color, powerUps.gun.color]
+            colors.sort(() => Math.random() - 0.5);
             powerUps.research.color = colors[0]
             powerUps.heal.color = colors[1]
             powerUps.ammo.color = colors[2]
@@ -9936,37 +10430,7 @@ const tech = {
                 }
             }
         },
-        remove() {
-            // const colors = ["#f7b", "#0eb", "#467", "#0cf", "hsl(246,100%,77%)", "#26a"] //no shuffle
-            // powerUps.research.color = colors[0]
-            // powerUps.heal.color = colors[1]
-            // powerUps.ammo.color = colors[2]
-            // powerUps.field.color = colors[3]
-            // powerUps.tech.color = colors[4]
-            // powerUps.gun.color = colors[5]
-            // for (let i = 0; i < powerUp.length; i++) {
-            //     switch (powerUp[i].name) {
-            //         case "research":
-            //             powerUp[i].color = colors[0]
-            //             break;
-            //         case "heal":
-            //             powerUp[i].color = colors[1]
-            //             break;
-            //         case "ammo":
-            //             powerUp[i].color = colors[2]
-            //             break;
-            //         case "field":
-            //             powerUp[i].color = colors[3]
-            //             break;
-            //         case "tech":
-            //             powerUp[i].color = colors[4]
-            //             break;
-            //         case "gun":
-            //             powerUp[i].color = colors[5]
-            //             break;
-            //     }
-            // }
-        }
+        remove() { }
     },
     {
         name: "emergency broadcasting",
@@ -10380,7 +10844,7 @@ const tech = {
         },
         requires: "",
         effect() {
-            String.prototype.shuffle = function () {
+            String.prototype.shuf = function () {
                 var a = this.split(""),
                     n = a.length;
 
@@ -10393,7 +10857,7 @@ const tech = {
                 return a.join("");
             }
 
-            for (let i = 0, len = tech.tech.length; i < len; i++) tech.tech[i].name = tech.tech[i].name.shuffle()
+            for (let i = 0, len = tech.tech.length; i < len; i++) tech.tech[i].name = tech.tech[i].name.shuf()
         },
         remove() { }
     },
@@ -10411,9 +10875,22 @@ const tech = {
         requires: "",
         effect() {
             setInterval(() => {
+                const unit = {
+                    x: 1,
+                    y: 0
+                }
+                for (let i = 0; i < 5; i++) {
+                    const where = Vector.add(m.pos, Vector.mult(Vector.rotate(unit, Math.random() * 2 * Math.PI), 2000 + 2000 * Math.random()))
+                    spawn.sucker(where.x, where.y, 140)
+                    const who = mob[mob.length - 1]
+                    who.locatePlayer()
+                    // who.damageReduction = 0.2
+                }
+
                 m.switchWorlds()
                 simulation.trails()
-            }, 20000); //every 30 seconds
+
+            }, 20000); //every 20 seconds
         },
         remove() { }
     },
@@ -10434,6 +10911,26 @@ const tech = {
                 let score = Math.ceil(1000 * Math.random() * Math.random() * Math.random() * Math.random() * Math.random())
                 simulation.inGameConsole(`simulation.score <span class='color-symbol'>=</span> ${score.toFixed(0)}`);
             }, 10000); //every 10 seconds
+        },
+        remove() { }
+    },
+    {
+        name: "aerodynamics",
+        description: "reduce air friction for all power ups",
+        maxCount: 1,
+        count: 0,
+        frequency: 0,
+        isInstant: true,
+        isJunk: true,
+        allowed() {
+            return true
+        },
+        requires: "",
+        effect() {
+            const styleEl = document.createElement('style');
+            document.head.appendChild(styleEl);
+            const myStyle = styleEl.sheet;
+            myStyle.insertRule(".choose-grid-no-images {border-radius: 50%;}", 0);
         },
         remove() { }
     },
@@ -10626,7 +11123,7 @@ const tech = {
     //                             ctx.lineTo(vertices[0].x, vertices[0].y)
     //                         }
 
-    //                         //stroke the map, so it looks different form the line of sight 
+    //                         //stroke the map, so it looks different form the line of sight
     //                         ctx.strokeStyle = "#234";
     //                         ctx.lineWidth = 9;
     //                         ctx.stroke(simulation.draw.mapPath); //this has a pretty large impact on performance, maybe 5% worse performance
@@ -10646,6 +11143,91 @@ const tech = {
     //     },
     //     remove() { }
     // },
+    {
+        name: "grayscale",
+        description: "make everything grayscale",
+        maxCount: 1,
+        count: 0,
+        frequency: 0,
+        isInstant: true,
+        isJunk: true,
+        allowed() {
+            return true
+        },
+        requires: "",
+        effect() {
+            document.documentElement.style.filter = 'grayscale(1)';
+        },
+        remove() { }
+    },
+    {
+        name: "blur",
+        description: "make everything blurry",
+        maxCount: 1,
+        count: 0,
+        frequency: 0,
+        isInstant: true,
+        isJunk: true,
+        allowed() {
+            return true
+        },
+        requires: "",
+        effect() {
+            simulation.ephemera.push({
+                do() {
+                    // document.documentElement.style.filter = `blur(${2 + 2 * Math.sin(simulation.cycle * 0.01)}px)`
+                    if (!(simulation.cycle % 180)) document.documentElement.style.filter = `blur(${Math.floor(4 * Math.random())}px)`
+                }
+            })
+        },
+        remove() { }
+    },
+    {
+        name: "hue-rotate",
+        description: "cycle colors around the color circle",
+        maxCount: 1,
+        count: 0,
+        frequency: 0,
+        isInstant: true,
+        isJunk: true,
+        allowed() {
+            return true
+        },
+        requires: "",
+        effect() {
+            //   
+            simulation.ephemera.push({
+                count: 0,
+                do() {
+                    document.documentElement.style.filter = `hue-rotate(${simulation.cycle}deg)`
+                }
+            })
+        },
+        remove() { }
+    },
+    {
+        name: "brightness",
+        description: "increase and decrease brightness",
+        maxCount: 1,
+        count: 0,
+        frequency: 0,
+        isInstant: true,
+        isJunk: true,
+        allowed() {
+            return true
+        },
+        requires: "",
+        effect() {
+            //   
+            simulation.ephemera.push({
+                count: 0,
+                do() {
+                    document.documentElement.style.filter = `brightness(${1 + 0.5 * Math.sin(simulation.cycle * 0.03)})`
+                }
+            })
+        },
+        remove() { }
+    },
     {
         name: "umbra",
         description: "produce a blue glow around everything<br>and probably some simulation lag",
@@ -10682,8 +11264,26 @@ const tech = {
         remove() { }
     },
     {
+        name: "the upside down",
+        description: `Flip the universe until the end of the level.<br>I'll give you 1.1x <strong class='color-d'>damage</strong> as well.`,
+        maxCount: 1,
+        count: 0,
+        frequency: 0,
+        isInstant: true,
+        isJunk: true,
+        allowed() {
+            return true
+        },
+        requires: "",
+        effect() {
+            simulation.flipCameraVertical(900)
+            m.damageDone *= 1.1
+        },
+        remove() { }
+    },
+    {
         name: "rewind",
-        description: "every 10 seconds <strong class='color-rewind'>rewind</strong> <strong>2</strong> seconds",
+        description: "every 10 seconds <strong>rewind</strong> <strong>2</strong> seconds",
         maxCount: 9,
         count: 0,
         frequency: 0,
@@ -10706,7 +11306,7 @@ const tech = {
     },
     {
         name: "undo",
-        description: "every 4 seconds <strong class='color-rewind'>rewind</strong> <strong>1/2</strong> a second",
+        description: "every 4 seconds <strong>rewind</strong> <strong>1/2</strong> a second",
         maxCount: 9,
         count: 0,
         frequency: 0,
@@ -10778,13 +11378,10 @@ const tech = {
         },
         requires: "",
         effect() {
-            spawn.setSpawnList();
-            spawn.setSpawnList();
             for (let i = 0, len = mob.length; i < len; i++) {
                 if (mob[i].alive && !mob[i].shield && !mob[i].isBadTarget) {
-                    const pick = spawn.pickList[Math.floor(Math.random() * spawn.pickList.length)];
-                    spawn[pick](mob[i].position.x, mob[i].position.y);
-                    if (Math.random() < 0.5) spawn[pick](mob[i].position.x, mob[i].position.y);
+                    spawn.randomMobByLevelsCleared(mob[i].position.x, mob[i].position.y)
+                    if (Math.random() < 0.5) spawn.randomMobByLevelsCleared(mob[i].position.x, mob[i].position.y)
                     mob[i].death();
                 }
             }
@@ -10793,7 +11390,7 @@ const tech = {
     },
     {
         name: "expert system",
-        description: `spawn ${powerUps.orb.tech()}<br><strong>+50%</strong> <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>`,
+        description: `spawn ${powerUps.orb.tech()}<br><strong>+50%</strong> chance for <strong class='color-junk'>JUNK</strong> <strong class='color-choice'><span>ch</span><span>oi</span><span>ces</span></strong>`,
         maxCount: 9,
         count: 0,
         frequency: 0,
@@ -11020,7 +11617,7 @@ const tech = {
     },
     {
         name: "rhythm",
-        description: "you oscillate up and down",
+        description: "you oscillate up and down<br>also you look like an egg",
         maxCount: 1,
         count: 0,
         frequency: 0,
@@ -11031,6 +11628,7 @@ const tech = {
         },
         requires: "",
         effect() {
+            m.skin.egg();
             setInterval(() => {
                 m.yOffWhen.stand = 53 + 28 * Math.sin(simulation.cycle * 0.2)
                 if (m.onGround && !m.crouch) m.yOffGoal = m.yOffWhen.stand
@@ -11098,7 +11696,7 @@ const tech = {
         },
         requires: "",
         effect() {
-            tech.damage *= 3
+            m.damageDone *= 3
 
             m.look = () => {
                 // const scale = 0;
@@ -11114,6 +11712,45 @@ const tech = {
             }
         },
         remove() { }
+    },
+    {
+        name: "pet bots",
+        description: "pet your <strong class='color-bot'>bots</strong>",
+        maxCount: 1,
+        count: 0,
+        frequency: 0,
+        isJunk: true,
+        isInstant: true,
+        allowed() {
+            return b.totalBots()
+        },
+        requires: "",
+        effect() {
+            simulation.ephemera.push({
+                count: 0,
+                do() {
+                    this.count++
+                    if (!(this.count % 420)) {
+                        for (let i = 0; i < bullet.length; i++) {
+                            if (bullet[i].botType && Math.random() < 0.3) {
+                                simulation.inGameConsole(`${bullet[i].botType}<span class='color-symbol'>-</span>bot.pet<span class='color-symbol'>()</span>`)
+                                if (m.onGround && !m.crouch) {
+                                    m.yOffGoal = m.yOffWhen.crouch;
+                                    setTimeout(() => {
+                                        if (!m.crouch) m.yOffGoal = m.yOffWhen.stand;
+                                    }, 1000);
+                                    if (m.immuneCycle < m.cycle + 90) m.immuneCycle = m.cycle + 90
+                                }
+                                if (Math.random() < 0.3) break
+                            }
+                        }
+
+                    }
+                }
+            })
+        },
+        remove() {
+        }
     },
     {
         name: "assimilation",
@@ -11295,7 +11932,7 @@ const tech = {
             const range = 1300
             for (let i = 0, len = 9; i < len; i++) {
                 const angle = 2 * Math.PI * i / len
-                spawn.randomLevelBoss(m.pos.x + range * Math.cos(angle), m.pos.y + range * Math.sin(angle), spawn.nonCollideBossList);
+                spawn.randomLevelBoss(m.pos.x + range * Math.cos(angle), m.pos.y + range * Math.sin(angle), ["cellBossCulture", "bomberBoss", "powerUpBoss", "growBossCulture", "snakeBoss"]);
             }
             spawn.historyBoss(0, 0)
             spawn.pulsarBoss(level.exit.x, level.exit.y, 70, true)
@@ -11396,6 +12033,7 @@ const tech = {
                     if (this.count && this.researchSpawned < 12 && !(this.state.length % 10)) {
                         this.researchSpawned++
                         powerUps.spawn(m.pos.x - 50 + 100 * (Math.random() - 0.5), m.pos.y + 100 * (Math.random() - 0.5), "research");
+                        sound.portamento(300, 600, 100, 0.03)//portamento(frequency, end = 1000, shiftRate = 10, gain = 0.05) {
                     }
                     setTimeout(() => {
                         loop()
@@ -11467,6 +12105,7 @@ const tech = {
                     if (this.count && this.researchSpawned < 12 && !(this.state.length % 10)) {
                         this.researchSpawned++
                         powerUps.spawn(m.pos.x - 50 + 100 * (Math.random() - 0.5), m.pos.y + 100 * (Math.random() - 0.5), "research");
+                        sound.portamento(300, 600, 100, 0.03)//portamento(frequency, end = 1000, shiftRate = 10, gain = 0.05) {
                     }
                     setTimeout(() => {
                         loop()
@@ -11596,7 +12235,7 @@ const tech = {
             bc.activated = false
 
             bc.onmessage = function (ev) {
-                if (ev.data === 'tech') powerUps.directSpawn(m.pos.x, m.pos.y, "tech");
+                if (ev.data === 'tech') powerUps.spawn(m.pos.x, m.pos.y, "tech");
                 if (ev.data === 'death') {
                     m.death()
                     bc.close(); //end session
@@ -11892,7 +12531,7 @@ const tech = {
     bonusEnergy: null,
     // healGiveMaxEnergy: null,
     healMaxEnergyBonus: 0, //not null
-    aimDamage: null,
+    slowFireDamage: null,
     isNoFireDefense: null,
     isNoFireDamage: null,
     duplicateChance: null,
@@ -11929,6 +12568,7 @@ const tech = {
     cancelTechCount: null,
     isBotDamage: null,
     isBanish: null,
+    isRetain: null,
     isMaxEnergyTech: null,
     isLowEnergyDamage: null,
     isRewindBot: null,
@@ -11937,6 +12577,8 @@ const tech = {
     isEndLevelPowerUp: null,
     isMissileBig: null,
     isMissileBiggest: null,
+    isMissileFast: null,
+    isMissile2ndExplode: null,
     isLaserMine: null,
     isFoamMine: null,
     isAmmoFoamSize: null,
@@ -11958,7 +12600,6 @@ const tech = {
     isDuplicateMobs: null,
     isDynamoBotUpgrade: null,
     isBlockPowerUps: null,
-    isDamageAfterKillNoRegen: null,
     isHarmReduceNoKill: null,
     isSwitchReality: null,
     isResearchReality: null,
@@ -12037,7 +12678,6 @@ const tech = {
     baseFx: null,
     isNeutronium: null,
     isFreeWormHole: null,
-    isRewindField: null,
     isCrouchRegen: null,
     isAxion: null,
     isDarkEnergy: null,
@@ -12096,7 +12736,7 @@ const tech = {
     collidePowerUps: null,
     isDilate: null,
     isDiaphragm: null,
-    isNoGroundDamage: null,
+    isOffGroundDamage: null,
     isSuperBounce: null,
     isDivisor: null,
     isFoamCavitation: null,
@@ -12118,6 +12758,7 @@ const tech = {
     isPowerUpDamage: null,
     isExitPrompt: null,
     isResearchDamage: null,
+    isResearchHeal: null,
     interestRate: null,
     isImmunityDamage: null,
     isMobDeathImmunity: null,
@@ -12128,4 +12769,29 @@ const tech = {
     isWiki: null,
     isStaticBlock: null,
     isDamageFieldTech: null,
+    isRemineralize: null,
+    mineralDamageReduction: null,
+    isDemineralize: null,
+    mineralDamage: null,
+    negativeMassCost: null,
+    beamCollimator: null,
+    isInPilot: null,
+    isNoPilotCost: null,
+    isPlasmaBoost: null,
+    isControlPlasma: null,
+    energyDefense: null,
+    isNewWormHoleDamage: null,
+    isNoDeath: null,
+    isDeathTech: null,
+    isDeathTechTriggered: null,
+    isRebar: null,
+    isMaul: null,
+    isTargeting: null,
+    isBreakHarpoon: null,
+    isBreakHarpoonGain: null,
+    isExponential: null,
+    isCoyote: null,
+    isNitinol: null,
+    isEndothermic: null,
+    isPrecision: null,
 }
