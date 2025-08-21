@@ -22,9 +22,23 @@
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4207227785539100" crossorigin="anonymous"></script>
-
 </head>
 <body>
+<div id="loader">
+  <div class="loading-title">Loading Pulsar...</div>
+  
+  <div class="loading-bar">
+    <div class="progress" id="progress"></div>
+  </div>
+  <div class="discord-section" style="padding: 5px;"></div>
+  <div class="discord-section">
+    <div class="discord-text">Join the Discord! 
+    <a href="https://discord.gg/9KKk4DNBPE" class="discord-link">
+      <span class="discord-icon"><i class="fa-brands fa-discord" style="color:#006eff"></i></span>
+    </a></div>
+  </div>
+</div>
+
 <div id="particles-js"></div>
 
 <div id="cookieConsent" style="display:none;">
@@ -259,15 +273,19 @@
   </label>
 </div>
 </div>
-<script type="text/javascript">
-	atOptions = {
-		'key' : '1118f7a5d44f23dbfc48da2338d22502',
-		'format' : 'iframe',
-		'height' : 60,
-		'width' : 468,
-		'params' : {}
-	};
-</script>
+<div style="width:100%;display:flex;justify-content:center;">
+  <script type="text/javascript">
+    atOptions = {
+      'key' : '1118f7a5d44f23dbfc48da2338d22502',
+      'format' : 'iframe',
+      'height' : 60,
+      'width' : 468,
+      'params' : {}
+    };
+  </script>
+  <script type="text/javascript" src="//www.highperformancedisplaycontent.com/1118f7a5d44f23dbfc48da2338d22502/invoke.js"></script>
+</div>
+
 <script type="text/javascript" src="//www.highperformanceformat.com/1118f7a5d44f23dbfc48da2338d22502/invoke.js"></script>
         <div class="categories-wrapper" id="categoriesWrapper">
 
@@ -1900,6 +1918,33 @@ uploadInput.addEventListener('change', (event) => {
   };
   window.onload = showCookieConsent;
 
+const progress = document.getElementById("progress");
+const loader = document.getElementById("loader");
+const hubControls = document.getElementById("hub-controls");
+
+if (hubControls) {
+  hubControls.style.display = "none";
+}
+
+let width = 0;
+const interval = setInterval(() => {
+  if (width < 90) {
+    width += 2;
+    progress.style.width = width + "%";
+  }
+}, 100);
+
+window.addEventListener("load", () => {
+  clearInterval(interval);
+  progress.style.width = "100%";
+  setTimeout(() => {
+    loader.classList.add("fade-out");
+    if (hubControls) {
+      hubControls.style.display = "";
+    }
+    setTimeout(() => loader.remove(), 600);
+  }, 300);
+});
 </script>
 </body>
 </html>
