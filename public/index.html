@@ -265,10 +265,11 @@
   <button class="color-btn teal" data-color="linear-gradient(80deg, #185a9d, #43cea2)"></button>
 </div>
 
+
 <div id="switchContainer">
   <label id="toggleLabel" for="particlesToggle">Particles</label>
   <label class="switch">
-    <input type="checkbox" id="particlesToggle" checked />
+    <input type="checkbox" id="particlesToggle"/>
     <span class="slider"></span>
   </label>
 </div>
@@ -283,6 +284,18 @@
       'params' : {}
     };
   </script>
+  <div class="ad-container">
+  <script type="text/javascript">
+    atOptions = {
+      'key' : '1118f7a5d44f23dbfc48da2338d22502',
+      'format' : 'iframe',
+      'height' : 60,
+      'width' : 468,
+      'params' : {}
+    };
+  </script>
+</div>
+
   <script type="text/javascript" src="//www.highperformancedisplaycontent.com/1118f7a5d44f23dbfc48da2338d22502/invoke.js"></script>
 </div>
 
@@ -1750,7 +1763,7 @@ if (hideCategoriesBtn) {
   const container = document.getElementById('particles-js');
 
   const savedState = localStorage.getItem('particlesEnabled');
-  const enabled = savedState === null ? true : savedState === 'true';
+  const enabled = savedState === null ? false : savedState === 'true';
 
   toggle.checked = enabled;
   container.style.display = enabled ? 'block' : 'none';
@@ -1781,7 +1794,7 @@ if (hideCategoriesBtn) {
 
 if (!localStorage.getItem('backgroundStyle') && !localStorage.getItem('backgroundValue')) {
   localStorage.setItem('backgroundStyle', 'gradient');
-  localStorage.setItem('backgroundValue', 'linear-gradient(-80deg, #3a5588, #0c1254)');
+  localStorage.setItem('backgroundValue', 'linear-gradient(80deg, #185a9d, #43cea2)');
 }
 
 document.querySelectorAll('.color-btn').forEach(button => {
