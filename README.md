@@ -11,15 +11,14 @@
 
 ## Features:
 
-- Fast, Advanced & Powerful Web Proxy
 - Tons of apps
-- App grid and windowed style
 - Sleek & Clean UI
 - Search Bar
 - Games
 - Favoriting
-- Tabs
+- Categories
 - Customization
+- Ability to save site data
 - And a lot more features coming soon...
 
 
