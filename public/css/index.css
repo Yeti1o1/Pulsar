@@ -4,7 +4,7 @@
     box-sizing: border-box;
     font-family: 'Lato', sans-serif;
     scrollbar-width: thin;
-    scrollbar-color: #ffffff #000000;
+    scrollbar-color: #ffffff #111;
 }
 
 @keyframes arrowPulse {
@@ -313,12 +313,12 @@ body::before {
 #downloadBtn {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 600px;
+    border-radius: 10px;
     color: #e0e0e0;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: bold;
-    padding: 10px 20px;
+    padding: 10px 10px;
     transition: all 0.3s ease;
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
@@ -637,12 +637,12 @@ nav ul li .discord-btn {
 .toggle-categories-btn {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 600px;
+    border-radius: 10px;
     color: #e0e0e0;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: bold;
-    padding: 10px 20px;
+    padding: 10px 10px;
     transition: all 0.3s ease;
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
@@ -885,7 +885,7 @@ nav ul li:nth-child(6) { animation-delay: 0.65s !important; }
 .search-wrapper {
     align-items: center;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
+    border-radius: 10px;
     display: flex;
     flex-grow: 1;
     width: clamp(100px, 25vw, 325px);
@@ -968,12 +968,12 @@ nav ul li:nth-child(6) { animation-delay: 0.65s !important; }
 #uploadBtn {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 600px;
+    border-radius: 10px;
     color: #e0e0e0;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: bold;
-    padding: 10px 20px;
+    padding: 10px 10px;
     transition: all 0.3s ease;
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
