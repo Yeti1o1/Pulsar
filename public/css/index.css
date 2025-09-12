@@ -202,7 +202,6 @@ body::before {
     color: #eee;
     -webkit-text-fill-color: initial;
     font-size: 1.4rem;
-    text-shadow: 0 0 3px rgba(255, 255, 255, 0.4), 0 0 7px rgba(255, 255, 255, 0.35);
     display: inline-flex;
     align-items: center;
     gap: 10px;
