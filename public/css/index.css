@@ -97,9 +97,9 @@ body::before {
     right: 8px;
     font-size: 1.1rem;
     color: rgba(236, 235, 235, 0.733);
-    background-color: rgba(0, 0, 0, 0.534);
-    padding: 4px 5px;
-    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.600);
+    padding: 5px 5px;
+    border-radius: 5px;
     transition: all 0.3s ease;
     z-index: 5;
     cursor: pointer;
@@ -628,7 +628,7 @@ nav ul li .discord-btn {
 }
 
 .toggle-all-btn:hover {
-    background: rgba(110, 110, 110, 0.363);
+    background: rgba(72, 72, 72, 0.363);
     box-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
     color: #fff;
     top: -1px;
