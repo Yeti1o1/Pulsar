@@ -310,7 +310,7 @@ body::before {
 
 #downloadBtn {
     background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 0px solid rgba(255, 255, 255, 0.2);
     border-radius: 10px;
     color: #e0e0e0;
     cursor: pointer;
@@ -616,7 +616,7 @@ nav ul li .discord-btn {
 }
 .toggle-all-btn {
     background: rgba(87, 87, 87, 0);
-    border: 1px solid rgba(141, 141, 141, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.5);
     border-radius: 6px;
     color: #ffffff;
     cursor: pointer;
@@ -635,7 +635,7 @@ nav ul li .discord-btn {
 
 .toggle-categories-btn {
     background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 0px solid rgba(255, 255, 255, 0.2);
     border-radius: 10px;
     color: #e0e0e0;
     cursor: pointer;
@@ -880,7 +880,6 @@ nav ul li:nth-child(6) { animation-delay: 0.65s !important; }
 .search-icon-btn:hover {
     color: #fff;
 }
-
 .search-wrapper {
     align-items: center;
     background: rgba(255, 255, 255, 0.1);
@@ -889,8 +888,8 @@ nav ul li:nth-child(6) { animation-delay: 0.65s !important; }
     flex-grow: 1;
     width: clamp(100px, 25vw, 325px);
     padding: 0px 5px 0px 15px;
+    margin-left: 800px;
 }
-
 
 #switchContainer {
     position: fixed;
@@ -966,7 +965,7 @@ nav ul li:nth-child(6) { animation-delay: 0.65s !important; }
 
 #uploadBtn {
     background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 0px solid rgba(255, 255, 255, 0.2);
     border-radius: 10px;
     color: #e0e0e0;
     cursor: pointer;
