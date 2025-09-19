@@ -568,3 +568,4 @@ function showFavoritedGames(event) {
     if (viewAllBtn) viewAllBtn.hidden = false;
     if (hideCategoriesBtn) hideCategoriesBtn.hidden = true;
 }
+
