@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hypersonic</title>
+  <style>
+    body { 
+      background: black; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center; 
+      height: 100vh; 
+      margin: 0; 
+      color: white; 
+      font-family: sans-serif; 
+      overflow: hidden; 
+    }
+    canvas { 
+      background: black; 
+      display: block; 
+      border: 5px solid white; 
+      box-sizing: border-box;
+    }
+    #startMenu, #gameOverMenu { 
+      position: absolute;
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      font-family: sans-serif;
+      z-index: 10;
+    }
+    #startMenu button, #gameOverMenu button { 
+      padding: 10px 20px; 
+      margin-top: 20px; 
+      font-size: 16px; 
+      cursor: pointer; 
+    }
+    #gameOverMenu { display: none; }
+  </style>
+</head>
+<body>
+<div id="startMenu">
+  <h1>Hypersonic</h1>
+  <button id="startButton">Start Game</button>
+</div>
+
+<div id="gameOverMenu" style="display: none;">
+  <h1 id="gameOverMessage">Game Over!</h1>
+  <div style="display: flex; gap: 20px; justify-content: center; margin-top: 30px;">
+    <button id="playAgainButton" style="background:black;color:#00ffff;border:3px solid #00ffff;font-size:1.5em;padding:15px 40px;cursor:pointer;text-transform:uppercase;letter-spacing:2px;box-shadow:0 0 10px #00ffff;transform: skew(-20deg);transition:all 0.3s ease;">
+      Play Again
+    </button>
+
+    <button onclick="window.location.href='index.html'" style="background:black;color:#00ffff;border:3px solid #00ffff;font-size:1.5em;padding:15px 40px;cursor:pointer;text-transform:uppercase;letter-spacing:2px;box-shadow:0 0 10px #00ffff;transform: skew(-20deg);transition:all 0.3s ease;">
+      Home
+    </button>
+  </div>
+</div>
+
+<canvas id="game"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+let grid = 20;
+let step; 
+let snakeSize;
+let gameRunning = false;
+let lastMoveTime = 0;
+const moveDelay = 50;
+
+function resizeCanvas() {
+  const size = Math.min(window.innerWidth * 0.95, window.innerHeight * 0.95);
+  canvas.width = size;
+  canvas.height = size;
+  grid = Math.floor(size / 30);
+  step = grid * 0.5;
+  snakeSize = grid * 0.5;
+}
+window.addEventListener('resize', () => {
+  if (gameRunning) resizeCanvas();
+});
+
+class Snake {
+  constructor(color, x, y, keys, vx = 1, vy = 0) {
+    this.color = color;
+    this.x = Math.round(x / grid) * grid;
+    this.y = Math.round(y / grid) * grid;
+    this.vx = vx;
+    this.vy = vy;
+    this.trail = [{x: this.x, y: this.y}];
+    this.alive = true;
+    this.keys = keys;
+    this.framesAlive = 0;
+  }
+
+  move() {
+    if (!this.alive) return;
+    this.x = (this.x + this.vx * step + canvas.width) % canvas.width;
+    this.y = (this.y + this.vy * step + canvas.height) % canvas.height;
+    this.trail.push({x: this.x, y: this.y});
+    this.framesAlive++;
+  }
+
+  draw() {
+    ctx.fillStyle = this.color;
+    this.trail.forEach(p => ctx.fillRect(p.x, p.y, snakeSize, snakeSize));
+
+    const head = this.trail[this.trail.length - 1];
+    ctx.fillStyle = "black";
+    ctx.fillRect(head.x, head.y, snakeSize, snakeSize);
+
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+    ctx.arc(head.x + snakeSize/2, head.y + snakeSize/2, snakeSize/2, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle = "black";
+    ctx.beginPath();
+    ctx.arc(head.x + snakeSize/2, head.y + snakeSize/2, snakeSize/4, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  checkCollision(snakes) {
+    if (this.framesAlive < 5) return;
+    snakes.forEach(snake => {
+      snake.trail.forEach((p, idx) => {
+        if (this !== snake || idx < snake.trail.length - 1) {
+          const dx = Math.min(Math.abs(this.x - p.x), canvas.width - Math.abs(this.x - p.x));
+          const dy = Math.min(Math.abs(this.y - p.y), canvas.height - Math.abs(this.y - p.y));
+          if (dx < snakeSize && dy < snakeSize) this.alive = false;
+        }
+      });
+    });
+  }
+}
+
+let snake1, snake2, snakes;
+
+function initGame() {
+  resizeCanvas();
+  const startOffset = grid * 2;
+  const endOffset = grid * 3;
+  snake1 = new Snake("cyan", startOffset, startOffset, {up: "w", left: "a", down: "s", right: "d"}, 1, 0);
+  snake2 = new Snake("lime", canvas.width - endOffset, canvas.height - endOffset, 
+                     {up: "ArrowUp", left: "ArrowLeft", down: "ArrowDown", right: "ArrowRight"}, 
+                     -1, 0);
+  snakes = [snake1, snake2];
+  lastMoveTime = 0;
+}
+
+document.addEventListener("keydown", e => {
+  if (!gameRunning) return;
+  snakes.forEach(s => {
+    if (e.key === s.keys.up && s.vy === 0) { s.vx = 0; s.vy = -1; }
+    if (e.key === s.keys.down && s.vy === 0) { s.vx = 0; s.vy = 1; }
+    if (e.key === s.keys.left && s.vx === 0) { s.vx = -1; s.vy = 0; }
+    if (e.key === s.keys.right && s.vx === 0) { s.vx = 1; s.vy = 0; }
+  });
+});
+
+function gameLoop(timestamp) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (!lastMoveTime) lastMoveTime = timestamp;
+  if (timestamp - lastMoveTime > moveDelay) {
+    snakes.forEach(s => s.move());
+    snakes.forEach(s => s.checkCollision(snakes));
+    lastMoveTime = timestamp;
+  }
+
+  snakes.forEach(s => s.draw());
+
+  if (snakes.some(s => !s.alive)) {
+    gameRunning = false;
+    showGameOver();
+    return;
+  }
+
+  requestAnimationFrame(gameLoop);
+}
+
+function showGameOver() {
+  const [s1, s2] = snakes;
+  let message = "";
+  if (!s1.alive && !s2.alive) message = "It's a tie!";
+  else if (!s1.alive) message = "Lime wins!";
+  else if (!s2.alive) message = "Cyan wins!";
+  document.getElementById("gameOverMessage").textContent = message;
+  document.getElementById("gameOverMenu").style.display = "flex";
+}
+
+document.getElementById("startButton").addEventListener("click", () => {
+  initGame();
+  document.getElementById("startMenu").style.display = "none";
+  document.getElementById("gameOverMenu").style.display = "none";
+  canvas.style.display = "block";
+  gameRunning = true;
+  requestAnimationFrame(gameLoop);
+});
+
+document.getElementById("playAgainButton").addEventListener("click", () => {
+  initGame();
+  document.getElementById("gameOverMenu").style.display = "none";
+  gameRunning = true;
+  requestAnimationFrame(gameLoop);
+});
+</script>
+</body>
+</html>

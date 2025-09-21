@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hypersonic</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      background-image: url('bg.png');
+      background-size: 50%;
+      overflow: hidden;
+      color: #00ffff;
+      position: relative;
+    }
+
+    .menu-container {
+      background: rgb(0, 0, 0);
+      padding: 50px 80px;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 50px;
+      z-index: 2;
+      box-shadow: 0 0 50px #00ffffaa;
+    }
+
+    h1 {
+      font-size: 5em;
+      margin: 0;
+    }
+
+    .menu {
+      display: flex;
+      flex-direction: row;
+      gap: 50px;
+    }
+
+    .menu button {
+      background: black;
+      color: #00ffff;
+      border: 3px solid #00ffff;
+      font-size: 2em;
+      padding: 20px 60px;
+      cursor: pointer;
+      border-radius: 0px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      box-shadow: 0 0 10px #00ffff;
+      transform: skew(-20deg);
+      transition: all 0.3s ease;
+    }
+
+    .menu button:hover, .menu button:focus {
+      background: #00ffff;
+      color: black;
+      box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 20px;
+      font-size: 1.2em;
+      text-align: center;
+      color: #00ffff;
+      z-index: 2;
+    }
+
+    .footer a {
+      color: #00ffff;
+      text-decoration: none;
+      font-weight: bold;
+      margin-left: 5px;
+    }
+
+    .footer a:hover {
+      text-shadow: 0 0 15px #00ffff;
+    }
+  </style>
+</head>
+<body>
+  <div class="menu-container">
+    <h1>Hypersonic</h1>
+    <div class="menu">
+      <button id="onePlayerBtn">One Player</button>
+      <button id="twoPlayerBtn">Two Player</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    Owned by Pulsar • <a href="https://discord.gg/9KKk4DNBPE" target="_blank">Join Discord</a>
+  </div>
+
+  <script>
+    document.getElementById("onePlayerBtn").addEventListener("click", () => {
+      window.location.href = "1p.html";
+    });
+
+    document.getElementById("twoPlayerBtn").addEventListener("click", () => {
+      window.location.href = "2p.html";
+    });
+  </script>
+</body>
+</html>
