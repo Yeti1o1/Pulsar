@@ -34,40 +34,53 @@
       z-index: 10;
     }
     #startMenu button, #gameOverMenu button { 
-      padding: 10px 20px; 
-      margin-top: 20px; 
-      font-size: 16px; 
-      cursor: pointer; 
+      background:black;
+      color:#00ffff;
+      border:3px solid #00ffff;
+      font-size:1.5em;
+      padding:15px 40px;
+      cursor:pointer;
+      text-transform:uppercase;
+      letter-spacing:2px;
+      box-shadow:0 0 10px #00ffff;
+      transform: skew(-20deg);
+      transition:all 0.3s ease;
+      margin-top:20px;
     }
     #gameOverMenu { display: none; }
+    #jumpsInfo {
+      margin-bottom: 10px;
+      font-size: 18px;
+      color: #00ffff;
+      display: flex;
+      gap: 20px;
+    }
   </style>
 </head>
 <body>
 <div id="startMenu">
-  <h1>Hypersonic</h1>
+  <h1>Hypersonic 1P</h1>
   <button id="startButton">Start Game</button>
 </div>
 
-<div id="gameOverMenu" style="display: none;">
+<div id="gameOverMenu">
   <h1 id="gameOverMessage">Game Over!</h1>
-  <div style="display: flex; gap: 20px; justify-content: center; margin-top: 30px;">
-    <button id="playAgainButton" style="background:black;color:#00ffff;border:3px solid #00ffff;font-size:1.5em;padding:15px 40px;cursor:pointer;text-transform:uppercase;letter-spacing:2px;box-shadow:0 0 10px #00ffff;transform: skew(-20deg);transition:all 0.3s ease;">
-      Play Again
-    </button>
-
-    <button onclick="window.location.href='index.html'" style="background:black;color:#00ffff;border:3px solid #00ffff;font-size:1.5em;padding:15px 40px;cursor:pointer;text-transform:uppercase;letter-spacing:2px;box-shadow:0 0 10px #00ffff;transform: skew(-20deg);transition:all 0.3s ease;">
-      Home
-    </button>
+  <div style="display:flex; gap:20px; justify-content:center; margin-top:30px;">
+    <button id="playAgainButton">Play Again</button>
+    <button onclick="window.location.href='index.html'">Home</button>
   </div>
 </div>
 
+<div id="jumpsInfo">Player Jumps: 2 &nbsp;|&nbsp; Enemy Jumps: 2</div>
 <canvas id="game"></canvas>
 
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
+const jumpsInfo = document.getElementById("jumpsInfo");
+
 let grid = 20;
-let step; 
+let step;
 let snakeSize;
 let gameRunning = false;
 let lastMoveTime = 0;
@@ -77,13 +90,12 @@ function resizeCanvas() {
   const size = Math.min(window.innerWidth * 0.95, window.innerHeight * 0.95);
   canvas.width = size;
   canvas.height = size;
-  grid = Math.floor(size / 30);
+  grid = Math.max(8, Math.floor(size / 30));
   step = grid * 0.5;
   snakeSize = grid * 0.5;
 }
-window.addEventListener('resize', () => {
-  if (gameRunning) resizeCanvas();
-});
+window.addEventListener('resize', () => { resizeCanvas(); });
+resizeCanvas();
 
 class Snake {
   constructor(color, x, y, keys, vx = 1, vy = 0, isEnemy = false) {
@@ -97,185 +109,145 @@ class Snake {
     this.keys = keys;
     this.framesAlive = 0;
     this.isEnemy = isEnemy;
+    this.jumps = 2;
   }
-
   move(snakes, player) {
     if (!this.alive) return;
-
-    if (this.isEnemy) this.enemyAI(snakes, player);
-
-    this.x = (this.x + this.vx * step + canvas.width) % canvas.width;
-    this.y = (this.y + this.vy * step + canvas.height) % canvas.height;
-    this.trail.push({x: this.x, y: this.y});
+    if (this.isEnemy) {
+      const allDirs = [{vx:1,vy:0},{vx:-1,vy:0},{vx:0,vy:1},{vx:0,vy:-1}];
+      const safeDirs = allDirs.filter(d => !this.willCollide(d, snakes));
+      if (safeDirs.length===0 && this.jumps>0 && this.willCollide({vx:this.vx,vy:this.vy}, snakes)){
+        destroyTrailAhead(this,4);
+        this.jumps--;
+        updateJumpsDisplay();
+      } else this.enemyAI(snakes, player);
+    }
+    this.x = (this.x + this.vx*step + canvas.width)%canvas.width;
+    this.y = (this.y + this.vy*step + canvas.height)%canvas.height;
+    this.trail.push({x:this.x, y:this.y});
     this.framesAlive++;
   }
-
   draw() {
     ctx.fillStyle = this.color;
     this.trail.forEach(p => ctx.fillRect(p.x, p.y, snakeSize, snakeSize));
-
-    const head = this.trail[this.trail.length - 1];
+    const head = this.trail[this.trail.length-1];
     ctx.fillStyle = "black";
     ctx.fillRect(head.x, head.y, snakeSize, snakeSize);
-
     ctx.fillStyle = "white";
     ctx.beginPath();
-    ctx.arc(head.x + snakeSize/2, head.y + snakeSize/2, snakeSize/2, 0, Math.PI*2);
+    ctx.arc(head.x+snakeSize/2, head.y+snakeSize/2, snakeSize/2, 0, Math.PI*2);
     ctx.fill();
-
     ctx.fillStyle = "black";
     ctx.beginPath();
-    ctx.arc(head.x + snakeSize/2, head.y + snakeSize/2, snakeSize/4, 0, Math.PI*2);
+    ctx.arc(head.x+snakeSize/2, head.y+snakeSize/2, snakeSize/4,0,Math.PI*2);
     ctx.fill();
   }
-
   checkCollision(snakes) {
-    if (this.framesAlive < 5) return;
-    snakes.forEach(snake => {
-      snake.trail.forEach((p, idx) => {
-        if (this !== snake || idx < snake.trail.length - 1) {
-          if (this.overlap(this.x, this.y, p.x, p.y)) this.alive = false;
+    if(this.framesAlive<5) return;
+    snakes.forEach(snake=>{
+      snake.trail.forEach((p,idx)=>{
+        if(this!==snake || idx<snake.trail.length-1){
+          const dx=Math.min(Math.abs(this.x-p.x), canvas.width-Math.abs(this.x-p.x));
+          const dy=Math.min(Math.abs(this.y-p.y), canvas.height-Math.abs(this.y-p.y));
+          if(dx<snakeSize && dy<snakeSize) this.alive=false;
         }
       });
     });
   }
-
   overlap(x1,y1,x2,y2){
-    const dx = Math.min(Math.abs(x1-x2), canvas.width - Math.abs(x1-x2));
-    const dy = Math.min(Math.abs(y1-y2), canvas.height - Math.abs(y1-y2));
-    return dx < snakeSize && dy < snakeSize;
+    const dx=Math.min(Math.abs(x1-x2), canvas.width-Math.abs(x1-x2));
+    const dy=Math.min(Math.abs(y1-y2), canvas.height-Math.abs(y1-y2));
+    return dx<snakeSize && dy<snakeSize;
   }
-
-  willCollide(dir, snakes) {
-    const nx = (this.trail[this.trail.length-1].x + dir.vx * step + canvas.width) % canvas.width;
-    const ny = (this.trail[this.trail.length-1].y + dir.vy * step + canvas.height) % canvas.height;
-    for (let snake of snakes) {
-      for (let i=0;i<snake.trail.length;i++){
-        const p = snake.trail[i];
-        const dx = Math.min(Math.abs(nx-p.x), canvas.width - Math.abs(nx-p.x));
-        const dy = Math.min(Math.abs(ny-p.y), canvas.height - Math.abs(ny-p.y));
-        if (dx < snakeSize && dy < snakeSize) return true;
+  willCollide(dir, snakes){
+    const nx=(this.trail[this.trail.length-1].x + dir.vx*step + canvas.width)%canvas.width;
+    const ny=(this.trail[this.trail.length-1].y + dir.vy*step + canvas.height)%canvas.height;
+    for(let snake of snakes){
+      for(let i=0;i<snake.trail.length;i++){
+        const p=snake.trail[i];
+        const dx=Math.min(Math.abs(nx-p.x), canvas.width-Math.abs(nx-p.x));
+        const dy=Math.min(Math.abs(ny-p.y), canvas.height-Math.abs(ny-p.y));
+        if(dx<snakeSize && dy<snakeSize) return true;
       }
     }
     return false;
   }
-
-  enemyAI(snakes, player) {
-    const head = this.trail[this.trail.length - 1];
-
-    if (Math.random() < 0.08) { 
-      const dirs = [
-        {vx:1, vy:0}, {vx:-1, vy:0}, {vx:0, vy:1}, {vx:0, vy:-1}
-      ];
-      const safeDirs = dirs.filter(d => !this.willCollide(d, snakes));
-      if (safeDirs.length>0){
-        const choice = safeDirs[Math.floor(Math.random()*safeDirs.length)];
-        this.vx = choice.vx;
-        this.vy = choice.vy;
-        return;
-      }
-    }
-
-    const directions = [
-      {vx:this.vx, vy:this.vy},
-      {vx:this.vy, vy:-this.vx},
-      {vx:-this.vy, vy:this.vx}
-    ];
-
-    directions.sort((a,b)=>{
-      const ax = (head.x + a.vx*step + canvas.width) % canvas.width;
-      const ay = (head.y + a.vy*step + canvas.height) % canvas.height;
-      const bx = (head.x + b.vx*step + canvas.width) % canvas.width;
-      const by = (head.y + b.vy*step + canvas.height) % canvas.height;
-
-      const aDist = this.wrapDistance(ax, ay, player.x, player.y) - this.playerFreedom(player, snakes, a);
-      const bDist = this.wrapDistance(bx, by, player.x, player.y) - this.playerFreedom(player, snakes, b);
-      return aDist - bDist;
+  enemyAI(snakes, player){
+    const head=this.trail[this.trail.length-1];
+    const dirs=[{vx:this.vx,vy:this.vy},{vx:this.vy,vy:-this.vx},{vx:-this.vy,vy:this.vx}];
+    dirs.sort((a,b)=>{
+      const ax=(head.x + a.vx*step + canvas.width)%canvas.width;
+      const ay=(head.y + a.vy*step + canvas.height)%canvas.height;
+      const bx=(head.x + b.vx*step + canvas.width)%canvas.width;
+      const by=(head.y + b.vy*step + canvas.height)%canvas.height;
+      return Math.hypot(ax-player.x, ay-player.y) - Math.hypot(bx-player.x, by-player.y);
     });
-
-    for (let dir of directions){
-      if (!this.willCollide(dir, snakes)){
-        this.vx = dir.vx;
-        this.vy = dir.vy;
-        return;
-      }
-    }
-
-    const allDirs = [
-      {vx:1,vy:0},{vx:-1,vy:0},{vx:0,vy:1},{vx:0,vy:-1}
-    ];
-    const safeDirs = allDirs.filter(d => !this.willCollide(d,snakes));
-    if (safeDirs.length>0){
-      const choice = safeDirs[Math.floor(Math.random()*safeDirs.length)];
-      this.vx = choice.vx;
-      this.vy = choice.vy;
-    }
+    for(let dir of dirs){ if(!this.willCollide(dir,snakes)){ this.vx=dir.vx; this.vy=dir.vy; return; } }
+    const allDirs=[{vx:1,vy:0},{vx:-1,vy:0},{vx:0,vy:1},{vx:0,vy:-1}];
+    const safeDirs=allDirs.filter(d=>!this.willCollide(d,snakes));
+    if(safeDirs.length>0){ const choice=safeDirs[Math.floor(Math.random()*safeDirs.length)]; this.vx=choice.vx; this.vy=choice.vy; }
   }
+}
 
-  wrapDistance(x1, y1, x2, y2) {
-    const dx = Math.min(Math.abs(x1-x2), canvas.width - Math.abs(x1-x2));
-    const dy = Math.min(Math.abs(y1-y2), canvas.height - Math.abs(y1-y2));
-    return Math.hypot(dx, dy);
-  }
-
-  playerFreedom(player, snakes, moveDir){
-    let freedom = 0;
-    const testDirs = [{vx:1,vy:0},{vx:-1,vy:0},{vx:0,vy:1},{vx:0,vy:-1}];
-    testDirs.forEach(d=>{
-      if (!this.willCollide(d,snakes)) freedom++;
-    });
-    return freedom;
+function destroyTrailAhead(snake,lengthCells){
+  const head=snake.trail[snake.trail.length-1];
+  for(let i=1;i<=lengthCells;i++){
+    const tx=(head.x+snake.vx*step*i+canvas.width)%canvas.width;
+    const ty=(head.y+snake.vy*step*i+canvas.height)%canvas.height;
+    for(let s of snakes){
+      s.trail=s.trail.filter((p,idx)=>{
+        if((s===player || s===enemy) && idx>=s.trail.length-3) return true;
+        const dx=Math.min(Math.abs(tx-p.x),canvas.width-Math.abs(tx-p.x));
+        const dy=Math.min(Math.abs(ty-p.y),canvas.height-Math.abs(ty-p.y));
+        return !(dx<snakeSize && dy<snakeSize);
+      });
+    }
   }
 }
 
 let player, enemy, snakes;
 
-function initGame() {
+function initGame(){
   resizeCanvas();
-  const startOffset = grid * 2;
-  const endOffset = grid * 3;
-  player = new Snake("cyan", startOffset, startOffset, {up:"w",left:"a",down:"s",right:"d"},1,0,false);
-  enemy = new Snake("lime", canvas.width-endOffset, canvas.height-endOffset,null,-1,0,true);
-  snakes = [player, enemy];
+  const startOffset=grid*2;
+  const endOffset=grid*3;
+  player=new Snake("cyan",startOffset,startOffset,{up:"w",left:"a",down:"s",right:"d"},1,0,false);
+  enemy=new Snake("lime",canvas.width-endOffset,canvas.height-endOffset,null,-1,0,true);
+  snakes=[player,enemy];
   lastMoveTime=0;
+  updateJumpsDisplay();
 }
 
-document.addEventListener("keydown", e => {
-  if (!gameRunning) return;
-  [player].forEach(s => {
-    if (e.key===s.keys.up && s.vy===0){s.vx=0;s.vy=-1;}
-    if (e.key===s.keys.down && s.vy===0){s.vx=0;s.vy=1;}
-    if (e.key===s.keys.left && s.vx===0){s.vx=-1;s.vy=0;}
-    if (e.key===s.keys.right && s.vx===0){s.vx=1;s.vy=0;}
-  });
+document.addEventListener("keydown", e=>{
+  if(!gameRunning) return;
+  if(e.key===player.keys.up && player.vy===0){player.vx=0;player.vy=-1;}
+  if(e.key===player.keys.down && player.vy===0){player.vx=0;player.vy=1;}
+  if(e.key===player.keys.left && player.vx===0){player.vx=-1;player.vy=0;}
+  if(e.key===player.keys.right && player.vx===0){player.vx=1;player.vy=0;}
+  if(e.key==="e" || e.key==="E"){ if(player.jumps>0){ destroyTrailAhead(player,4); player.jumps--; updateJumpsDisplay(); } }
 });
 
-function gameLoop(timestamp) {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+function updateJumpsDisplay(){ jumpsInfo.textContent="Player Jumps: "+player.jumps+"  |  Enemy Jumps: "+enemy.jumps; }
 
-  if (!lastMoveTime) lastMoveTime=timestamp;
-  if (timestamp-lastMoveTime>moveDelay){
-    snakes.forEach(s => s.move(snakes, player));
-    snakes.forEach(s => s.checkCollision(snakes));
+function gameLoop(timestamp){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(!lastMoveTime) lastMoveTime=timestamp;
+  if(timestamp-lastMoveTime>moveDelay){
+    snakes.forEach(s=>s.move(snakes,player));
+    snakes.forEach(s=>s.checkCollision(snakes));
     lastMoveTime=timestamp;
   }
-
-  snakes.forEach(s => s.draw());
-
-  if (snakes.some(s => !s.alive)){
-    gameRunning=false;
-    showGameOver();
-    return;
-  }
-
+  snakes.forEach(s=>s.draw());
+  updateJumpsDisplay();
+  if(snakes.some(s=>!s.alive)){ gameRunning=false; showGameOver(); return; }
   requestAnimationFrame(gameLoop);
 }
 
 function showGameOver(){
   let message="";
-  if (!player.alive && !enemy.alive) message="It's a tie!";
-  else if (!player.alive) message="Enemy wins!";
-  else if (!enemy.alive) message="Player wins!";
+  if(!player.alive && !enemy.alive) message="It's a tie!";
+  else if(!player.alive) message="Enemy wins!";
+  else if(!enemy.alive) message="Player wins!";
   document.getElementById("gameOverMessage").textContent=message;
   document.getElementById("gameOverMenu").style.display="flex";
 }

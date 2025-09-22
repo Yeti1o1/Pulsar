@@ -16,29 +16,40 @@
       font-family: 'Orbitron', sans-serif;
       background-image: url('bg.png');
       background-size: 50%;
-      overflow: hidden;
       color: #00ffff;
       position: relative;
     }
 
-    .menu-container {
+    .menu-container, .controls-container {
       background: rgb(0, 0, 0);
-      padding: 50px 80px;
+      padding: 40px 60px;
       border-radius: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 50px;
-      z-index: 2;
-      box-shadow: 0 0 50px #00ffffaa;
+      gap: 40px;
+      box-shadow: 0 0 60px #00ffffaa;
+      width: 90%;
+      max-width: 1000px;
     }
 
+    .controls-container { display: none; }
+
     h1 {
-      font-size: 5em;
+      font-size: 4em;
       margin: 0;
+      text-align: center;
+      letter-spacing: 2px;
     }
 
     .menu {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .menu-row {
       display: flex;
       flex-direction: row;
       gap: 50px;
@@ -65,14 +76,69 @@
       box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
     }
 
+    .controls-grid {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      gap: 50px;
+    }
+
+    .player-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      flex: 1;
+    }
+
+    .player-controls h2 {
+      font-size: 2em;
+      margin-bottom: 10px;
+      text-decoration: underline;
+    }
+
+    .control-button {
+      display: inline-block;
+      background: black;
+      color: #00ffff;
+      border: 3px solid #00ffff;
+      padding: 15px 25px;
+      font-size: 1.3em;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      border-radius: 5px;
+      box-shadow: 0 0 10px #00ffff;
+      transition: all 0.3s ease;
+      width: 180px;
+      text-align: center;
+    }
+
+    .control-button:hover {
+      background: #00ffff;
+      color: black;
+      box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+    }
+
+    .back-btn {
+      margin-top: 30px;
+      padding: 20px 60px;
+      font-size: 1.8em;
+      width: auto;
+    }
+
     .footer {
       position: absolute;
-      bottom: 20px;
+      bottom: 0px;
       font-size: 1.2em;
       text-align: center;
       color: #00ffff;
       z-index: 2;
+      background: rgb(0, 0, 0);
+      padding: 50px 50px;
     }
+
 
     .footer a {
       color: #00ffff;
@@ -87,12 +153,38 @@
   </style>
 </head>
 <body>
-  <div class="menu-container">
+  <div class="menu-container" id="mainMenu">
     <h1>Hypersonic</h1>
     <div class="menu">
-      <button id="onePlayerBtn">One Player</button>
-      <button id="twoPlayerBtn">Two Player</button>
+      <div class="menu-row">
+        <button id="onePlayerBtn">One Player</button>
+        <button id="twoPlayerBtn">Two Player</button>
+      </div>
+      <button id="controls">Controls</button>
     </div>
+  </div>
+
+  <div class="controls-container" id="controlsMenu">
+    <h1>Controls</h1>
+    <div class="controls-grid">
+      <div class="player-controls">
+        <h2>Cyan Player</h2>
+        <div class="control-button">Move Up: W</div>
+        <div class="control-button">Move Down: S</div>
+        <div class="control-button">Move Left: A</div>
+        <div class="control-button">Move Right: D</div>
+        <div class="control-button">Jump: E</div>
+      </div>
+      <div class="player-controls">
+        <h2>Lime Player</h2>
+        <div class="control-button">Move Up: 🡅</div>
+        <div class="control-button">Move Down: 🡇</div>
+        <div class="control-button">Move Left: 🡄</div>
+        <div class="control-button">Move Right: 🡆</div>
+        <div class="control-button">Jump: /</div>
+      </div>
+    </div>
+    <button class="control-button back-btn" id="backBtn">Back</button>
   </div>
 
   <div class="footer">
@@ -100,12 +192,25 @@
   </div>
 
   <script>
+    const mainMenu = document.getElementById("mainMenu");
+    const controlsMenu = document.getElementById("controlsMenu");
+
     document.getElementById("onePlayerBtn").addEventListener("click", () => {
       window.location.href = "1p.html";
     });
 
     document.getElementById("twoPlayerBtn").addEventListener("click", () => {
       window.location.href = "2p.html";
+    });
+
+    document.getElementById("controls").addEventListener("click", () => {
+      mainMenu.style.display = "none";
+      controlsMenu.style.display = "flex";
+    });
+
+    document.getElementById("backBtn").addEventListener("click", () => {
+      controlsMenu.style.display = "none";
+      mainMenu.style.display = "flex";
     });
   </script>
 </body>
