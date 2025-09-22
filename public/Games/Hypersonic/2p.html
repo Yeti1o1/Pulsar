@@ -50,11 +50,43 @@
     #gameOverMenu { display: none; }
     #jumpsInfo {
       margin-bottom: 10px;
-      font-size: 18px;
-      color: #00ffff;
       display: flex;
-      gap: 20px;
+      justify-content: space-between;
+      width: 48%;
     }
+    .jump-display {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .jump-label {
+      margin-right: 8px;
+    }
+    .jump-circle {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: transparent;
+      position: relative;
+    }
+    .jump-circle.filled {
+      background: currentColor;
+    }
+    .jump-circle.filled::before {
+      content:"";
+      position:absolute;
+      width:60%;
+      height:60%;
+      border-radius:50%;
+      background:white;
+      top:20%;
+      left:20%;
+    }
+    #p1Jumps { color: cyan; }
+    #p2Jumps { color: lime; flex-direction: row-reverse; }
+    #p2Jumps .jump-label { margin-right: 0; margin-left: 8px; }
   </style>
 </head>
 <body>
@@ -72,8 +104,8 @@
 </div>
 
 <div id="jumpsInfo">
-  <span id="p1Jumps">Cyan Jumps: 2</span>
-  <span id="p2Jumps">Lime Jumps: 2</span>
+  <div id="p1Jumps" class="jump-display"></div>
+  <div id="p2Jumps" class="jump-display"></div>
 </div>
 
 <canvas id="game"></canvas>
@@ -99,7 +131,7 @@ function resizeCanvas() {
   step = grid * 0.5;
   snakeSize = grid * 0.5;
 }
-window.addEventListener('resize', () => { resizeCanvas(); });
+window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
 class Snake {
@@ -158,16 +190,19 @@ class Snake {
   }
 }
 
-let snake1,snake2,snakes;
+let snake1, snake2, snakes;
+let jumpItem;
 
 function initGame(){
   const offset=grid*2;
   const endOffset=grid*3;
-  snake1=new Snake("cyan", offset, offset, {up:"w",left:"a",down:"s",right:"d"},1,0);
+  snake1=new Snake("cyan", offset, offset, {up:"w",left:"a",down:"s",right:"d"});
   snake2=new Snake("lime", canvas.width-endOffset, canvas.height-endOffset, 
-    {up:"ArrowUp",left:"ArrowLeft",down:"ArrowDown",right:"ArrowRight"}, -1,0);
+    {up:"ArrowUp",left:"ArrowLeft",down:"ArrowDown",right:"ArrowRight"});
   snakes=[snake1,snake2];
   lastMoveTime=0;
+
+  spawnJumpItem();
   updateJumpsDisplay();
 }
 
@@ -184,9 +219,64 @@ document.addEventListener("keydown", e=>{
 });
 
 function updateJumpsDisplay(){
-  p1JumpsDisplay.textContent="Cyan Jumps: "+snake1.jumps;
-  p2JumpsDisplay.textContent="Lime Jumps: "+snake2.jumps;
+  function renderJumps(container, jumpsLeft, color, isLime=false){
+    container.innerHTML = "";
+    const text = document.createElement("span");
+    text.classList.add("jump-label");
+    text.textContent = "Jumps";
+    container.appendChild(text);
+
+    for(let i=0; i<jumpsLeft; i++){
+      const circle = document.createElement("div");
+      circle.style.position = "relative";
+      circle.style.width = "18px";
+      circle.style.height = "18px";
+
+      const outerRing = document.createElement("div");
+      outerRing.style.width = "100%";
+      outerRing.style.height = "100%";
+      outerRing.style.borderRadius = "50%";
+      outerRing.style.border = `2px solid ${color}`;
+      outerRing.style.background = "transparent";
+      outerRing.style.position = "absolute";
+      outerRing.style.top = "0";
+      outerRing.style.left = "0";
+
+      const innerFill = document.createElement("div");
+      innerFill.style.width = "82%";
+      innerFill.style.height = "82%";
+      innerFill.style.borderRadius = "50%";
+      innerFill.style.background = color;
+      innerFill.style.position = "absolute";
+
+      if(isLime){
+        innerFill.style.top = "20%";
+        innerFill.style.left = "19%";
+      } else {
+        innerFill.style.top = "20%";
+        innerFill.style.left = "21%";
+      }
+
+      const highlight = document.createElement("div");
+      highlight.style.width = "40%";
+      highlight.style.height = "40%";
+      highlight.style.borderRadius = "50%";
+      highlight.style.background = "white";
+      highlight.style.position = "absolute";
+      highlight.style.top = "15%";
+      highlight.style.left = "12%";
+
+      innerFill.appendChild(highlight);
+      circle.appendChild(outerRing);
+      circle.appendChild(innerFill);
+      container.appendChild(circle);
+    }
+  }
+  renderJumps(p1JumpsDisplay, snake1.jumps, "cyan");
+  renderJumps(p2JumpsDisplay, snake2.jumps, "lime", true);
 }
+
+
 
 function destroyTrailAhead(snake,lengthCells){
   const head=snake.trail[snake.trail.length-1];
@@ -195,13 +285,74 @@ function destroyTrailAhead(snake,lengthCells){
     const ty=(head.y+snake.vy*step*i+canvas.height)%canvas.height;
     for(let s of snakes){
       s.trail=s.trail.filter((p,idx)=>{
-        if((s===snake1||s===snake2) && idx>=s.trail.length-3) return true;
+        if(idx>=s.trail.length-3) return true;
         const dx=Math.min(Math.abs(tx-p.x),canvas.width-Math.abs(tx-p.x));
         const dy=Math.min(Math.abs(ty-p.y),canvas.height-Math.abs(ty-p.y));
         return !(dx<snakeSize && dy<snakeSize);
       });
     }
   }
+}
+
+function spawnJumpItem(){
+  const size = grid;
+  let safe = false;
+  let x, y;
+
+  while(!safe){
+    x = Math.floor(Math.random()*(canvas.width-size)/grid)*grid;
+    y = Math.floor(Math.random()*(canvas.height-size)/grid)*grid;
+    safe = true;
+
+    for(const snake of snakes){
+      for(const point of snake.trail){
+        const dx = Math.abs(x - point.x);
+        const dy = Math.abs(y - point.y);
+        if(dx <= grid*3 && dy <= grid*3){
+          safe = false;
+          break;
+        }
+      }
+      if(!safe) break;
+    }
+  }
+
+  jumpItem = { x, y };
+}
+
+
+function drawJumpItem(){
+  if(!jumpItem) return;
+  const size = grid*0.6;
+  const cx = jumpItem.x + grid/2;
+  const cy = jumpItem.y + grid/2;
+  ctx.strokeStyle="orange";
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.arc(cx,cy,size/2,0,Math.PI*2);
+  ctx.stroke();
+  ctx.fillStyle="orange";
+  ctx.beginPath();
+  ctx.arc(cx,cy,size/3,0,Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle="white";
+  ctx.beginPath();
+  ctx.arc(cx - size/8, cy - size/8, size/8, 0, Math.PI*2);
+  ctx.fill();
+}
+
+function checkJumpPickup(){
+  [snake1,snake2].forEach(snake=>{
+    if(!jumpItem) return;
+    const dx=Math.abs(snake.x - jumpItem.x);
+    const dy=Math.abs(snake.y - jumpItem.y);
+    if(dx<grid && dy<grid){
+      snake.jumps++;
+      jumpItem=null;
+      spawnJumpItem();
+      updateJumpsDisplay();
+    }
+  });
 }
 
 function gameLoop(timestamp){
@@ -213,6 +364,9 @@ function gameLoop(timestamp){
     lastMoveTime=timestamp;
   }
   snakes.forEach(s=>s.draw());
+  drawJumpItem();
+  checkJumpPickup();
+  updateJumpsDisplay();
   if(snakes.some(s=>!s.alive)){
     gameRunning=false;
     showGameOver();

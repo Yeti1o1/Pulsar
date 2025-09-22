@@ -1,0 +1,14 @@
+Copyright (c) 2025 Pulsar
+
+This game, "Hypersonic," is provided free of charge for personal use, sharing, and distribution.
+
+You may:
+- Download, use, and share this game in its complete, original form.
+- Redistribute the game, provided it is not modified.
+
+You may not:
+- Modify, alter, or create derivative works of the game or its contents.
+- Sell the game or include it in commercial packages without written permission.
+
+This game is licensed under the Creative Commons Attribution-NoDerivatives 4.0 International License (CC BY-ND 4.0).
+https://creativecommons.org/licenses/by-nd/4.0/
