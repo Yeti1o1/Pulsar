@@ -21,7 +21,7 @@
       border: 5px solid white; 
       box-sizing: border-box;
     }
-    #startMenu, #gameOverMenu { 
+    #startMenu, #gameOverMenu, #countdownOverlay { 
       position: absolute;
       display: flex; 
       flex-direction: column; 
@@ -48,6 +48,11 @@
       margin-top:20px;
     }
     #gameOverMenu { display: none; }
+    #countdownOverlay { 
+      display: none; 
+      font-size: 6em; 
+      font-weight: bold;
+    }
     #jumpsInfo {
       margin-bottom: 10px;
       display: flex;
@@ -63,26 +68,6 @@
     }
     .jump-label {
       margin-right: 8px;
-    }
-    .jump-circle {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: transparent;
-      position: relative;
-    }
-    .jump-circle.filled {
-      background: currentColor;
-    }
-    .jump-circle.filled::before {
-      content:"";
-      position:absolute;
-      width:60%;
-      height:60%;
-      border-radius:50%;
-      background:white;
-      top:20%;
-      left:20%;
     }
     #p1Jumps { color: cyan; }
     #p2Jumps { color: lime; flex-direction: row-reverse; }
@@ -103,6 +88,8 @@
   </div>
 </div>
 
+<div id="countdownOverlay"></div>
+
 <div id="jumpsInfo">
   <div id="p1Jumps" class="jump-display"></div>
   <div id="p2Jumps" class="jump-display"></div>
@@ -115,6 +102,7 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const p1JumpsDisplay = document.getElementById("p1Jumps");
 const p2JumpsDisplay = document.getElementById("p2Jumps");
+const countdownOverlay = document.getElementById("countdownOverlay");
 
 let grid = 20;
 let step;
@@ -198,7 +186,7 @@ function initGame(){
   const endOffset=grid*3;
   snake1=new Snake("cyan", offset, offset, {up:"w",left:"a",down:"s",right:"d"});
   snake2=new Snake("lime", canvas.width-endOffset, canvas.height-endOffset, 
-    {up:"ArrowUp",left:"ArrowLeft",down:"ArrowDown",right:"ArrowRight"});
+    {up:"ArrowUp",left:"ArrowLeft",down:"ArrowDown",right:"ArrowRight"}, -1, 0);
   snakes=[snake1,snake2];
   lastMoveTime=0;
 
@@ -224,23 +212,35 @@ function updateJumpsDisplay(){
     const text = document.createElement("span");
     text.classList.add("jump-label");
     text.textContent = "Jumps";
+
+    container.style.display = "flex";
+    container.style.alignItems = "center";
+
+    if(isLime){
+      container.style.flexDirection = "row-reverse";
+      text.style.marginLeft = "0.5em";
+      text.style.marginRight = "0";
+    } else {
+      container.style.flexDirection = "row";
+      text.style.marginRight = "0.5em";
+      text.style.marginLeft = "0";
+    }
+
     container.appendChild(text);
 
     for(let i=0; i<jumpsLeft; i++){
       const circle = document.createElement("div");
       circle.style.position = "relative";
-      circle.style.width = "18px";
-      circle.style.height = "18px";
+      circle.style.width = "1.2em";
+      circle.style.aspectRatio = "1 / 1";
 
       const outerRing = document.createElement("div");
       outerRing.style.width = "100%";
       outerRing.style.height = "100%";
       outerRing.style.borderRadius = "50%";
-      outerRing.style.border = `2px solid ${color}`;
-      outerRing.style.background = "transparent";
+      outerRing.style.border = `0.18em solid ${color}`;
       outerRing.style.position = "absolute";
-      outerRing.style.top = "0";
-      outerRing.style.left = "0";
+      outerRing.style.inset = "0";
 
       const innerFill = document.createElement("div");
       innerFill.style.width = "82%";
@@ -248,14 +248,9 @@ function updateJumpsDisplay(){
       innerFill.style.borderRadius = "50%";
       innerFill.style.background = color;
       innerFill.style.position = "absolute";
-
-      if(isLime){
-        innerFill.style.top = "20%";
-        innerFill.style.left = "19%";
-      } else {
-        innerFill.style.top = "20%";
-        innerFill.style.left = "21%";
-      }
+      innerFill.style.top = "50%";
+      innerFill.style.left = "50%";
+      innerFill.style.transform = "translate(-35%, -35%)";
 
       const highlight = document.createElement("div");
       highlight.style.width = "40%";
@@ -275,8 +270,6 @@ function updateJumpsDisplay(){
   renderJumps(p1JumpsDisplay, snake1.jumps, "cyan");
   renderJumps(p2JumpsDisplay, snake2.jumps, "lime", true);
 }
-
-
 
 function destroyTrailAhead(snake,lengthCells){
   const head=snake.trail[snake.trail.length-1];
@@ -319,7 +312,6 @@ function spawnJumpItem(){
 
   jumpItem = { x, y };
 }
-
 
 function drawJumpItem(){
   if(!jumpItem) return;
@@ -384,20 +376,41 @@ function showGameOver(){
   document.getElementById("gameOverMenu").style.display="flex";
 }
 
+// Countdown logic
+function startCountdown(callback){
+  let count = 3;
+  countdownOverlay.style.display="flex";
+  countdownOverlay.textContent = count;
+  let interval = setInterval(()=>{
+    count--;
+    if(count>0){
+      countdownOverlay.textContent = count;
+    } else {
+      clearInterval(interval);
+      countdownOverlay.style.display="none";
+      callback();
+    }
+  },600);
+}
+
 document.getElementById("startButton").addEventListener("click",()=>{
   initGame();
   document.getElementById("startMenu").style.display="none";
   document.getElementById("gameOverMenu").style.display="none";
   canvas.style.display="block";
-  gameRunning=true;
-  requestAnimationFrame(gameLoop);
+  startCountdown(()=>{
+    gameRunning=true;
+    requestAnimationFrame(gameLoop);
+  });
 });
 
 document.getElementById("playAgainButton").addEventListener("click",()=>{
   initGame();
   document.getElementById("gameOverMenu").style.display="none";
-  gameRunning=true;
-  requestAnimationFrame(gameLoop);
+  startCountdown(()=>{
+    gameRunning=true;
+    requestAnimationFrame(gameLoop);
+  });
 });
 </script>
 </body>

@@ -5,9 +5,10 @@
   <style>
     body { background: black; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; color: white; font-family: sans-serif; overflow: hidden; }
     canvas { background: black; display: block; border: 5px solid white; box-sizing: border-box; }
-    #startMenu, #gameOverMenu { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); color: white; font-family: sans-serif; z-index: 10; }
+    #startMenu, #gameOverMenu, #countdownOverlay { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); color: white; font-family: sans-serif; z-index: 10; }
     #startMenu button, #gameOverMenu button { background:black; color:#00ffff; border:3px solid #00ffff; font-size:1.5em; padding:15px 40px; cursor:pointer; text-transform:uppercase; letter-spacing:2px; box-shadow:0 0 10px #00ffff; transform: skew(-20deg); transition:all 0.3s ease; margin-top:20px; }
     #gameOverMenu { display: none; }
+    #countdownOverlay { font-size: 5em; font-weight: bold; display: none; background: rgba(0,0,0,0.6); }
     #jumpsInfo { margin-bottom: 10px; display: flex; justify-content: space-between; width: 48%; }
     .jump-display { display: flex; gap: 8px; align-items: center; font-weight: bold; font-size: 16px; }
     .jump-label { margin-right: 8px; }
@@ -26,6 +27,8 @@
     <button onclick="window.location.href='index.html'">Home</button>
   </div>
 </div>
+
+<div id="countdownOverlay"><span id="countdownText">3</span></div>
 
 <div id="jumpsInfo">
   <div id="p1Jumps" class="jump-display"></div>
@@ -57,10 +60,8 @@ class Snake{
     this.vx=vx; this.vy=vy; this.trail=[{x:this.x,y:this.y}]; this.alive=true;
     this.keys=keys; this.framesAlive=0; this.isEnemy=isEnemy; this.jumps=2;
   }
-
   move(snakes,player){
     if(!this.alive) return;
-
     if(this.isEnemy){
       const allDirs=[{vx:1,vy:0},{vx:-1,vy:0},{vx:0,vy:1},{vx:0,vy:-1}];
       const safeDirs=allDirs.filter(d=>!this.willCollide(d,snakes));
@@ -68,13 +69,11 @@ class Snake{
         useJump(this);
       } else this.enemyAI(snakes,player);
     }
-
     this.x = (this.x + this.vx*step + canvas.width) % canvas.width;
     this.y = (this.y + this.vy*step + canvas.height) % canvas.height;
     this.trail.push({x:this.x,y:this.y});
     this.framesAlive++;
   }
-
   draw(){
     ctx.fillStyle=this.color;
     this.trail.forEach(p=>ctx.fillRect(p.x,p.y,snakeSize,snakeSize));
@@ -85,7 +84,6 @@ class Snake{
     ctx.fillStyle="black"; ctx.beginPath();
     ctx.arc(head.x+snakeSize/2,head.y+snakeSize/2,snakeSize/4,0,Math.PI*2); ctx.fill();
   }
-
   checkCollision(snakes){
     if(this.framesAlive<5) return;
     snakes.forEach(snake=>{
@@ -98,7 +96,6 @@ class Snake{
       });
     });
   }
-
   willCollide(dir,snakes){
     const nx=(this.trail[this.trail.length-1].x + dir.vx*step + canvas.width) % canvas.width;
     const ny=(this.trail[this.trail.length-1].y + dir.vy*step + canvas.height) % canvas.height;
@@ -112,47 +109,39 @@ class Snake{
     }
     return false;
   }
-
-enemyAI(snakes, player){
-  const head = this.trail[this.trail.length-1];
-  let targetX = player.x, targetY = player.y;
-
-  if(jumpItem){
-    const distToPlayer = Math.hypot(head.x - player.x, head.y - player.y);
-    const distToJump = Math.hypot(head.x - jumpItem.x, head.y - jumpItem.y);
-    // Go for jump only if it's closer than player or player is far
-    if(distToJump + 10 < distToPlayer){
-      targetX = jumpItem.x;
-      targetY = jumpItem.y;
+  enemyAI(snakes, player){
+    const head = this.trail[this.trail.length-1];
+    let targetX = player.x, targetY = player.y;
+    if(jumpItem){
+      const distToPlayer = Math.hypot(head.x - player.x, head.y - player.y);
+      const distToJump = Math.hypot(head.x - jumpItem.x, head.y - jumpItem.y);
+      if(distToJump + 10 < distToPlayer){
+        targetX = jumpItem.x;
+        targetY = jumpItem.y;
+      }
     }
+    const dirs=[{vx:this.vx,vy:this.vy},{vx:this.vy,vy:-this.vx},{vx:-this.vy,vy:this.vx}];
+    dirs.sort((a,b)=>{
+      const ax=(head.x+a.vx*step+canvas.width)%canvas.width;
+      const ay=(head.y+a.vy*step+canvas.height)%canvas.height;
+      const bx=(head.x+b.vx*step+canvas.width)%canvas.width;
+      const by=(head.y+b.vy*step+canvas.height)%canvas.height;
+      return Math.hypot(ax-targetX,ay-targetY)-Math.hypot(bx-targetX,by-targetY);
+    });
+    for(let dir of dirs) if(!this.willCollide(dir,snakes)){ this.vx=dir.vx; this.vy=dir.vy; return; }
+    const allDirs=[{vx:1,vy:0},{vx:-1,vy:0},{vx:0,vy:1},{vx:0,vy:-1}];
+    const safeDirs=allDirs.filter(d=>!this.willCollide(d,snakes));
+    if(safeDirs.length>0){ const choice=safeDirs[Math.floor(Math.random()*safeDirs.length)]; this.vx=choice.vx; this.vy=choice.vy; }
   }
-
-  const dirs=[{vx:this.vx,vy:this.vy},{vx:this.vy,vy:-this.vx},{vx:-this.vy,vy:this.vx}];
-  dirs.sort((a,b)=>{
-    const ax=(head.x+a.vx*step+canvas.width)%canvas.width;
-    const ay=(head.y+a.vy*step+canvas.height)%canvas.height;
-    const bx=(head.x+b.vx*step+canvas.width)%canvas.width;
-    const by=(head.y+b.vy*step+canvas.height)%canvas.height;
-    return Math.hypot(ax-targetX,ay-targetY)-Math.hypot(bx-targetX,by-targetY);
-  });
-
-  for(let dir of dirs) if(!this.willCollide(dir,snakes)){ this.vx=dir.vx; this.vy=dir.vy; return; }
-  const allDirs=[{vx:1,vy:0},{vx:-1,vy:0},{vx:0,vy:1},{vx:0,vy:-1}];
-  const safeDirs=allDirs.filter(d=>!this.willCollide(d,snakes));
-  if(safeDirs.length>0){ const choice=safeDirs[Math.floor(Math.random()*safeDirs.length)]; this.vx=choice.vx; this.vy=choice.vy; }
-}
-
 }
 
 function useJump(snake) {
   if (snake.jumps <= 0) return;
   snake.jumps--;
-
   const head = snake.trail[snake.trail.length - 1];
   for (let i = 1; i <= 4; i++) {
     const tx = (head.x + snake.vx * step * i + canvas.width) % canvas.width;
     const ty = (head.y + snake.vy * step * i + canvas.height) % canvas.height;
-
     snakes.forEach(s => {
       s.trail = s.trail.filter((p, idx) => {
         const dx = Math.min(Math.abs(tx - p.x), canvas.width - Math.abs(tx - p.x));
@@ -161,7 +150,6 @@ function useJump(snake) {
       });
     });
   }
-
   updateJumpsDisplay();
 }
 
@@ -173,7 +161,6 @@ function spawnJumpItem(){
     snakes.forEach(s=>{ s.trail.forEach(p=>{ const dx=Math.abs(jumpItem.x-p.x); const dy=Math.abs(jumpItem.y-p.y); if(dx<=3*grid && dy<=3*grid) valid=false; }); });
   }while(!valid);
 }
-
 function drawJumpItem(){
   if(!jumpItem) return;
   const size=grid*0.6, cx=jumpItem.x+grid/2, cy=jumpItem.y+grid/2;
@@ -182,7 +169,6 @@ function drawJumpItem(){
   ctx.fillStyle="orange"; ctx.beginPath(); ctx.arc(cx,cy,size/3,0,Math.PI*2); ctx.fill();
   ctx.fillStyle="white"; ctx.beginPath(); ctx.arc(cx-size/8,cy-size/8,size/8,0,Math.PI*2); ctx.fill();
 }
-
 function checkJumpPickup(){
   if(!jumpItem) return;
   [player,enemy].forEach(snake=>{
@@ -197,67 +183,21 @@ function updateJumpsDisplay(){
     const text=document.createElement("span"); 
     text.classList.add("jump-label"); 
     text.textContent="Jumps";
-
-    if(isEnemy){
-      container.style.flexDirection = "row-reverse";
-      text.style.marginLeft = "8px";
-      text.style.marginRight = "0";
-    } else {
-      container.style.flexDirection = "row";
-      text.style.marginRight = "8px";
-      text.style.marginLeft = "0";
-    }
-
+    container.style.display = "flex"; container.style.alignItems = "center";
+    if(isEnemy){ container.style.flexDirection = "row-reverse"; text.style.marginLeft = "0.5em"; text.style.marginRight = "0"; }
+    else { container.style.flexDirection = "row"; text.style.marginRight = "0.5em"; text.style.marginLeft = "0"; }
     container.appendChild(text);
-
     for(let i=0;i<jumpsLeft;i++){
-      const circle=document.createElement("div"); 
-      circle.style.position="relative"; 
-      circle.style.width="18px"; 
-      circle.style.height="18px";
-
-      const outer=document.createElement("div"); 
-      outer.style.width="100%"; 
-      outer.style.height="100%"; 
-      outer.style.borderRadius="50%"; 
-      outer.style.border=`2px solid ${color}`; 
-      outer.style.position="absolute"; 
-      outer.style.top="0"; 
-      outer.style.left="0";
-
-      const inner=document.createElement("div"); 
-      inner.style.width="82%"; 
-      inner.style.height="82%"; 
-      inner.style.borderRadius="50%"; 
-      inner.style.background=color; 
-      inner.style.position="absolute"; 
-      inner.style.top="20%"; 
-      if(isEnemy){
-        inner.style.left = "19%";
-      } else {
-        inner.style.left = "21%";
-      }
-
-      const highlight=document.createElement("div"); 
-      highlight.style.width="40%"; 
-      highlight.style.height="40%"; 
-      highlight.style.borderRadius="50%"; 
-      highlight.style.background="white"; 
-      highlight.style.position="absolute"; 
-      highlight.style.top="15%"; 
-      highlight.style.left="12%";
-
-      inner.appendChild(highlight); 
-      circle.appendChild(outer); 
-      circle.appendChild(inner); 
-      container.appendChild(circle);
+      const circle=document.createElement("div"); circle.style.position="relative"; circle.style.width="1.2em"; circle.style.aspectRatio="1 / 1";
+      const outer=document.createElement("div"); outer.style.width="100%"; outer.style.height="100%"; outer.style.borderRadius="50%"; outer.style.border=`0.18em solid ${color}`; outer.style.position="absolute"; outer.style.inset="0";
+      const inner=document.createElement("div"); inner.style.width="82%"; inner.style.height="82%"; inner.style.borderRadius="50%"; inner.style.background=color; inner.style.position="absolute"; inner.style.top="50%"; inner.style.left="50%"; inner.style.transform="translate(-35%,-35%)";
+      const highlight=document.createElement("div"); highlight.style.width="40%"; highlight.style.height="40%"; highlight.style.borderRadius="50%"; highlight.style.background="white"; highlight.style.position="absolute"; highlight.style.top="15%"; highlight.style.left="12%";
+      inner.appendChild(highlight); circle.appendChild(outer); circle.appendChild(inner); container.appendChild(circle);
     }
   }
-
   renderJumps(document.getElementById("p1Jumps"), player.jumps, "cyan", false);
   renderJumps(document.getElementById("p2Jumps"), enemy.jumps, "lime", true);
 }
-
 
 function initGame(){
   resizeCanvas(); const offset=grid*2;
@@ -293,8 +233,37 @@ function showGameOver(){
   document.getElementById("gameOverMessage").textContent=message; document.getElementById("gameOverMenu").style.display="flex";
 }
 
-document.getElementById("startButton").addEventListener("click",()=>{ initGame(); document.getElementById("startMenu").style.display="none"; document.getElementById("gameOverMenu").style.display="none"; canvas.style.display="block"; gameRunning=true; requestAnimationFrame(gameLoop); });
-document.getElementById("playAgainButton").addEventListener("click",()=>{ initGame(); document.getElementById("gameOverMenu").style.display="none"; gameRunning=true; requestAnimationFrame(gameLoop); });
+function startCountdown(startCallback){
+  const overlay=document.getElementById("countdownOverlay");
+  const text=document.getElementById("countdownText");
+  let count=3;
+  overlay.style.display="flex";
+  text.textContent=count;
+  const interval=setInterval(()=>{
+    count--;
+    if(count>0){ text.textContent=count; }
+    else if(count===0){ text.textContent="GO!"; }
+    else {
+      clearInterval(interval);
+      overlay.style.display="none";
+      startCallback();
+    }
+  },600);
+}
+
+document.getElementById("startButton").addEventListener("click",()=>{
+  initGame();
+  document.getElementById("startMenu").style.display="none";
+  document.getElementById("gameOverMenu").style.display="none";
+  canvas.style.display="block";
+  startCountdown(()=>{ gameRunning=true; requestAnimationFrame(gameLoop); });
+});
+
+document.getElementById("playAgainButton").addEventListener("click",()=>{
+  initGame();
+  document.getElementById("gameOverMenu").style.display="none";
+  startCountdown(()=>{ gameRunning=true; requestAnimationFrame(gameLoop); });
+});
 </script>
 </body>
 </html>
