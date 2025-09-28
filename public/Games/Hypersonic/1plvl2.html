@@ -33,7 +33,6 @@
 <div id="jumpsInfo">
   <div id="p1Jumps" class="jump-display"></div>
   <div id="p2Jumps" class="jump-display"></div>
-  <div id="p3Jumps" class="jump-display"></div>
 </div>
 
 <canvas id="game"></canvas>
@@ -42,14 +41,14 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-let grid = 20, step, snakeSize, gameRunning=false, lastMoveTime=0, moveDelay=10, jumpItem;
+let grid = 20, step, snakeSize, gameRunning=false, lastMoveTime=0, moveDelay=30, jumpItem;
 let player, enemy, snakes;
 
 function resizeCanvas(){
   const size = Math.min(window.innerWidth*0.95, window.innerHeight*0.95);
   canvas.width=size; canvas.height=size;
   grid = Math.max(8, Math.floor(size/30));
-  step = grid * 4;
+  step = grid*0.5;
   snakeSize = grid*0.5;
 }
 window.addEventListener('resize', resizeCanvas);
@@ -70,18 +69,10 @@ class Snake{
         useJump(this);
       } else this.enemyAI(snakes,player);
     }
-    // Move in increments of grid to check for collisions between positions
-    for (let i = 1; i <= step / grid; i++) {
-      let nextX = (this.x + this.vx * grid + canvas.width) % canvas.width;
-      let nextY = (this.y + this.vy * grid + canvas.height) % canvas.height;
-      this.x = nextX;
-      this.y = nextY;
-      this.trail.push({x: this.x, y: this.y});
-      // Check collision after each mini-step
-      this.checkCollision(snakes);
-      if (!this.alive) break;
-    }
-    this.framesAlive++;
+    this.x = (this.x + this.vx*step + canvas.width) % canvas.width;
+    this.y = (this.y + this.vy*step + canvas.height) % canvas.height;
+  this.trail.push({x:this.x,y:this.y});
+  if (this.trail.length > 1000) this.trail.shift(); // Prevent runaway memory usage
     this.framesAlive++;
   }
   draw(){
@@ -181,7 +172,7 @@ function drawJumpItem(){
 }
 function checkJumpPickup(){
   if(!jumpItem) return;
-  [player, enemy, enemy2].forEach(snake=>{
+  [player,enemy].forEach(snake=>{
     const dx=Math.abs(snake.x-jumpItem.x), dy=Math.abs(snake.y-jumpItem.y);
     if(dx<grid && dy<grid){ snake.jumps++; jumpItem=null; spawnJumpItem(); updateJumpsDisplay(); }
   });
@@ -207,17 +198,13 @@ function updateJumpsDisplay(){
   }
   renderJumps(document.getElementById("p1Jumps"), player.jumps, "cyan", false);
   renderJumps(document.getElementById("p2Jumps"), enemy.jumps, "lime", true);
-  if (typeof enemy2 !== "undefined") {
-    renderJumps(document.getElementById("p3Jumps"), enemy2.jumps, "red", true);
-  }
 }
 
 function initGame(){
   resizeCanvas(); const offset=grid*2;
   player=new Snake("cyan",offset,offset,{up:"w",left:"a",down:"s",right:"d"},1,0,false);
   enemy=new Snake("lime",canvas.width-offset,canvas.height-offset,null,-1,0,true);
-  enemy2=new Snake("red",canvas.width/2,canvas.height-offset,null,0,-1,true);
-  snakes=[player,enemy,enemy2]; lastMoveTime=0; spawnJumpItem(); updateJumpsDisplay();
+  snakes=[player,enemy]; lastMoveTime=0; spawnJumpItem(); updateJumpsDisplay();
 }
 
 document.addEventListener("keydown",e=>{
@@ -231,28 +218,20 @@ document.addEventListener("keydown",e=>{
 
 function gameLoop(timestamp){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  snakes.forEach(s=>s.move(snakes,player));
-  snakes.forEach(s=>s.checkCollision(snakes));
-  snakes.forEach(s=>s.draw()); drawJumpItem(); checkJumpPickup(); updateJumpsDisplay();
-  // End game if player dies or both enemies are dead
-  const enemiesAlive = [enemy, enemy2].filter(e => e.alive).length;
-  if(!player.alive || enemiesAlive === 0){
-    gameRunning = false;
-    showGameOver();
-    return;
+  if(!lastMoveTime) lastMoveTime=timestamp;
+  if(timestamp-lastMoveTime>moveDelay){
+    snakes.forEach(s=>s.move(snakes,player));
+    snakes.forEach(s=>s.checkCollision(snakes));
+    lastMoveTime=timestamp;
   }
+  snakes.forEach(s=>s.draw()); drawJumpItem(); checkJumpPickup(); updateJumpsDisplay();
+  if(snakes.some(s=>!s.alive)){ gameRunning=false; showGameOver(); return; }
   requestAnimationFrame(gameLoop);
 }
 
 function showGameOver(){
-  let message = "";
-  const aliveEnemies = [enemy, enemy2].filter(e => e.alive);
-  if(!player.alive && aliveEnemies.length === 0) message="It's a tie!";
-  else if(!player.alive) message="Enemy wins!";
-  else if(aliveEnemies.length === 0) message="Player wins!";
-  else message="Game Over!";
-  document.getElementById("gameOverMessage").textContent=message;
-  document.getElementById("gameOverMenu").style.display="flex";
+  let message=""; if(!player.alive && !enemy.alive) message="It's a tie!"; else if(!player.alive) message="Enemy wins!"; else message="Player wins!";
+  document.getElementById("gameOverMessage").textContent=message; document.getElementById("gameOverMenu").style.display="flex";
 }
 
 function startCountdown(startCallback){

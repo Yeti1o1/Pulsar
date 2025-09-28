@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hypersonic Levels</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      background-image: url('bg.png');
+      background-size: 50%;
+      color: #00ffff;
+      position: relative;
+    }
+    .menu-container {
+      background: rgb(0, 0, 0);
+      padding: 40px 60px;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+      box-shadow: 0 0 60px #00ffffaa;
+      width: 90%;
+      max-width: 1000px;
+    }
+    h1 {
+      font-size: 4em;
+      margin: 0;
+      text-align: center;
+      letter-spacing: 2px;
+    }
+    .menu {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .menu-row {
+      display: flex;
+      flex-direction: row;
+      gap: 50px;
+    }
+    .menu button {
+      background: black;
+      color: #00ffff;
+      border: 3px solid #00ffff;
+      font-size: 2em;
+      padding: 20px 60px;
+      cursor: pointer;
+      border-radius: 0px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      box-shadow: 0 0 10px #00ffff;
+      transform: skew(-20deg);
+      transition: all 0.3s ease;
+    }
+    .menu button:hover, .menu button:focus {
+      background: #00ffff;
+      color: black;
+      box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+    }
+    .footer {
+      position: absolute;
+      bottom: 0px;
+      font-size: 1.2em;
+      text-align: center;
+      color: #00ffff;
+      z-index: 2;
+      background: rgb(0, 0, 0);
+      padding: 50px 50px;
+    }
+    .footer a {
+      color: #00ffff;
+      text-decoration: none;
+      font-weight: bold;
+      margin-left: 5px;
+    }
+    .footer a:hover {
+      text-shadow: 0 0 15px #00ffff;
+    }
+  </style>
+</head>
+<body>
+  <div class="menu-container" id="mainMenu">
+    <h1>Single Player</h1>
+    <div class="menu">
+      <div class="menu-row">
+        <button onclick="window.location.href='1plvl1.html'">Level 1</button>
+        <button onclick="window.location.href='1plvl2.html'">Level 2</button>
+        <button onclick="window.location.href='1plvl3.html'">Level 3</button>
+      </div>
+      <button onclick="window.location.href='index.html'">Back to Home</button>
+    </div>
+  </div>
+  <div class="footer">
+    Owned by Pulsar • <a href="https://discord.gg/9KKk4DNBPE" target="_blank">Join Discord</a>
+  </div>
+</body>
+</html>
