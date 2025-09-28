@@ -49,10 +49,26 @@
       gap: 20px;
     }
 
+    .menu-label {
+      color: #00ffff;
+      font-size: 1.3em;
+      font-weight: bold;
+      margin-bottom: 8px;
+      margin-top: 8px;
+      letter-spacing: 1px;
+      text-shadow: 0 0 8px #00ffff88;
+      text-align: center;
+    }
+
     .menu-row {
       display: flex;
       flex-direction: row;
-      gap: 50px;
+      gap: 64px;
+      justify-content: center;
+    }
+
+    .menu-row button span {
+      margin-right: 8px;
     }
 
     .menu button {
@@ -60,7 +76,7 @@
       color: #00ffff;
       border: 3px solid #00ffff;
       font-size: 2em;
-      padding: 20px 60px;
+      padding: 20px 30px;
       cursor: pointer;
       border-radius: 0px;
       text-transform: uppercase;
@@ -158,9 +174,11 @@
     <div class="menu">
       <div class="menu-row">
         <button id="onePlayerBtn">One Player</button>
+        <button id="endlessBtn">Endless</button>
         <button id="twoPlayerBtn">Two Player</button>
       </div>
-      <button id="controls">Controls</button>
+      <div style="height:32px;"></div>
+      <button id="controls" style="align-self:center;">Controls</button>
     </div>
   </div>
 
@@ -197,6 +215,10 @@
 
     document.getElementById("onePlayerBtn").addEventListener("click", () => {
       window.location.href = "levels.html";
+    });
+
+    document.getElementById("endlessBtn").addEventListener("click", () => {
+      window.location.href = "endless.html";
     });
 
     document.getElementById("twoPlayerBtn").addEventListener("click", () => {

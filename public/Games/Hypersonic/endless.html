@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hypersonic Endless</title>
+  <style>
+    body { background: black; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; color: white; font-family: sans-serif; overflow: hidden; }
+    canvas { background: black; display: block; border: 5px solid white; box-sizing: border-box; }
+    #startMenu, #gameOverMenu, #countdownOverlay { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); color: white; font-family: sans-serif; z-index: 10; }
+    #startMenu button, #gameOverMenu button { background:black; color:#00ffff; border:3px solid #00ffff; font-size:1.5em; padding:15px 40px; cursor:pointer; text-transform:uppercase; letter-spacing:2px; box-shadow:0 0 10px #00ffff; transform: skew(-20deg); transition:all 0.3s ease; margin-top:20px; }
+    #gameOverMenu { display: none; }
+    #countdownOverlay { font-size: 5em; font-weight: bold; display: none; background: rgba(0,0,0,0.6); }
+    #jumpsInfo { margin-bottom: 10px; display: flex; justify-content: space-between; width: 48%; }
+    .jump-display { display: flex; gap: 8px; align-items: center; font-weight: bold; font-size: 16px; }
+    .jump-label { margin-right: 8px; }
+  </style>
+</head>
+<body>
+<div id="startMenu">
+  <button id="startButton">Start Game</button>
+</div>
+
+<div id="gameOverMenu">
+  <h1 id="gameOverMessage">Game Over!</h1>
+  <div style="display:flex; gap:20px; justify-content:center; margin-top:30px;">
+    <button id="playAgainButton">Play Again</button>
+    <button onclick="window.location.href='index.html'">Home</button>
+  </div>
+</div>
+
+<div id="countdownOverlay"><span id="countdownText">3</span></div>
+
+<div id="jumpsInfo">
+  <div id="p1Jumps" class="jump-display"></div>
+</div>
+
+<canvas id="game"></canvas>
+
+<script>
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+let grid = 20, step, snakeSize, gameRunning=false, lastMoveTime=0, moveDelay=50, jumpItem;
+let player, enemies = [], snakes, score = 0;
+const ENEMY_COUNT = 8;
+let camera = {x: 0, y: 0};
+
+
+function resizeCanvas(){
+  const size = Math.min(window.innerWidth*0.95, window.innerHeight*0.95);
+  canvas.width = size;
+  canvas.height = size;
+  grid = Math.max(8, Math.floor(size/30));
+  step = grid*0.5;
+  snakeSize = grid*0.5;
+  // Remove vertical margin so canvas starts at the top
+  canvas.style.marginTop = '0px';
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+class Snake{
+  constructor(color,x,y,keys,vx=1,vy=0,isEnemy=false){
+    this.color=color; this.x=x; this.y=y;
+    this.vx=vx; this.vy=vy; this.trail=[{x:this.x,y:this.y}]; this.alive=true;
+    this.keys=keys; this.framesAlive=0; this.isEnemy=isEnemy; this.jumps=2;
+  }
+  move(snakes,player){
+    if(!this.alive) return;
+    if(this.isEnemy){
+      const allDirs=[{vx:1,vy:0},{vx:-1,vy:0},{vx:0,vy:1},{vx:0,vy:-1}];
+      const safeDirs=allDirs.filter(d=>!this.willCollide(d,snakes));
+      if(safeDirs.length===0 && this.jumps>0 && this.willCollide({vx:this.vx,vy:this.vy},snakes)){
+        useJump(this);
+      } else this.enemyAI(snakes,player);
+    }
+    this.x += this.vx*step;
+    this.y += this.vy*step;
+    this.trail.push({x:this.x,y:this.y});
+    if (this.trail.length > 1000) this.trail.shift();
+    this.framesAlive++;
+  }
+  draw(){
+    // Draw trail as a continuous line for smooth stitching
+    if (this.trail.length > 1) {
+      ctx.save();
+      ctx.strokeStyle = this.color;
+      ctx.lineWidth = snakeSize;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      for (let i = 0; i < this.trail.length; i++) {
+        const p = this.trail[i];
+        const px = p.x - camera.x + canvas.width/2 + snakeSize/2;
+        const py = p.y - camera.y + canvas.height/2 + snakeSize/2;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+    // Draw head as before
+    const head=this.trail[this.trail.length-1];
+    ctx.fillStyle="black"; ctx.fillRect(head.x-camera.x+canvas.width/2, head.y-camera.y+canvas.height/2, snakeSize, snakeSize);
+    ctx.fillStyle="white"; ctx.beginPath();
+    ctx.arc(head.x-camera.x+canvas.width/2+snakeSize/2, head.y-camera.y+canvas.height/2+snakeSize/2, snakeSize/2, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle="black"; ctx.beginPath();
+    ctx.arc(head.x-camera.x+canvas.width/2+snakeSize/2, head.y-camera.y+canvas.height/2+snakeSize/2, snakeSize/4, 0, Math.PI*2); ctx.fill();
+  }
+  checkCollision(snakes){
+    if(this.framesAlive<20) return;
+    snakes.forEach(snake=>{
+      snake.trail.forEach((p,idx)=>{
+        if(this!==snake || idx<snake.trail.length-2){
+          const dx=Math.abs(this.x-p.x);
+          const dy=Math.abs(this.y-p.y);
+          if(dx<snakeSize && dy<snakeSize) this.alive=false;
+        }
+      });
+    });
+  }
+  willCollide(dir,snakes){
+    const nx=this.trail[this.trail.length-1].x + dir.vx*step;
+    const ny=this.trail[this.trail.length-1].y + dir.vy*step;
+    for(let snake of snakes){
+      for(let i=0;i<snake.trail.length;i++){
+        const p=snake.trail[i];
+        const dx=Math.abs(nx-p.x);
+        const dy=Math.abs(ny-p.y);
+        if(dx<snakeSize && dy<snakeSize) return true;
+      }
+    }
+    return false;
+  }
+  enemyAI(snakes, player){
+    const head = this.trail[this.trail.length-1];
+    let targetX = player.x, targetY = player.y;
+    if(jumpItem){
+      const distToPlayer = Math.hypot(head.x - player.x, head.y - player.y);
+      const distToJump = Math.hypot(head.x - jumpItem.x, head.y - jumpItem.y);
+      if(distToJump + 10 < distToPlayer){
+        targetX = jumpItem.x;
+        targetY = jumpItem.y;
+      }
+    }
+    // Only cardinal directions
+    const dirs=[
+      {vx: 1, vy: 0},
+      {vx: -1, vy: 0},
+      {vx: 0, vy: 1},
+      {vx: 0, vy: -1}
+    ];
+    // Sort by distance to target
+    dirs.sort((a,b)=>{
+      const ax = head.x + a.vx*step;
+      const ay = head.y + a.vy*step;
+      const bx = head.x + b.vx*step;
+      const by = head.y + b.vy*step;
+      return Math.hypot(ax-targetX,ay-targetY) - Math.hypot(bx-targetX,by-targetY);
+    });
+    for(let dir of dirs) {
+      if(!this.willCollide(dir,snakes)) {
+        this.vx = dir.vx;
+        this.vy = dir.vy;
+        return;
+      }
+    }
+    // If all directions blocked, pick a random safe cardinal direction
+    const safeDirs = dirs.filter(d=>!this.willCollide(d,snakes));
+    if(safeDirs.length>0){
+      const choice = safeDirs[Math.floor(Math.random()*safeDirs.length)];
+      this.vx = choice.vx;
+      this.vy = choice.vy;
+    }
+  }
+}
+
+function useJump(snake) {
+  if (snake.jumps <= 0) return;
+  // Only allow jumps in cardinal directions
+  if (!((Math.abs(snake.vx) === 1 && snake.vy === 0) || (snake.vx === 0 && Math.abs(snake.vy) === 1))) return;
+  snake.jumps--;
+  const head = snake.trail[snake.trail.length - 1];
+  // Store cleared jump positions for visual effect
+  let clearedPositions = [];
+  for (let i = 1; i <= 4; i++) {
+    const tx = head.x + snake.vx * step * i;
+    const ty = head.y + snake.vy * step * i;
+    clearedPositions.push({x: tx, y: ty});
+    snakes.forEach(s => {
+      s.trail = s.trail.filter((p, idx) => {
+        const dx = Math.abs(tx - p.x);
+        const dy = Math.abs(ty - p.y);
+        return !(dx < snakeSize && dy < snakeSize);
+      });
+    });
+  }
+  // Show jump effect for a short time
+  showJumpEffect(clearedPositions);
+  updateJumpsDisplay();
+}
+
+// Add jump effect rendering
+let jumpEffectPositions = [];
+let jumpEffectTimeout = null;
+function showJumpEffect(positions) {
+  jumpEffectPositions = positions;
+  if (jumpEffectTimeout) clearTimeout(jumpEffectTimeout);
+  jumpEffectTimeout = setTimeout(() => {
+    jumpEffectPositions = [];
+  }, 350); // Show for 350ms
+}
+
+function spawnJumpItem(){
+  let valid=true;
+  do{
+    valid=true;
+    jumpItem={x: Math.floor(Math.random()*(canvas.width-grid)/grid)*grid, y: Math.floor(Math.random()*(canvas.height-grid)/grid)*grid};
+    snakes.forEach(s=>{ s.trail.forEach(p=>{ const dx=Math.abs(jumpItem.x-p.x); const dy=Math.abs(jumpItem.y-p.y); if(dx<=3*grid && dy<=3*grid) valid=false; }); });
+  }while(!valid);
+}
+function drawJumpItem(){
+  if(!jumpItem) return;
+  const size=grid*0.6, cx=jumpItem.x-camera.x+canvas.width/2+grid/2, cy=jumpItem.y-camera.y+canvas.height/2+grid/2;
+  ctx.strokeStyle="orange"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(cx,cy,size/2,0,Math.PI*2); ctx.stroke();
+  ctx.fillStyle="orange"; ctx.beginPath(); ctx.arc(cx,cy,size/3,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="white"; ctx.beginPath(); ctx.arc(cx-size/8,cy-size/8,size/8,0,Math.PI*2); ctx.fill();
+}
+function checkJumpPickup(){
+  if(!jumpItem) return;
+  [player, ...enemies].forEach(snake=>{
+    const dx=Math.abs(snake.x-jumpItem.x), dy=Math.abs(snake.y-jumpItem.y);
+    if(dx<grid && dy<grid){ snake.jumps++; jumpItem=null; spawnJumpItem(); updateJumpsDisplay(); }
+  });
+}
+
+function updateJumpsDisplay(){
+  function renderJumps(container, jumpsLeft, color, isEnemy=false){
+    container.innerHTML=""; 
+    const text=document.createElement("span"); 
+    text.classList.add("jump-label"); 
+    text.textContent="Jumps";
+    container.style.display = "flex"; container.style.alignItems = "center";
+    container.style.flexDirection = "row";
+    text.style.marginRight = "0.5em"; text.style.marginLeft = "0";
+    container.appendChild(text);
+    for(let i=0;i<jumpsLeft;i++){
+      const circle=document.createElement("div"); circle.style.position="relative"; circle.style.width="1.2em"; circle.style.aspectRatio="1 / 1";
+      const outer=document.createElement("div"); outer.style.width="100%"; outer.style.height="100%"; outer.style.borderRadius="50%"; outer.style.border=`0.18em solid ${color}`; outer.style.position="absolute"; outer.style.inset="0";
+      const inner=document.createElement("div"); inner.style.width="82%"; inner.style.height="82%"; inner.style.borderRadius="50%"; inner.style.background=color; inner.style.position="absolute"; inner.style.top="50%"; inner.style.left="50%"; inner.style.transform="translate(-35%,-35%)";
+      const highlight=document.createElement("div"); highlight.style.width="40%"; highlight.style.height="40%"; highlight.style.borderRadius="50%"; highlight.style.background="white"; highlight.style.position="absolute"; highlight.style.top="15%"; highlight.style.left="12%";
+      inner.appendChild(highlight); circle.appendChild(outer); circle.appendChild(inner); container.appendChild(circle);
+    }
+  }
+  renderJumps(document.getElementById("p1Jumps"), player.jumps, "cyan", false);
+}
+
+function getRandomColor() {
+  // Pick from a set of bright, non-gray colors
+  const colors = [
+    "red", "orange", "yellow", "lime", "cyan", "blue", "magenta", "pink", "violet", "springgreen", "deepskyblue", "gold", "chartreuse"
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
+function initGame(){
+  resizeCanvas();
+  const offset=grid*2;
+  player=new Snake("cyan",0,0,{up:"w",left:"a",down:"s",right:"d"},1,0,false);
+  camera.x = player.x;
+  camera.y = player.y;
+  enemies = [];
+  const cardinalDirs = [
+    {vx: 1, vy: 0},
+    {vx: -1, vy: 0},
+    {vx: 0, vy: 1},
+    {vx: 0, vy: -1}
+  ];
+  for(let i=0;i<ENEMY_COUNT;i++){
+    let angle = (2*Math.PI*i)/ENEMY_COUNT;
+    let ex = Math.cos(angle)*canvas.width;
+    let ey = Math.sin(angle)*canvas.height;
+    // Assign a random cardinal direction and color
+    const dir = cardinalDirs[Math.floor(Math.random()*cardinalDirs.length)];
+    const color = getRandomColor();
+    enemies.push(new Snake(color,ex,ey,null,dir.vx,dir.vy,true));
+  }
+  snakes=[player,...enemies]; lastMoveTime=0; spawnJumpItem(); updateJumpsDisplay(); score=0;
+}
+
+document.addEventListener("keydown",e=>{
+  if(!gameRunning) return;
+  if(e.key===player.keys.up && player.vy===0){player.vx=0;player.vy=-1;}
+  if(e.key===player.keys.down && player.vy===0){player.vx=0;player.vy=1;}
+  if(e.key===player.keys.left && player.vx===0){player.vx=-1;player.vy=0;}
+  if(e.key===player.keys.right && player.vx===0){player.vx=1;player.vy=0;}
+  if(e.key.toLowerCase()==="e") useJump(player);
+});
+
+function gameLoop(timestamp){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(!lastMoveTime) lastMoveTime=timestamp;
+  if(timestamp-lastMoveTime>moveDelay){
+    snakes.forEach(s=>s.move(snakes,player));
+    snakes.forEach(s=>s.checkCollision(snakes));
+    // Camera follows player
+    camera.x = player.x;
+    camera.y = player.y;
+    // Respawn dead enemies
+    enemies.forEach((enemy, idx) => {
+      if(!enemy.alive){
+        score++;
+        let angle = Math.random()*2*Math.PI;
+        let ex = player.x + Math.cos(angle)*canvas.width;
+        let ey = player.y + Math.sin(angle)*canvas.height;
+        // Assign a random cardinal direction and color
+        const cardinalDirs = [
+          {vx: 1, vy: 0},
+          {vx: -1, vy: 0},
+          {vx: 0, vy: 1},
+          {vx: 0, vy: -1}
+        ];
+        const dir = cardinalDirs[Math.floor(Math.random()*cardinalDirs.length)];
+        const color = getRandomColor();
+        enemies[idx] = new Snake(color,ex,ey,null,dir.vx,dir.vy,true);
+        snakes = [player, ...enemies];
+      }
+    });
+    lastMoveTime=timestamp;
+  }
+  snakes.forEach(s=>s.draw()); drawJumpItem(); checkJumpPickup(); updateJumpsDisplay();
+  // Draw jump effect
+  if (jumpEffectPositions.length > 0) {
+    ctx.save();
+    ctx.globalAlpha = 0.7;
+    ctx.fillStyle = "orange";
+    jumpEffectPositions.forEach(pos => {
+      ctx.beginPath();
+      ctx.arc(pos.x - camera.x + canvas.width/2 + snakeSize/2, pos.y - camera.y + canvas.height/2 + snakeSize/2, snakeSize*0.7, 0, Math.PI*2);
+      ctx.fill();
+    });
+    ctx.restore();
+  }
+  if(!player.alive){ gameRunning=false; showGameOver(); return; }
+  requestAnimationFrame(gameLoop);
+}
+
+function showGameOver(){
+  document.getElementById("gameOverMessage").textContent="Game Over! Score: " + score;
+  document.getElementById("gameOverMenu").style.display="flex";
+}
+
+function startCountdown(startCallback){
+  const overlay=document.getElementById("countdownOverlay");
+  const text=document.getElementById("countdownText");
+  let count=3;
+  overlay.style.display="flex";
+  text.textContent=count;
+  const interval=setInterval(()=>{
+    count--;
+    if(count>0){ text.textContent=count; }
+    else if(count===0){ text.textContent="GO!"; }
+    else {
+      clearInterval(interval);
+      overlay.style.display="none";
+      startCallback();
+    }
+  },600);
+}
+
+document.getElementById("startButton").addEventListener("click",()=>{
+  initGame();
+  document.getElementById("startMenu").style.display="none";
+  document.getElementById("gameOverMenu").style.display="none";
+  canvas.style.display="block";
+  startCountdown(()=>{ gameRunning=true; requestAnimationFrame(gameLoop); });
+});
+
+document.getElementById("playAgainButton").addEventListener("click",()=>{
+  initGame();
+  document.getElementById("gameOverMenu").style.display="none";
+  startCountdown(()=>{ gameRunning=true; requestAnimationFrame(gameLoop); });
+});
+</script>
+</body>
+</html>
