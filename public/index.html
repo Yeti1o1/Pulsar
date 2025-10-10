@@ -26,8 +26,35 @@
 
   </head>
 <body>
+<div class="pumpkin-overlay">
+  <span class="pumpkin" style="top:10%; left:5%; transform: rotate(-10deg) scale(1.2);">🎃</span>
+  <span class="pumpkin" style="top:30%; left:15%; transform: rotate(15deg) scale(1);">🎃</span>
+  <span class="pumpkin" style="top:20%; left:30%; transform: rotate(-5deg) scale(1.5);">🎃</span>
+  <span class="pumpkin" style="top:10%; left:50%; transform: rotate(20deg) scale(0.9);">🎃</span>
+  <span class="pumpkin" style="top:25%; left:70%; transform: rotate(-15deg) scale(1.3);">🎃</span>
+  <span class="pumpkin" style="top:15%; left:85%; transform: rotate(5deg) scale(1);">🎃</span>
+</div>
+
+<style>
+.pumpkin-overlay {
+  position: absolute;
+  top: 80px;
+  left: 0;
+  width: 100%;
+  height: 120px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.pumpkin {
+  position: absolute;
+  font-size: 2.5rem;
+  user-select: none;
+}
+</style>
+
 <div id="loader">
-          <a href="index.html"><img src="Imgs/Logo.png" alt="Logo" style="
+          <a href="index.html"><img src="Imgs/LogoHalloween.png" alt="Logo" style="
             width: 125px;
             height: auto;
             vertical-align: middle;
@@ -222,7 +249,7 @@
         <section class="hub-controls">
 
         <h1 class="Title">
-          <a href="index.html"><img src="Imgs/Logo.png" alt="Logo" style="
+          <a href="index.html"><img src="Imgs/LogoHalloween.png" alt="Logo" style="
             width: 60px;
             height: auto;
             vertical-align: middle;
@@ -263,6 +290,7 @@
 <div class="quick-buttons">
   <button class="color-btn black" data-color="#000000"></button>
   <button class="color-btn white" data-color="#ffffff"></button>
+<button class="color-btn halloween" data-color="linear-gradient(135deg, #e76f0f 0%, #e68a00 50%, #d88c33 100%)"></button>
   <button class="color-btn red" data-color="linear-gradient(80deg, #ff5f6d, #ffc371)"></button>
   <button class="color-btn blue" data-color="linear-gradient(-80deg, #3a5588, #0c1254)"></button>
   <button class="color-btn green" data-color="linear-gradient(80deg, #11998e, #4cff90)"></button>
@@ -1790,7 +1818,7 @@ if (hideCategoriesBtn) {
 
 if (!localStorage.getItem('backgroundStyle') && !localStorage.getItem('backgroundValue')) {
   localStorage.setItem('backgroundStyle', 'gradient');
-  localStorage.setItem('backgroundValue', 'linear-gradient(80deg, #185a9d, #43cea2)');
+  localStorage.setItem('backgroundValue', 'linear-gradient(135deg, #e76f0f 0%, #e68a00 50%, #d88c33 100%)');
 }
 
 document.querySelectorAll('.color-btn').forEach(button => {

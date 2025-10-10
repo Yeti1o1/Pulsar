@@ -41,14 +41,14 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-let grid = 20, step, snakeSize, gameRunning=false, lastMoveTime=0, moveDelay=30, jumpItem;
+let grid = 20, step, snakeSize, gameRunning=false, lastMoveTime=0, moveDelay=50, jumpItem;
 let player, enemy, snakes;
 
 function resizeCanvas(){
   const size = Math.min(window.innerWidth*0.95, window.innerHeight*0.95);
   canvas.width=size; canvas.height=size;
   grid = Math.max(8, Math.floor(size/30));
-  step = grid*0.5;
+  step = grid*0.45;
   snakeSize = grid*0.5;
 }
 window.addEventListener('resize', resizeCanvas);
@@ -71,8 +71,7 @@ class Snake{
     }
     this.x = (this.x + this.vx*step + canvas.width) % canvas.width;
     this.y = (this.y + this.vy*step + canvas.height) % canvas.height;
-  this.trail.push({x:this.x,y:this.y});
-  if (this.trail.length > 1000) this.trail.shift(); // Prevent runaway memory usage
+    this.trail.push({x:this.x,y:this.y});
     this.framesAlive++;
   }
   draw(){
@@ -218,12 +217,8 @@ document.addEventListener("keydown",e=>{
 
 function gameLoop(timestamp){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  if(!lastMoveTime) lastMoveTime=timestamp;
-  if(timestamp-lastMoveTime>moveDelay){
-    snakes.forEach(s=>s.move(snakes,player));
-    snakes.forEach(s=>s.checkCollision(snakes));
-    lastMoveTime=timestamp;
-  }
+  snakes.forEach(s=>s.move(snakes,player));
+  snakes.forEach(s=>s.checkCollision(snakes));
   snakes.forEach(s=>s.draw()); drawJumpItem(); checkJumpPickup(); updateJumpsDisplay();
   if(snakes.some(s=>!s.alive)){ gameRunning=false; showGameOver(); return; }
   requestAnimationFrame(gameLoop);

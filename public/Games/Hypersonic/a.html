@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Subtle Pattern Background</title>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #111;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<script>
+const canvas = document.getElementById('bg')
+const ctx = canvas.getContext('2d')
+
+function resize() {
+  canvas.width = window.innerWidth
+  canvas.height = window.innerHeight
+  draw()
+}
+window.addEventListener('resize', resize)
+
+function makePattern() {
+  const tile = document.createElement('canvas')
+  tile.width = 40
+  tile.height = 40
+  const tctx = tile.getContext('2d')
+
+  tctx.fillStyle = '#111'
+  tctx.fillRect(0, 0, 40, 40)
+
+  tctx.strokeStyle = '#222'
+  tctx.lineWidth = 2
+  tctx.beginPath()
+  tctx.moveTo(0, 40)
+  tctx.lineTo(40, 0)
+  tctx.stroke()
+
+  return ctx.createPattern(tile, 'repeat')
+}
+
+function draw() {
+  const pattern = makePattern()
+  ctx.fillStyle = pattern
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+}
+
+resize()
+</script>
+</body>
+</html>
