@@ -65,8 +65,8 @@ body::before {
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    width: 142px;
-    height: 119px;
+    width: 148px;
+    height: 125px;
     background: rgba(60, 60, 60, 0.185);
     border: 3px solid #3c3c3c00;
     border-radius: 20px;
@@ -130,7 +130,7 @@ body::before {
 .favorite-container {
     display: flex;
     overflow: auto;
-    gap: 10px;
+    gap: 15px;
     white-space: nowrap;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -138,6 +138,7 @@ body::before {
     flex-wrap: nowrap;
     will-change: scroll-position;
     transform: translateZ(0);
+    padding-bottom: 20px;
 }
 
 
@@ -334,6 +335,29 @@ body::before {
     transform: translateY(-1px);
 }
 
+@media (max-width: 768px) {
+    #downloadBtn {
+        font-size: 0.7rem;
+        padding: 8px 8px;
+        border-radius: 8px;
+    }
+
+    #downloadBtn:hover {
+        transform: translateY(-0.5px);
+    }
+}
+
+.DMCA {
+    font-weight: bold;
+    background: transparent;
+}
+
+@media (max-width: 768px) {
+    .DMCA {
+        font-size: 0.7rem;
+        padding: 0px;
+    }
+}
 .game-category {
     display: flex;
     flex-direction: column;
@@ -392,6 +416,7 @@ body::before {
     -webkit-backdrop-filter: blur(5px);
     margin-bottom: 10px;
     margin-top: 20px;
+    padding-bottom: 20px;
 }
 
 .hub-controls {
@@ -450,15 +475,19 @@ main.hub-container,
     position: relative;
     z-index: 10;
     padding-top: 20vh;
-    padding-left: 85px;
+    padding-left: 125px;
+    padding-right: 125px;
 }
 
 @media (max-width: 768px) {
     main.hub-container,
     .hub-container {
-        padding: 4vh 4vw 2vh 4vw;
+        padding-top: 15vh;
+        padding-left: 8vw;
+        padding-right: 8vw;
     }
 }
+
 nav ul {
     display: flex;
     list-style: none;
@@ -513,6 +542,12 @@ nav ul li .discord-btn {
     color: #aaa;
 }
 
+@media (max-width: 768px) {
+    #myInput {
+        font-size: 0.7rem;
+        padding: 0px;
+    }
+}
 .noResultsMessage {
     text-align: center;
     margin-top: 30px;
@@ -527,7 +562,8 @@ nav ul li .discord-btn {
 .progress {
   height: 100%;
   width: 0;
-  background: linear-gradient(-80deg,#006eff,#173b80);
+  /*background: linear-gradient(-80deg,#006eff,#173b80);*/
+  background: linear-gradient(-80deg, #ff9900, #ff5e00);
   transition: width 0.2s linear;
 }
 
@@ -658,6 +694,19 @@ nav ul li .discord-btn {
     color: #fff;
     transform: translateY(-1px);
 }
+@media (max-width: 768px) {
+    #toggle-categories-btn {
+        font-size: 0.7rem;
+        padding: 8px 8px;
+        border-radius: 8px;
+    }
+
+    #toggle-categories-btn:hover {
+        transform: translateY(-0.5px);
+    }
+}
+
+
 
 .btnnn-container {
     box-sizing: border-box;
@@ -696,7 +745,6 @@ header h1 {
     font-size: 2rem;
     margin-left: 15px;
 }
-
 .main-menu {
     -webkit-backdrop-filter: blur(18px);
     background: #111111;
@@ -779,6 +827,34 @@ header h1 {
     transition: opacity 0.2s ease;
     white-space: nowrap;
 }
+
+@media (max-width: 768px) {
+    .main-menu {
+        width: 45px;
+        margin-top: 60px;
+        border-right: 1px solid #333;
+    }
+
+    .main-menu:hover {
+        width: 120px;
+    }
+
+    .main-menu li a {
+        height: 45px;
+        font-size: 0.9rem;
+        padding: 0 6px;
+    }
+
+    .main-menu .nav-icon {
+        font-size: 16px;
+        width: 45px;
+    }
+
+    .main-menu .nav-text {
+        margin-left: 6px;
+    }
+}
+
 
 nav ul li:nth-child(1) { animation-delay: 0.4s !important; }
 nav ul li:nth-child(2) { animation-delay: 0.45s !important; }
@@ -885,6 +961,7 @@ nav ul li:nth-child(6) { animation-delay: 0.65s !important; }
 .search-icon-btn:hover {
     color: #fff;
 }
+
 .search-wrapper {
     align-items: center;
     background: rgba(255, 255, 255, 0.1);
@@ -895,6 +972,21 @@ nav ul li:nth-child(6) { animation-delay: 0.65s !important; }
     padding: 0px 5px 0px 15px;
     margin-left: 300px;
 }
+
+@media (max-width: 768px) {
+    .search-icon-btn {
+        font-size: 1rem;
+        padding: 6px;
+        color: transparent;
+    }
+
+    .search-wrapper {
+        width: clamp(80px, 40vw, 100px);
+        padding: 0 4px 0 10px;
+        margin-left: 200px;
+    }
+}
+
 
 #switchContainer {
     position: fixed;
@@ -988,3 +1080,16 @@ nav ul li:nth-child(6) { animation-delay: 0.65s !important; }
     color: #fff;
     transform: translateY(-1px);
 }
+
+@media (max-width: 768px) {
+    #uploadBtn {
+        font-size: 0.7rem;
+        padding: 8px 8px;
+        border-radius: 8px;
+    }
+
+    #uploadBtn:hover {
+        transform: translateY(-0.5px);
+    }
+}
+
