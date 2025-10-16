@@ -300,10 +300,6 @@ body::before {
   background: linear-gradient(135deg, #11998e, #4cff90);
 }
 
-.color-btn.Halloween {
-  background: #000000;
-}
-
 .color-btn.yellow {
   background: linear-gradient(135deg, #f8b500, #fceabb);
 }
@@ -1148,5 +1144,6 @@ nav ul li:nth-child(6) { animation-delay: 0.65s !important; }
         transform: translateY(-0.5px);
     }
 }
+
 
 
