@@ -91,6 +91,14 @@ body::before {
     flex: 0 0 auto;
 }
 
+@media (max-width: 768px) {
+    .btn {
+        width: 89px;
+        height: 75px;
+        max-width: 89px;
+    }
+}
+
 .btn .heart-icon {
     position: absolute;
     top: 8px;
@@ -208,6 +216,12 @@ body::before {
     align-items: center;
     gap: 10px;
     flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+    .category-header h6 {
+        font-size: 1.2rem;
+    }
 }
 
 .category-header h6 i {
@@ -337,9 +351,8 @@ body::before {
 
 @media (max-width: 768px) {
     #downloadBtn {
-        font-size: 0.7rem;
-        padding: 8px 8px;
-        border-radius: 8px;
+        visibility: none;
+        display: none;
     }
 
     #downloadBtn:hover {
@@ -350,12 +363,12 @@ body::before {
 .DMCA {
     font-weight: bold;
     background: transparent;
+    font-size:0.8rem;
 }
 
 @media (max-width: 768px) {
     .DMCA {
         font-size: 0.7rem;
-        padding: 0px;
     }
 }
 .game-category {
@@ -435,6 +448,13 @@ body::before {
     border-bottom: 1px solid #e5e5e5;
 }
 
+@media (max-width: 1200px) {
+    .hub-controls {
+        padding: 5px;
+        gap: 5px;
+    }
+}
+    
 input:checked + .slider {
     background-color: #2196F3;
 }
@@ -483,7 +503,7 @@ main.hub-container,
     main.hub-container,
     .hub-container {
         padding-top: 15vh;
-        padding-left: 8vw;
+        padding-left: 15vw;
         padding-right: 8vw;
     }
 }
@@ -536,6 +556,7 @@ nav ul li .discord-btn {
     color: #fff;
     font-size: 1rem;
     outline: none;
+    min-width: 0;
 }
 
 #myInput::placeholder {
@@ -544,10 +565,12 @@ nav ul li .discord-btn {
 
 @media (max-width: 768px) {
     #myInput {
-        font-size: 0.7rem;
-        padding: 0px;
+        font-size: 0.65rem;
+        padding: 10px 0px 10px 0px;
     }
 }
+
+
 .noResultsMessage {
     text-align: center;
     margin-top: 30px;
@@ -562,7 +585,6 @@ nav ul li .discord-btn {
 .progress {
   height: 100%;
   width: 0;
-  /*background: linear-gradient(-80deg,#006eff,#173b80);*/
   background: linear-gradient(-80deg, #ff9900, #ff5e00);
   transition: width 0.2s linear;
 }
@@ -586,6 +608,14 @@ nav ul li .discord-btn {
     will-change: opacity, transform;
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
+}
+
+@media (max-width: 768px) {
+    .scroll-arrow {
+        height: 28px;
+        width: 28px;
+        font-size: 0.8rem;
+    }
 }
 
 .scroll-arrow.hidden {
@@ -655,6 +685,24 @@ nav ul li .discord-btn {
     margin: 0;
     white-space: nowrap;
 }
+
+.TitleImg {
+    width: 60px;
+    height: auto;
+    vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+    .Title {
+        font-size: 0px;
+        width: 20px;
+    }
+
+    .TitleImg {
+        width: 40px;
+    }
+}
+
 .toggle-all-btn {
     background: rgba(87, 87, 87, 0);
     border: 1px solid rgba(255, 255, 255, 0.5);
@@ -665,6 +713,14 @@ nav ul li .discord-btn {
     font-weight: bold;
     padding: 7.5px 15px;
     transition: all 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .toggle-all-btn {
+        font-size: 0.7rem;
+        padding: 5px 10px;
+        border-radius: 8px;
+    }
 }
 
 .toggle-all-btn:hover {
@@ -695,13 +751,13 @@ nav ul li .discord-btn {
     transform: translateY(-1px);
 }
 @media (max-width: 768px) {
-    #toggle-categories-btn {
+    .toggle-categories-btn {
         font-size: 0.7rem;
-        padding: 8px 8px;
+        padding: 4px 4px;
         border-radius: 8px;
     }
 
-    #toggle-categories-btn:hover {
+    .toggle-categories-btn:hover {
         transform: translateY(-0.5px);
     }
 }
@@ -975,15 +1031,16 @@ nav ul li:nth-child(6) { animation-delay: 0.65s !important; }
 
 @media (max-width: 768px) {
     .search-icon-btn {
-        font-size: 1rem;
-        padding: 6px;
         color: transparent;
+        display: none;
+        visibility: none;
     }
 
     .search-wrapper {
-        width: clamp(80px, 40vw, 100px);
-        padding: 0 4px 0 10px;
-        margin-left: 200px;
+        width: 100px;
+        padding: 0 12px 0 10px;
+        margin-left: 50px;
+        box-sizing: border-box;
     }
 }
 
@@ -1083,9 +1140,8 @@ nav ul li:nth-child(6) { animation-delay: 0.65s !important; }
 
 @media (max-width: 768px) {
     #uploadBtn {
-        font-size: 0.7rem;
-        padding: 8px 8px;
-        border-radius: 8px;
+        visibility: none;
+        display: none;
     }
 
     #uploadBtn:hover {

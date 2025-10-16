@@ -27,12 +27,11 @@
   </head>
 <body>
 <div class="pumpkin-overlay">
-  <span class="pumpkin" style="top:10%; left:5%; transform: rotate(-10deg) scale(1.2);">🎃</span>
-  <span class="pumpkin" style="top:30%; left:15%; transform: rotate(15deg) scale(1);">🎃</span>
-  <span class="pumpkin" style="top:20%; left:30%; transform: rotate(-5deg) scale(1.5);">🎃</span>
-  <span class="pumpkin" style="top:10%; left:50%; transform: rotate(20deg) scale(0.9);">🎃</span>
-  <span class="pumpkin" style="top:25%; left:70%; transform: rotate(-15deg) scale(1.3);">🎃</span>
-  <span class="pumpkin" style="top:15%; left:85%; transform: rotate(5deg) scale(1);">🎃</span>
+  <span class="pumpkin" style="top:28%; left:15%; transform: rotate(15deg) scale(1);">🎃</span>
+  <span class="pumpkin" style="top:18%; left:30%; transform: rotate(-5deg) scale(1.5);">🎃</span>
+  <span class="pumpkin" style="top:8%; left:50%; transform: rotate(20deg) scale(0.9);">🎃</span>
+  <span class="pumpkin" style="top:23%; left:70%; transform: rotate(-15deg) scale(1.3);">🎃</span>
+  <span class="pumpkin" style="top:13%; left:85%; transform: rotate(5deg) scale(1);">🎃</span>
 </div>
 
 <style>
@@ -50,6 +49,11 @@
   position: absolute;
   font-size: 2.5rem;
   user-select: none;
+}
+@media (max-width: 768px) {
+    .pumpkin {
+        visibility: hidden;
+    }
 }
 </style>
 
@@ -249,11 +253,7 @@
         <section class="hub-controls">
 
         <h1 class="Title">
-          <a href="index.html"><img src="Imgs/LogoHalloween.png" alt="Logo" style="
-            width: 60px;
-            height: auto;
-            vertical-align: middle;
-          "></a>
+          <a href="index.html"><img class="TitleImg" src="Imgs/LogoHalloween.png" alt="Logo"></a>
 <span style="font-family: 'Trebuchet MS', Helvetica, sans-serif; letter-spacing: 4px; font-weight: 900; font-size: 1.2em; text-shadow: 2px 2px #ff9100;">Pulsar</span>
 <!-- #00a2ff;-->
         </h1>
@@ -271,7 +271,7 @@
 <button id="uploadBtn">Upload Data</button>
 
             <a href="https://docs.google.com/forms/d/e/1FAIpQLSfa_z2rCmPxeGooJCXz9XP9TZPi8Rltb-eDCrsD9CffWi1Uwg/viewform" target="_blank" style="display:inline-flex;align-items:center;gap:5px;text-decoration:none;background-color:#111;color:white;padding:0px 5px;border-radius:8px;font-size:16px;font-weight:bold;transition:background-color 0.3s;">
-              <div class="DMCA"><i class="fas fa-gavel" style="font-size:0.8rem;"></i> <span>DMCA Takedown Form</span></div>
+              <div class="DMCA"><i class="fas fa-gavel"></i> <span>DMCA Takedown Form</span></div>
             </a>
 
 <a href="index.html" class="toggle-categories-btn view-all" style="text-decoration:none;" hidden>View All Games</a>
@@ -291,7 +291,6 @@
 <div class="quick-buttons">
   <button class="color-btn black" data-color="#000000"></button>
   <button class="color-btn white" data-color="#ffffff"></button>
-<button class="color-btn halloween" data-color="linear-gradient(135deg, #e76f0f 0%, #e68a00 50%, #d88c33 100%)"></button>
   <button class="color-btn red" data-color="linear-gradient(80deg, #ff5f6d, #ffc371)"></button>
   <button class="color-btn blue" data-color="linear-gradient(-80deg, #3a5588, #0c1254)"></button>
   <button class="color-btn green" data-color="linear-gradient(80deg, #11998e, #4cff90)"></button>
@@ -1819,7 +1818,7 @@ if (hideCategoriesBtn) {
 
 if (!localStorage.getItem('backgroundStyle') && !localStorage.getItem('backgroundValue')) {
   localStorage.setItem('backgroundStyle', 'gradient');
-  localStorage.setItem('backgroundValue', 'linear-gradient(135deg, #e76f0f 0%, #e68a00 50%, #d88c33 100%)');
+  localStorage.setItem('backgroundValue', '#000000');
 }
 
 document.querySelectorAll('.color-btn').forEach(button => {
