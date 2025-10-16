@@ -289,7 +289,6 @@
 <div style="position: fixed; top: 0; left: 0; width: 100%; height: 190px; background: #111; z-index: 11111111111111111111111111111;"></div>
 
 <div class="quick-buttons">
-  <button class="color-btn Halloween" data-color="#000000"></button>
   <button class="color-btn black" data-color="#000000"></button>
   <button class="color-btn white" data-color="#ffffff"></button>
   <button class="color-btn red" data-color="linear-gradient(80deg, #ff5f6d, #ffc371)"></button>
@@ -1817,6 +1816,12 @@ if (hideCategoriesBtn) {
     customizationDiv.style.display = customizationDiv.style.display === 'none' ? 'block' : 'none';
   });
 
+if (!localStorage.getItem('backgroundClearedOnce')) {
+  localStorage.removeItem('backgroundStyle');
+  localStorage.removeItem('backgroundValue');
+  localStorage.setItem('backgroundClearedOnce', 'true');
+}
+    
 if (!localStorage.getItem('backgroundStyle') && !localStorage.getItem('backgroundValue')) {
   localStorage.setItem('backgroundStyle', 'solid');
   localStorage.setItem('backgroundValue', '#000000');
