@@ -150,7 +150,7 @@ function beforeUnloadEventListener(event) {
     if (tech.isExitPrompt) {
         m.damageDone *= 1.25
         // simulation.inGameConsole(`<strong class='color-d'>damage</strong> <span class='color-symbol'>*=</span> ${1.25}`)
-        simulation.inGameConsole(`<span class='color-var'>tech</span>.damage *= ${1.25} //beforeunload`);
+        simulation.inGameConsole(`<span class='color-var'>tech</span>.<strong class='color-d'>damage</strong> *= ${1.25} //beforeunload`);
         if (Math.random() < 0.25) {
             removeEventListener('beforeunload', beforeUnloadEventListener);
         }
@@ -549,7 +549,7 @@ ${simulation.difficultyMode > 4 ? `<details id="constraints-details" style="padd
 <details id = "console-log-details" style="padding: 0 8px;">
 <summary>console log</summary>
 <div class="pause-details">
-    <div class="pause-grid-module" style="    background-color: #e2e9ec;font-size: 0.8em;">${document.getElementById("text-log").innerHTML}</div>
+    <div class="pause-grid-module" style="background-color: #e2e9ec;font-size: 0.85em; font-family: monospace;">${document.getElementById("text-log").innerHTML}</div>
 </div>
 </details>
 </div>`
@@ -611,7 +611,7 @@ ${simulation.difficultyMode > 4 ? `<details id="constraints-details" style="padd
         for (let i = 0, len = tech.tech.length; i < len; i++) {
             if (tech.tech[i].count > 0) {
                 const style = (localSettings.isHideImages || tech.tech[i].isJunk || tech.tech[i].isLore) ? `style="height:auto;"` : `style = "background-image: url('img/${tech.tech[i].name}.webp');"`
-                const techCountText = tech.tech[i].count > 1 ? `(${tech.tech[i].count}x)` : "";
+                // const techCountText = tech.tech[i].count > 1 ? `(${tech.tech[i].count}x)` : "";
                 if (tech.tech[i].isInstant) {
                     // text += `<div class="pause-grid-module" id ="${i}-pause-tech"  style = "border: 0px; opacity:0.5; font-size: 60%; line-height: 130%; margin: 1px; padding: 6px;"><div class="grid-title">${tech.tech[i].link} ${techCountText}</div>${tech.tech[i].descriptionFunction ? tech.tech[i].descriptionFunction() : tech.tech[i].description}</div></div>`
                 } else if (tech.tech[i].isFieldTech) {
@@ -1523,6 +1523,9 @@ window.addEventListener("keydown", function (event) {
                     mouseMove.reset()
                     document.exitFullscreen();
                     input.reset(); //to prevent key ghosting reset all input keys
+
+
+
                 } else if (mouseMove.isMouseInWindow) { //if mouse is in the window enter fullscreen
                     document.documentElement.requestFullscreen().then(() => {//wait for fullscreen to be ready
                         input.reset(); //to prevent key ghosting reset all input keys
@@ -1866,6 +1869,20 @@ const mouseMove = {
                 mouseMove.active = mouseMove.pointerLocked
             } else {
                 mouseMove.active = mouseMove.default
+                // if (true) {
+                //     //show where mouse is
+                //     simulation.ephemera.push({
+                //         count: 30, //cycles before it self removes
+                //         do() {
+                //             this.count--
+                //             if (this.count < 0) simulation.removeEphemera(this)
+                //             ctx.beginPath();
+                //             ctx.arc(simulation.mouse.x, -simulation.mouse.y, 50, 0, 2 * Math.PI);
+                //             ctx.fillStyle = "#f00"
+                //             ctx.fill();
+                //         },
+                //     })
+                // }
             }
         }
     },
@@ -2153,11 +2170,13 @@ document.getElementById("updates").addEventListener("toggle", function () {
             //     text += "<br><em>https://github.com/landgreen/n-gon/</em>: hash does <strong>not</strong> match latest version<br><hr>"
             // }
             for (let i = 0, len = 20; i < len; i++) {
-                text += "<strong>" + data[i].commit.author.date.substr(0, 10) + "</strong> - "; //+ "<br>"
-                text += data[i].commit.message
-                if (i < len - 1) text += "<hr>"
+                if (data[i].commit.message !== "quick bug fix") {
+                    text += "<strong>" + data[i].commit.author.date.substr(0, 10) + "</strong> - "; //+ "<br>"
+                    text += data[i].commit.message
+                    if (i < len - 1) text += "<hr>"
+                }
             }
-            text += "</pre>"
+            text += `</pre><hr><em>complete <a href="https://github.com/landgreen/n-gon/commits/master">change-log</a></em>`
             document.getElementById("updates-div").innerHTML = text.replace(/\n/g, "<br />")
         },
         function (xhr) {

@@ -34,33 +34,39 @@ function playerOnGroundCheck(event) {
             } else {
                 //sets a hard land where player stays in a crouch for a bit and can't jump
                 //crouch is forced in groundControl below
+
                 const momentum = player.velocity.y * player.mass //player mass is 5 so this triggers at 26 down velocity, unless the player is holding something
-                if (momentum > m.hardLanding && !input.up) {
+                if (momentum > m.hardLanding && !(input.up && Math.abs(player.velocity.x) > 7.5)) { //&& !input.up
                     m.doCrouch();
                     m.yOff = m.yOffWhen.jump;
                     m.hardLandCD = m.cycle + m.hardLandCDScale * Math.min(momentum / 6.5 - 6, 40)
-                    //falling damage
-                    if (tech.isFallingDamage && m.immuneCycle < m.cycle && momentum > 150) {
-                        m.takeDamage(Math.min(Math.sqrt(momentum - 100) * 0.01, 0.2) * spawn.dmgToPlayerByLevelsCleared());
-                        if (m.immuneCycle < m.cycle + m.collisionImmuneCycles) m.immuneCycle = m.cycle + m.collisionImmuneCycles; //player is immune to damage for 30 cycles
-                    }
+                    // m.hardLandCD = m.cycle + m.hardLandCDScale * Math.min(0.2 * momentum - 7.5, 60)
                 } else {
                     m.yOffGoal = m.yOffWhen.stand;
+                }
+                //falling damage
+                if (tech.isFallingDamage && m.immuneCycle < m.cycle && momentum > 150) {
+                    // m.takeDamage(Math.min(Math.sqrt(momentum - 100) * 0.02, 0.4) * spawn.dmgToPlayerByLevelsCleared());
+                    m.takeDamage(Math.min(Math.sqrt(momentum - 100) * 0.03, 0.6));
+                    // m.takeDamage(20);
+                    if (m.immuneCycle < m.cycle + m.collisionImmuneCycles) m.immuneCycle = m.cycle + m.collisionImmuneCycles; //player is immune to damage for 30 cycles
                 }
             }
         }
     }
 
-    const pairs = event.pairs;
-    for (let i = 0, j = pairs.length; i != j; ++i) {
-        let pair = pairs[i];
-        if (pair.bodyA === jumpSensor) {
-            m.standingOn = pair.bodyB; //keeping track to correctly provide recoil on jump
-            if (m.standingOn.alive !== true || m.immuneCycle > m.cycle) enter();
-        } else if (pair.bodyB === jumpSensor) {
-            m.standingOn = pair.bodyA; //keeping track to correctly provide recoil on jump
+
+    for (let i = 0, j = event.pairs.length; i != j; ++i) {
+        if (event.pairs[i].bodyA === jumpSensor) {
+            m.standingOn = event.pairs[i].bodyB; //keeping track to correctly provide recoil on jump
             if (m.standingOn.alive !== true || m.immuneCycle > m.cycle) enter();
         }
+
+        //doesn't seem to need to check bodyB (this might be because the player is added so it's earlier in array?)
+        // else if (event.pairs[i].bodyB === jumpSensor) {
+        //     m.standingOn = event.pairs[i].bodyA; //keeping track to correctly provide recoil on jump
+        //     if (m.standingOn.alive !== true || m.immuneCycle > m.cycle) enter();
+        // }
     }
     m.numTouching = 0;
 }
@@ -69,7 +75,7 @@ function playerOffGroundCheck(event) {
     //runs on collisions events
     const pairs = event.pairs;
     for (let i = 0, j = pairs.length; i != j; ++i) {
-        if (pairs[i].bodyA === jumpSensor || pairs[i].bodyB === jumpSensor) {
+        if (pairs[i].bodyA === jumpSensor) { //|| pairs[i].bodyB === jumpSensor) {
             if (m.onGround && m.numTouching === 0) {
                 m.onGround = false;
                 m.lastOnGroundCycle = m.cycle;
@@ -120,6 +126,8 @@ function collisionChecks(event) {
                             simulation.inGameConsole(`simulation.amplitude <span class='color-symbol'>=</span> ${Math.random()}`);
                         }
                         if (tech.isPiezo) m.energy += 20.48 * level.isReducedRegen;
+                        if (tech.isExplodeContact) b.explosion(m.pos, 450);
+
                         if (tech.isCouplingNoHit && m.coupling > 0) {
                             m.couplingChange(-3)
 
@@ -275,11 +283,25 @@ function collisionChecks(event) {
     }
 }
 
-//determine if player is on the ground
+
 Events.on(engine, "collisionStart", function (event) {
     playerOnGroundCheck(event);
     // playerHeadCheck(event);
     collisionChecks(event);
+
+
+    // //do we need to also check bodyB
+    // for (let i = 0, j = event.pairs.length; i != j; ++i) {
+    //     if (event.pairs[i].bodyA === jumpSensor) {
+    //         player.collision.isJump = true
+    //     } else if (event.pairs[i].bodyA === playerBody) {
+    //         player.collision.isBody = true
+    //     } else if (event.pairs[i].bodyA === playerHead) {
+    //         player.collision.isHead = true
+    //     } else if (event.pairs[i].bodyA === headSensor) {
+    //         player.collision.isHeadSensor = true
+    //     }
+    // }
 });
 Events.on(engine, "collisionActive", function (event) {
     playerOnGroundCheck(event);
@@ -287,4 +309,16 @@ Events.on(engine, "collisionActive", function (event) {
 });
 Events.on(engine, "collisionEnd", function (event) {
     playerOffGroundCheck(event);
+
+    // for (let i = 0, j = event.pairs.length; i != j; ++i) {
+    //     if (event.pairs[i].bodyA === jumpSensor) {
+    //         player.collision.isJump = false
+    //     } else if (event.pairs[i].bodyA === playerBody) {
+    //         player.collision.isBody = false
+    //     } else if (event.pairs[i].bodyA === playerHead) {
+    //         player.collision.isHead = false
+    //     } else if (event.pairs[i].bodyA === headSensor) {
+    //         player.collision.isHeadSensor = false
+    //     }
+    // }
 });

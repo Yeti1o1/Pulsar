@@ -386,7 +386,7 @@ const b = {
         }
         let sub = Vector.sub(where, player.position);
         let dist = Vector.magnitude(sub);
-        if (tech.isSmartRadius && radius > dist - 50) radius = Math.max(dist - 50, 1)
+        if (tech.isSmartRadius && (radius > dist - 50) && m.immuneCycle < m.cycle) radius = Math.max(dist - 50, 1)
 
         if (tech.isExplodeRadio) { //radiation explosion
             radius *= 1.25; //alert range
@@ -748,12 +748,14 @@ const b = {
                             !mob[i].isBadTarget &&
                             !mob[i].isInvulnerable &&
                             this.position.y < mob[i].bounds.min.y &&
-                            this.position.x > mob[i].position.x - mob[i].radius / 2 &&
-                            this.position.x < mob[i].position.x + mob[i].radius / 2 &&
+                            this.position.x > mob[i].position.x - mob[i].radius - 10 &&
+                            this.position.x < mob[i].position.x + mob[i].radius + 10 &&
                             Matter.Query.ray(map, this.position, mob[i].position).length === 0 &&
                             Matter.Query.ray(body, this.position, mob[i].position).length === 0
                         ) {
-                            Matter.Body.setVelocity(this, { x: 0, y: 4 + Math.max(10, this.speed) });
+                            const unit = Vector.normalise(Vector.sub(mob[i].position, this.position))
+                            Matter.Body.setVelocity(this, Vector.mult(unit, 45));
+                            Matter.Body.setVelocity(mob[i], { x: 0, y: 0 });
                             this.do = function () {
                                 this.force.y += this.mass * 0.003;
                             }
@@ -815,12 +817,14 @@ const b = {
                             !mob[i].isBadTarget &&
                             !mob[i].isInvulnerable &&
                             this.position.y < mob[i].bounds.min.y &&
-                            this.position.x > mob[i].position.x - mob[i].radius / 2 &&
-                            this.position.x < mob[i].position.x + mob[i].radius / 2 &&
+                            this.position.x > mob[i].position.x - mob[i].radius - 10 &&
+                            this.position.x < mob[i].position.x + mob[i].radius + 10 &&
                             Matter.Query.ray(map, this.position, mob[i].position).length === 0 &&
                             Matter.Query.ray(body, this.position, mob[i].position).length === 0
                         ) {
-                            Matter.Body.setVelocity(this, { x: 0, y: 4 + Math.max(10, this.speed) });
+                            const unit = Vector.normalise(Vector.sub(mob[i].position, this.position))
+                            Matter.Body.setVelocity(this, Vector.mult(unit, 45));
+                            Matter.Body.setVelocity(mob[i], { x: 0, y: 0 });
                             this.frictionAir = 0
                             this.do = function () {
                                 this.force.y += this.mass * 0.003;
@@ -932,12 +936,15 @@ const b = {
                             !mob[i].isBadTarget &&
                             !mob[i].isInvulnerable &&
                             this.position.y < mob[i].bounds.min.y &&
-                            this.position.x > mob[i].position.x - mob[i].radius / 2 &&
-                            this.position.x < mob[i].position.x + mob[i].radius / 2 &&
+                            this.position.x > mob[i].position.x - mob[i].radius - 10 &&
+                            this.position.x < mob[i].position.x + mob[i].radius + 10 &&
                             Matter.Query.ray(map, this.position, mob[i].position).length === 0 &&
                             Matter.Query.ray(body, this.position, mob[i].position).length === 0
                         ) {
-                            Matter.Body.setVelocity(this, { x: 0, y: 4 + Math.max(10, this.speed) });
+                            const unit = Vector.normalise(Vector.sub(mob[i].position, this.position))
+                            Matter.Body.setVelocity(this, Vector.mult(unit, 45));
+                            Matter.Body.setVelocity(mob[i], { x: 0, y: 0 });
+
                             this.frictionAir = 0
                             this.do = function () {
                                 if (simulation.cycle > this.endCycle - this.suckCycles) { //suck
@@ -985,9 +992,14 @@ const b = {
                             const sub = Vector.sub(that.position, who[i].position);
                             const dist = Vector.magnitude(sub);
                             if (dist < radius && dist > 150 && !who.isInvulnerable) {
-                                knock = Vector.mult(Vector.normalise(sub), mag * who[i].mass / Math.sqrt(dist));
-                                who[i].force.x += knock.x;
-                                who[i].force.y += knock.y;
+                                knock = Vector.mult(Vector.normalise(sub), mag * who[i].mass / Math.sqrt(Math.max(50, dist)));
+                                if (who.isBoss) {
+                                    who[i].force.x += 0.3 * knock.x;
+                                    who[i].force.y += 0.3 * knock.y;
+                                } else {
+                                    who[i].force.x += knock.x;
+                                    who[i].force.y += knock.y;
+                                }
                             }
                         }
                     }
@@ -1045,9 +1057,14 @@ const b = {
                                 const sub = Vector.sub(that.position, who[i].position);
                                 const dist = Vector.magnitude(sub);
                                 if (dist < radius && dist > 150 && !who.isInvulnerable) {
-                                    knock = Vector.mult(Vector.normalise(sub), mag * who[i].mass / Math.sqrt(dist));
-                                    who[i].force.x += knock.x;
-                                    who[i].force.y += knock.y;
+                                    knock = Vector.mult(Vector.normalise(sub), mag * who[i].mass / Math.sqrt(Math.max(50, dist)));
+                                    if (who.isBoss) {
+                                        who[i].force.x += 0.3 * knock.x;
+                                        who[i].force.y += 0.3 * knock.y;
+                                    } else {
+                                        who[i].force.x += knock.x;
+                                        who[i].force.y += knock.y;
+                                    }
                                 }
                             }
                         }
@@ -1082,12 +1099,14 @@ const b = {
                             !mob[i].isBadTarget &&
                             !mob[i].isInvulnerable &&
                             this.position.y < mob[i].bounds.min.y &&
-                            this.position.x > mob[i].position.x - mob[i].radius / 2 &&
-                            this.position.x < mob[i].position.x + mob[i].radius / 2 &&
+                            this.position.x > mob[i].position.x - mob[i].radius - 10 &&
+                            this.position.x < mob[i].position.x + mob[i].radius + 10 &&
                             Matter.Query.ray(map, this.position, mob[i].position).length === 0 &&
                             Matter.Query.ray(body, this.position, mob[i].position).length === 0
                         ) {
-                            Matter.Body.setVelocity(this, { x: 0, y: 4 + Math.max(10, this.speed) });
+                            const unit = Vector.normalise(Vector.sub(mob[i].position, this.position))
+                            Matter.Body.setVelocity(this, Vector.mult(unit, 45));
+                            Matter.Body.setVelocity(mob[i], { x: 0, y: 0 });
 
                             this.do = function () {
                                 this.force.y += this.mass * 0.0025; //extra gravity for harder arcs
@@ -1101,9 +1120,14 @@ const b = {
                                             const sub = Vector.sub(that.position, who[i].position);
                                             const dist = Vector.magnitude(sub);
                                             if (dist < radius && dist > 150 && !who.isInvulnerable) {
-                                                knock = Vector.mult(Vector.normalise(sub), mag * who[i].mass / Math.sqrt(dist));
-                                                who[i].force.x += knock.x;
-                                                who[i].force.y += knock.y;
+                                                knock = Vector.mult(Vector.normalise(sub), mag * who[i].mass / Math.sqrt(Math.max(50, dist)));
+                                                if (who.isBoss) {
+                                                    who[i].force.x += 0.3 * knock.x;
+                                                    who[i].force.y += 0.3 * knock.y;
+                                                } else {
+                                                    who[i].force.x += knock.x;
+                                                    who[i].force.y += knock.y;
+                                                }
                                             }
                                         }
                                     }
@@ -1241,13 +1265,15 @@ const b = {
                             !mob[i].isBadTarget &&
                             !mob[i].isInvulnerable &&
                             this.position.y < mob[i].bounds.min.y &&
-                            this.position.x > mob[i].position.x - mob[i].radius / 2 &&
-                            this.position.x < mob[i].position.x + mob[i].radius / 2 &&
+                            this.position.x > mob[i].position.x - mob[i].radius - 10 &&
+                            this.position.x < mob[i].position.x + mob[i].radius + 10 &&
                             Matter.Query.ray(map, this.position, mob[i].position).length === 0 &&
                             Matter.Query.ray(body, this.position, mob[i].position).length === 0
                         ) {
-                            Matter.Body.setVelocity(this, { x: 0, y: 4 + Math.max(10, this.speed) });
-                            // console.log()
+                            const unit = Vector.normalise(Vector.sub(mob[i].position, this.position))
+                            Matter.Body.setVelocity(this, Vector.mult(unit, 45));
+                            Matter.Body.setVelocity(mob[i], { x: 0, y: 0 });
+
                             isPrecisionTriggered = true
                             if (tech.isRPG) this.thrust = { x: 0, y: 0 }
 
@@ -1592,7 +1618,7 @@ const b = {
                         player.force.x += momentum.x
                         player.force.y += momentum.y
                         if (this.pickUpTarget) {
-                            if (tech.isReel && this.blockDist > 150) {
+                            if (tech.isReel && this.blockDist > 15 && m.immuneCycle < m.cycle) {
                                 // console.log(0.0003 * Math.min(this.blockDist, 1000))
                                 m.energy += 0.00113 * Math.min(this.blockDist, 800) * level.isReducedRegen //max 0.352 energy
                                 simulation.drawList.push({ //add dmg to draw queue
@@ -1853,8 +1879,6 @@ const b = {
                 isInternal: false
             }]
         }
-
-
         bullet[me] = Bodies.fromVertices(where.x, where.y, shape, {
             cycle: 0,
             angle: angle,
@@ -2177,23 +2201,27 @@ const b = {
                 if (tech.fragments) b.targetedNail(this.position, tech.fragments * Math.floor(2 + 1.5 * Math.random()))
                 if (tech.isMissileFast) {
                     simulation.ephemera.push({
-                        count: 21,
+                        count: 35,
                         where: this.position,
                         size: this.explodeRad * size,
                         do() {
                             if (!m.isTimeDilated) {
                                 this.count--
-                                if (this.count < 0) {
+                                if (this.count < 3) {
                                     simulation.removeEphemera(this)
+                                } else if (this.count === 15) {
                                     b.explosion(this.where, this.size * (tech.isMissile2ndExplode ? 1.7 : 0.8));
+                                } else if (this.count < 17) {
+                                    //draw outline
+                                    ctx.beginPath();
+                                    const r = this.size * (tech.isMissile2ndExplode ? 1.7 : 0.8)
+                                    ctx.arc(this.where.x, this.where.y, r, 0, 2 * Math.PI);
+                                    // ctx.fillStyle = "rgba(255,155,200,0.5)"
+                                    // ctx.fill()
+                                    ctx.strokeStyle = "#000"
+                                    ctx.lineWidth = 4
+                                    ctx.stroke();
                                 }
-                                // //draw outline
-                                // ctx.beginPath();
-                                // const r = this.size * Math.max((this.count) / 21, 0.7)
-                                // ctx.arc(this.where.x, this.where.y, r, 0, 2 * Math.PI);
-                                // ctx.strokeStyle = "#000"
-                                // ctx.lineWidth = 2
-                                // ctx.stroke();
                             }
                         },
                     })
