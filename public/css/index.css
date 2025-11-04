@@ -484,7 +484,6 @@ input:checked + .slider:before {
     transform: translateX(32px);
 }
 
-/* Enhanced loader visuals: floating logo, shimmer bar, pulsing dots */
 #loader {
     position: fixed;
     top: 0;
@@ -502,13 +501,12 @@ input:checked + .slider:before {
     backdrop-filter: blur(6px);
 }
 
-/* soft glow behind the loader */
 #loader::after {
     content: '';
     position: absolute;
     width: 60vmax;
     height: 60vmax;
-    background: radial-gradient(circle at center, rgba(255,140,30,0.06), transparent 30%);
+    background: radial-gradient(circle at center, rgba(0,162,255,0.06), transparent 30%);
     filter: blur(28px);
     z-index: -1;
 }
@@ -525,7 +523,6 @@ input:checked + .slider:before {
     position: relative;
 }
 
-/* subtle moving highlight over the whole bar */
 .loading-bar::before {
     content: '';
     position: absolute;
@@ -635,14 +632,13 @@ nav ul li .discord-btn {
 .progress {
     height: 100%;
     width: 0;
-    background: linear-gradient(90deg, #ffb347, #ff7e5f);
+    background: linear-gradient(90deg, #7ec8ff, #1e6fe8);
     transition: width 0.35s ease;
     border-radius: 999px;
     position: relative;
     overflow: hidden;
 }
 
-/* shimmer overlay on the filled portion */
 .progress::after {
     content: '';
     position: absolute;
@@ -650,13 +646,13 @@ nav ul li .discord-btn {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(120deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.15) 100%);
+    /* keep the shimmer highlight but slightly cooler in tint */
+    background: linear-gradient(120deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.14) 100%);
     transform: translateX(-40%);
     animation: shimmer 1.8s linear infinite;
     opacity: 0.55;
 }
 
-/* floating/rotating logo inside loader */
 #loader a img,
 #loader img { 
     width: 140px;
@@ -664,7 +660,8 @@ nav ul li .discord-btn {
     vertical-align: middle;
     border-radius: 10px;
     animation: floatLogo 3.5s ease-in-out infinite;
-    filter: drop-shadow(0 18px 40px rgba(255,120,30,0.06));
+    /* cooler blue drop-shadow */
+    filter: drop-shadow(0 18px 40px rgba(0,162,255,0.06));
 }
 
 .loading-title {
@@ -675,10 +672,10 @@ nav ul li .discord-btn {
     position: relative;
     display: inline-block;
     color: #fff;
-    text-shadow: 0 2px 18px rgba(255,110,30,0.06);
+    /* subtle blue glow */
+    text-shadow: 0 2px 18px rgba(0,162,255,0.06);
 }
 
-/* animated dots created with box-shadow for consistent layout */
 .loading-title::after {
     content: '';
     display: inline-block;
@@ -687,8 +684,8 @@ nav ul li .discord-btn {
     margin-left: 10px;
     vertical-align: middle;
     border-radius: 3px;
-    background: linear-gradient(90deg, #ffb347, #ff7e5f);
-    box-shadow: 14px 0 0 #ffb347, 28px 0 0 #ffb347;
+    background: linear-gradient(90deg, #7ec8ff, #1e6fe8);
+    box-shadow: 14px 0 0 #7ec8ff, 28px 0 0 #7ec8ff;
     animation: dotsPulse 1s steps(3, end) infinite;
     opacity: 0.95;
 }
