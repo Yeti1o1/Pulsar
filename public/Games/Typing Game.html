@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Typing Speed Game</title>
+<style>
+    body {
+        font-family: "Segoe UI", sans-serif;
+        background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
+        color: #fff;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .game-container {
+        background: #151515;
+        padding: 35px 45px;
+        border-radius: 14px;
+        text-align: center;
+        width: 420px;
+        box-shadow: 0 0 30px rgba(0,0,0,0.6);
+        border: 1px solid #2a2a2a;
+        position: relative;
+    }
+
+    h1 {
+        margin-top: 0;
+        font-weight: 400;
+        font-size: 30px;
+        color: #6cf0ff;
+        text-shadow: 0 0 8px #004d59;
+    }
+
+    #word {
+        font-size: 38px;
+        font-weight: bold;
+        margin: 25px 0;
+        letter-spacing: 2px;
+        color: #ffe08d;
+    }
+
+    input {
+        width: 100%;
+        padding: 14px;
+        font-size: 20px;
+        border-radius: 6px;
+        border: 2px solid #444;
+        outline: none;
+        background: #0e0e0e;
+        color: white;
+        text-align: center;
+        transition: border-color 0.2s, background 0.2s;
+    }
+
+    input:focus {
+        border-color: #6cf0ff;
+    }
+
+    .wrong {
+        border-color: red !important;
+        animation: shake 0.3s ease;
+        background: #330000 !important;
+    }
+
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+    }
+
+    .stats {
+        margin-top: 20px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 18px;
+    }
+
+    .game-over {
+        font-size: 22px;
+        margin-top: 15px;
+        color: #ff6b6b;
+        display: none;
+    }
+
+    button {
+        margin-top: 20px;
+        padding: 12px 15px;
+        font-size: 17px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        background: #6cf0ff;
+        color: #000;
+        font-weight: bold;
+    }
+
+    button:hover {
+        background: #4cd6e5;
+    }
+
+    /* Made by Pulsar text */
+    .footer {
+        margin-top: 25px;
+        font-size: 14px;
+        color: #777;
+        text-align: center;
+        opacity: 0.8;
+    }
+</style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>Typing Game</h1>
+
+    <div id="word">start</div>
+
+    <input id="input" type="text" autocomplete="off" placeholder="Type word..." />
+
+    <div class="stats">
+        <div>Score: <span id="score">0</span></div>
+        <div>Mistakes: <span id="mistakes">0</span></div>
+        <div>Time: <span id="time">30</span>s</div>
+    </div>
+
+    <div class="game-over" id="gameOverText">Game Over!</div>
+    <button id="restartBtn">Restart</button>
+
+    <div class="footer">Owned by Pulsar</div>
+</div>
+
+<script>
+    const wordElement = document.getElementById("word");
+    const input = document.getElementById("input");
+    const scoreElement = document.getElementById("score");
+    const timeElement = document.getElementById("time");
+    const mistakesElement = document.getElementById("mistakes");
+    const gameOverText = document.getElementById("gameOverText");
+    const restartBtn = document.getElementById("restartBtn");
+
+    /* HUGE word list (300+ words) */
+    const words = `
+    apple orange keyboard speed planet dream future energy signal vector matrix coding
+    shadow neon crystal dragon quantum module rocket galaxy phantom storm silent motion
+    puzzle network ocean forest canyon binary flame python object random chrome window
+    memory screen alpha beta gamma delta echo fury ghost hunter ignite laser jungle king
+    lunar metal night orbit pixel quick river solar tiger unity vapor wonder xenon youth
+    zenith amber brave cyber drift ember flash glitch halo inferno joy karma logic magic
+    nova omega pulse quake radar synth thunder ultra venom warp xray yield zero artifact
+    blade comet drift engine forge gear hyper ion jade knot lunar mystic nano orbit prime
+    quake rogue spirit torque ultra vivid warp xenon yield zen core dash echo flux grind
+    haze icon jolt keen link myth node optic prime quill rune surge titan unity viper
+    wave xeno young zeal arc base code dive echo flux grid heat isle jump kite loop mist
+    neon oath pace quartz rise spark tale undo vast wire yarn zone aim bark case dive
+    ember fade glow hold iron jade kite lift mask nest open pine quest rise sail trace
+    undo vast wave yarn zoom apex burst claw dusk echo fang glow hex isle jade karma link
+    moss nova octane pulse quartz rune surge titan unity vine warp xray yield zen
+    `.trim().split(/\s+/);
+
+    let currentWord = "";
+    let score = 0;
+    let mistakes = 0;
+    let time = 30;
+    let timerInterval;
+
+    function pickWord() {
+        return words[Math.floor(Math.random() * words.length)];
+    }
+
+    function startGame() {
+        score = 0;
+        mistakes = 0;
+        time = 30;
+
+        scoreElement.textContent = score;
+        mistakesElement.textContent = mistakes;
+        timeElement.textContent = time;
+
+        gameOverText.style.display = "none";
+        input.disabled = false;
+        input.value = "";
+        input.focus();
+
+        currentWord = pickWord();
+        wordElement.textContent = currentWord;
+
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            time--;
+            timeElement.textContent = time;
+
+            if (time <= 0) {
+                endGame();
+            }
+        }, 1000);
+    }
+
+    function wrongTyping() {
+        mistakes++;
+        mistakesElement.textContent = mistakes;
+        score = 0;
+        scoreElement.textContent = score;
+
+        input.classList.add("wrong");
+        setTimeout(() => input.classList.remove("wrong"), 300);
+    }
+
+    function endGame() {
+        clearInterval(timerInterval);
+        input.disabled = true;
+        gameOverText.style.display = "block";
+    }
+
+    input.addEventListener("input", () => {
+        if (input.value.trim() === currentWord) {
+            score++;
+            scoreElement.textContent = score;
+            input.value = "";
+            time += 2;
+            currentWord = pickWord();
+            wordElement.textContent = currentWord;
+        } 
+        else if (!currentWord.startsWith(input.value)) {
+            wrongTyping();
+        }
+    });
+
+    restartBtn.addEventListener("click", startGame);
+
+    startGame();
+</script>
+
+</body>
+</html>
