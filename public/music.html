@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="referrer" content="no-referrer">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1c1f24">
+    <meta name="googlebot" content="index, follow, snippet">
+    <meta name="robots" content="index, follow">
+    <link rel="icon" href="Imgs/favicon.ico" type="image/x-icon">
+
+    <title>Pulsar</title>
+    <meta name="description" content="Pulsar is a feature-packed game site with tons of customization, favorites, features, and more. Join our community today.">
+        <meta name="keywords" content="Pulsar, customization, features, community, favorites, games, game site, web platform">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron&family=Audiowide&family=Press+Start+2P&family=Russo+One&family=Bungee&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/index.css">
+    <script src="index.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4207227785539100" crossorigin="anonymous"></script>
+
+<style>
+  body {
+    background-color: #000000;
+    color: #ffffff;
+  }
+
+  .btn {
+     height: 600px;
+     width: 464px;
+  }
+</style>
+  </head>
+<body>
+
+        <section class="hub-controls">
+
+        <h1 class="Title">
+          <a href="index.html"><img class="TitleImg" src="Imgs/Logo.png" alt="Logo"></a>
+<span style="font-family: 'Trebuchet MS', Helvetica, sans-serif; letter-spacing: 4px; font-weight: 900; font-size: 1.2em; text-shadow: 2px 2px #00a2ff;">Pulsar</span>
+        </h1>
+
+            <button class="updrop-button" style="color: transparent;"><i class="fa-solid fa-square-pen"></i></button>
+
+            </div>
+        </section>
+        
+
+    <main class="hub-container">
+
+     <section class="game-category" id="recommended-category">
+     <div class="category-header">
+<h6><span style="font-size: 1.2em; text-shadow: none;">🎶</span> Music By Pulsar <a style="text-decoration:none;cursor:pointer;" class="toggle-all-btn"> View All</a></h6>
+     <div class="scroll-arrows">
+      <button class="scroll-arrow left-arrow" aria-label="Scroll Left"><i class="fas fa-angle-left"></i></button>
+      <button class="scroll-arrow right-arrow" aria-label="Scroll Right"><i class="fas fa-angle-right"></i></button>
+      </div>
+    </div> 
+    <div id="recommended-category">
+      <div class="btn-container"> 
+        <button class="btn" loading="lazy" data-path="Games/Gibberish.html" data-game-id="fav-Games-Gibberish-html"><img class="imgg" src="Imgs/Gibberish.png" alt="Gibberish"><div class="game-info-bar"><span class="game-name">Gibberish</span></div></button>
+
+     </div>
+     </div>
+</section>
+</main>
+
+<script>
+  particlesJS("particles-js", {
+    "particles": {
+      "number": {
+        "value": 80,
+        "density": {
+          "enable": true,
+          "value_area": 800
+        }
+      },
+      "color": {
+        "value": "#ffffff"
+      },
+      "shape": {
+        "type": "circle",
+        "stroke": {
+          "width": 0,
+          "color": "#000000"
+        }
+      },
+      "opacity": {
+        "value": 0.5,
+        "random": true,
+        "anim": {
+          "enable": false,
+          "speed": 1,
+          "opacity_min": 0.1,
+          "sync": false
+        }
+      },
+      "size": {
+        "value": 3,
+        "random": true,
+        "anim": {
+          "enable": false,
+          "speed": 40,
+          "size_min": 0.1,
+          "sync": false
+        }
+      },
+      "line_linked": {
+        "enable": true,
+        "distance": 150,
+        "color": "#ffffff",
+        "opacity": 0.4,
+        "width": 1
+      },
+      "move": {
+        "enable": true,
+        "speed": 6,
+        "direction": "none",
+        "random": false,
+        "straight": false,
+        "out_mode": "out",
+        "bounce": false,
+        "attract": {
+          "enable": false,
+          "rotateX": 600,
+          "rotateY": 1200
+        }
+      }
+    },
+    "interactivity": {
+      "detect_on": "canvas",
+      "events": {
+        "onhover": {
+          "enable": true,
+          "mode": "repulse"
+        },
+        "onclick": {
+          "enable": true,
+          "mode": "push"
+        },
+        "resize": true
+      },
+      "modes": {
+        "grab": {
+          "distance": 400,
+          "line_linked": {
+            "opacity": 1
+          }
+        },
+        "bubble": {
+          "distance": 400,
+          "size": 40,
+          "duration": 2,
+          "opacity": 8,
+          "speed": 3
+        },
+        "repulse": {
+          "distance": 200,
+          "duration": 0.4
+        },
+        "push": {
+          "particles_nb": 4
+        },
+        "remove": {
+          "particles_nb": 2
+        }
+      }
+    },
+    "retina_detect": true
+  });
+
+  document.querySelectorAll('.btn').forEach(button => {
+    const img = button.querySelector('.imgg');
+
+    button.addEventListener('mousemove', (e) => {
+      const rect = button.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const xPercent = x / rect.width * 120;
+      const yPercent = y / rect.height * 120;
+
+      img.style.transformOrigin = `${xPercent}% ${yPercent}%`;
+      img.style.transform = 'scale(1.4)';
+    });
+
+    button.addEventListener('mouseleave', () => {
+      img.style.transformOrigin = 'center center';
+      img.style.transform = 'scale(1)';
+    });
+  });
+  
+function showOnlyClickedCategory(event) {
+    event.preventDefault();
+
+    const clickedButton = event.currentTarget;
+    const categorySection = clickedButton.closest('section.game-category');
+    if (!categorySection) return;
+
+    document.querySelectorAll('section.game-category').forEach(section => {
+        section.style.display = (section === categorySection) ? 'block' : 'none';
+    });
+
+    clickedButton.style.display = 'none';
+
+    document.querySelectorAll('.scroll-arrows').forEach(arrow => {
+        arrow.style.display = 'none';
+    });
+
+    const btnContainer = categorySection.querySelector('.btn-container');
+    if (btnContainer) {
+        btnContainer.style.display = 'grid';
+        btnContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(150px, 1fr))';
+        btnContainer.style.gap = '10px';
+    }
+
+    const viewAllGamesBtn = document.querySelector('a.toggle-categories-btn[href="index.html"]');
+    const hideCategoriesBtn = document.querySelector('a.toggle-categories-btn[href="gamesall.html?category=all"]');
+
+    if (viewAllGamesBtn && hideCategoriesBtn) {
+        viewAllGamesBtn.hidden = false;
+        hideCategoriesBtn.hidden = true;
+    }
+}
+
+function showOnlyAllCategory() {
+    const allCategorySection = document.getElementById('all-category');
+    if (!allCategorySection) return;
+
+    document.querySelectorAll('section.game-category').forEach(section => {
+        section.style.display = (section === allCategorySection) ? 'block' : 'none';
+    });
+
+    document.querySelectorAll('.toggle-all-btn').forEach(btn => {
+        btn.style.display = '';
+    });
+
+    const targetBtn = allCategorySection.querySelector('.toggle-all-btn');
+    if (targetBtn) targetBtn.style.display = 'none';
+
+    document.querySelectorAll('.scroll-arrows').forEach(arrow => {
+        arrow.style.display = 'none';
+    });
+
+    const btnContainer = allCategorySection.querySelector('.btn-container');
+    if (btnContainer) {
+        btnContainer.style.display = 'grid';
+        btnContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(150px, 1fr))';
+        btnContainer.style.gap = '10px';
+    }
+
+    const viewAllGamesBtn = document.querySelector('a.toggle-categories-btn[href="index.html"]');
+    const hideCategoriesBtn = document.querySelector('a.toggle-categories-btn[href="gamesall.html?category=all"]');
+
+    if (viewAllGamesBtn && hideCategoriesBtn) {
+        viewAllGamesBtn.hidden = false;
+        hideCategoriesBtn.hidden = true;
+    }
+}
+
+function showAllCategories() {
+    document.querySelectorAll('section.game-category').forEach(section => {
+        section.style.display = 'block';
+    });
+    document.querySelectorAll('.toggle-all-btn').forEach(btn => {
+        btn.style.display = '';
+    });
+    document.querySelectorAll('.scroll-arrows').forEach(arrow => {
+        arrow.style.display = '';
+    });
+    document.querySelectorAll('.btn-container').forEach(container => {
+        container.style.display = 'flex';
+        container.style.gridTemplateColumns = '';
+        container.style.gap = '';
+    });
+
+    const viewAllGamesBtn = document.querySelector('a.toggle-categories-btn[href="index.html"]');
+    const hideCategoriesBtn = document.querySelector('a.toggle-categories-btn[href="gamesall.html?category=all"]');
+
+    if (viewAllGamesBtn && hideCategoriesBtn) {
+        viewAllGamesBtn.hidden = true;
+        hideCategoriesBtn.hidden = false;
+    }
+}
+
+function showOnlyClickedCategory(event) {
+    const clickedBtn = event.currentTarget;
+    const section = clickedBtn.closest('section.game-category');
+
+    if (!section) return;
+
+    document.querySelectorAll('section.game-category').forEach(sec => {
+        sec.style.display = (sec === section) ? 'block' : 'none';
+    });
+
+    document.querySelectorAll('.scroll-arrows').forEach(arrow => {
+        arrow.style.display = 'none';
+    });
+
+    const btnContainer = section.querySelector('.btn-container');
+    if (btnContainer) {
+        btnContainer.style.display = 'grid';
+        btnContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(150px, 1fr))';
+        btnContainer.style.gap = '10px';
+    }
+
+    const viewAllGamesBtn = document.querySelector('a.toggle-categories-btn.view-all');
+    const hideCategoriesBtn = document.querySelector('a.toggle-categories-btn.hide-categories');
+
+    if (viewAllGamesBtn && hideCategoriesBtn) {
+        viewAllGamesBtn.hidden = false;
+        hideCategoriesBtn.hidden = true;
+    }
+}
+
+function showOnlyClickedCategory(event) {
+    const clickedBtn = event.currentTarget;
+    const section = clickedBtn.closest('section.game-category');
+
+    if (!section) return;
+
+    document.querySelectorAll('section.game-category').forEach(sec => {
+        sec.style.display = (sec === section) ? 'block' : 'none';
+    });
+
+    document.querySelectorAll('.scroll-arrows').forEach(arrow => {
+        arrow.style.display = 'none';
+    });
+
+    const btnContainer = section.querySelector('.btn-container');
+    if (btnContainer) {
+        btnContainer.style.display = 'grid';
+        btnContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(150px, 1fr))';
+        btnContainer.style.gap = '10px';
+    }
+
+    clickedBtn.style.display = 'none';
+
+    const viewAllGamesBtn = document.querySelector('a.toggle-categories-btn.view-all');
+    const hideCategoriesBtn = document.querySelector('a.toggle-categories-btn.hide-categories');
+
+    if (viewAllGamesBtn && hideCategoriesBtn) {
+        viewAllGamesBtn.hidden = false;
+        hideCategoriesBtn.hidden = true;
+    }
+}
+
+function showOnlyAllCategory() {
+    const allCategorySection = document.getElementById('all-category');
+    if (!allCategorySection) return;
+
+    document.querySelectorAll('section.game-category').forEach(section => {
+        section.style.display = (section === allCategorySection) ? 'block' : 'none';
+    });
+
+    document.querySelectorAll('.toggle-all-btn').forEach(btn => {
+        btn.style.display = '';
+    });
+
+    const targetBtn = allCategorySection.querySelector('.toggle-all-btn');
+    if (targetBtn) targetBtn.style.display = 'none';
+
+    document.querySelectorAll('.scroll-arrows').forEach(arrow => {
+        arrow.style.display = 'none';
+    });
+
+    const btnContainer = allCategorySection.querySelector('.btn-container');
+    if (btnContainer) {
+        btnContainer.style.display = 'grid';
+        btnContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(150px, 1fr))';
+        btnContainer.style.gap = '10px';
+    }
+
+    const viewAllGamesBtn = document.querySelector('a.toggle-categories-btn.view-all');
+    const hideCategoriesBtn = document.querySelector('a.toggle-categories-btn.hide-categories');
+
+    if (viewAllGamesBtn && hideCategoriesBtn) {
+        viewAllGamesBtn.hidden = false;
+        hideCategoriesBtn.hidden = true;
+    }
+}
+
+function showAllCategories() {
+    document.querySelectorAll('section.game-category').forEach(section => {
+        section.style.display = 'block';
+    });
+
+    document.querySelectorAll('.toggle-all-btn').forEach(btn => {
+        btn.style.display = '';
+    });
+
+    document.querySelectorAll('.scroll-arrows').forEach(arrow => {
+        arrow.style.display = '';
+    });
+
+    document.querySelectorAll('.btn-container').forEach(container => {
+        container.style.display = 'flex';
+        container.style.gridTemplateColumns = '';
+        container.style.gap = '';
+    });
+
+    const viewAllGamesBtn = document.querySelector('a.toggle-categories-btn.view-all');
+    const hideCategoriesBtn = document.querySelector('a.toggle-categories-btn.hide-categories');
+
+    if (viewAllGamesBtn && hideCategoriesBtn) {
+        viewAllGamesBtn.hidden = true;
+        hideCategoriesBtn.hidden = false;
+    }
+}
+
+document.querySelectorAll('.toggle-all-btn').forEach(btn => {
+    btn.addEventListener('click', showOnlyClickedCategory);
+});
+
+document.querySelectorAll('.open-category-btn').forEach(btn => {
+    btn.addEventListener('click', function(event) {
+        event.preventDefault();
+        const category = btn.getAttribute('data-category');
+        const targetBtn = document.querySelector(`#${category}-category .toggle-all-btn`);
+        if (targetBtn) {
+            targetBtn.click();
+        } else if (category === 'all') {
+            showOnlyAllCategory();
+        }
+    });
+});
+
+const viewAllGamesBtn = document.querySelector('a.toggle-categories-btn.view-all');
+const hideCategoriesBtn = document.querySelector('a.toggle-categories-btn.hide-categories');
+
+if (viewAllGamesBtn) {
+    viewAllGamesBtn.addEventListener('click', function(event) {
+    });
+}
+
+if (hideCategoriesBtn) {
+    hideCategoriesBtn.addEventListener('click', function(event) {
+        event.preventDefault();
+        showOnlyAllCategory();
+    });
+}
+
+  const toggle = document.getElementById('particlesToggle');
+  const container = document.getElementById('particles-js');
+
+  const savedState = localStorage.getItem('particlesEnabled');
+  const enabled = savedState === null ? false : savedState === 'true';
+
+  toggle.checked = enabled;
+  container.style.display = enabled ? 'block' : 'none';
+
+  if (enabled) {
+    particlesJS.load('particles-js', 'particles.json', function() {
+      console.log('particles.js loaded');
+    });
+  }
+
+  toggle.addEventListener('change', () => {
+    const isChecked = toggle.checked;
+    localStorage.setItem('particlesEnabled', isChecked);
+    if (isChecked) {
+      container.style.display = 'block';
+      particlesJS.load('particles-js', 'particles.json', function() {
+        console.log('particles.js loaded');
+      });
+    } else {
+      container.style.display = 'none';
+    }
+  });
+
+  document.querySelector('.updrop-button').addEventListener('click', () => {
+    const customizationDiv = document.querySelector('.Customization');
+    customizationDiv.style.display = customizationDiv.style.display === 'none' ? 'block' : 'none';
+  });
+
+if (!localStorage.getItem('backgroundClearedOnce')) {
+  localStorage.removeItem('backgroundStyle');
+  localStorage.removeItem('backgroundValue');
+  localStorage.setItem('backgroundClearedOnce', 'true');
+}
+    
+if (!localStorage.getItem('backgroundStyle') && !localStorage.getItem('backgroundValue')) {
+  localStorage.setItem('backgroundStyle', 'solid');
+  localStorage.setItem('backgroundValue', '#000000');
+}
+
+document.querySelectorAll('.color-btn').forEach(button => {
+  button.addEventListener('click', () => {
+    const color = button.getAttribute('data-color');
+    if (color.startsWith('linear-gradient')) {
+      document.body.style.backgroundImage = color;
+      document.body.style.backgroundColor = '';
+      localStorage.setItem('backgroundStyle', 'gradient');
+      localStorage.setItem('backgroundValue', color);
+    } else {
+      document.body.style.background = color;
+      document.body.style.backgroundImage = '';
+      localStorage.setItem('backgroundStyle', 'solid');
+      localStorage.setItem('backgroundValue', color);
+    }
+  });
+});
+
+window.addEventListener('load', () => {
+  const bgStyle = localStorage.getItem('backgroundStyle');
+  const bgValue = localStorage.getItem('backgroundValue');
+
+  if (bgStyle && bgValue) {
+    if (bgStyle === 'gradient') {
+      document.body.style.backgroundImage = bgValue;
+      document.body.style.backgroundColor = '';
+    } else if (bgStyle === 'solid') {
+      document.body.style.background = bgValue;
+      document.body.style.backgroundImage = '';
+    }
+  }
+});
+
+const overlay = document.querySelector('.theme-overlay');
+
+function updateOverlay() {
+  const bgStyle = localStorage.getItem('backgroundStyle');
+  const bgValue = localStorage.getItem('backgroundValue');
+  if (bgStyle === 'solid' && bgValue === '#000000') {
+    overlay.style.display = 'block';
+  } else {
+    overlay.style.display = 'none';
+  }
+}
+
+updateOverlay();
+
+window.addEventListener('storage', updateOverlay);
+window.addEventListener('load', updateOverlay);
+document.querySelectorAll('.color-btn').forEach(button => {
+  button.addEventListener('click', updateOverlay);
+});
+
+  const heartIcon = document.getElementById('heartIcon');
+
+  const gameId = localStorage.getItem('lastClickedUrl') || 'default-game-id';
+
+  function updateHeartUI(isFavorited) {
+    if (isFavorited) {
+      heartIcon.classList.add('favorited');
+      heartIcon.style.color = 'rgb(0, 132, 255)';
+    } else {
+      heartIcon.classList.remove('favorited');
+      heartIcon.style.color = 'white';
+    }
+  }
+
+  function getFavorites() {
+    return JSON.parse(localStorage.getItem('favorites') || '{}');
+  }
+
+  function setFavorites(favorites) {
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+  }
+
+  function toggleFavorite() {
+    const favorites = getFavorites();
+    const isFavorited = !!favorites[gameId];
+    if (isFavorited) {
+      delete favorites[gameId];
+    } else {
+      favorites[gameId] = true;
+    }
+    setFavorites(favorites);
+    updateHeartUI(!isFavorited);
+  }
+
+  const favorites = getFavorites();
+  updateHeartUI(!!favorites[gameId]);
+
+  heartIcon.addEventListener('click', toggleFavorite);
+
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'favorites') {
+      const newFavorites = JSON.parse(e.newValue || '{}');
+      updateHeartUI(!!newFavorites[gameId]);
+    }
+  });
+  </script>
+<script>
+const downloadBtn = document.getElementById('downloadBtn');
+const uploadBtn = document.getElementById('uploadBtn');
+const uploadInput = document.getElementById('uploadInput');
+
+downloadBtn.addEventListener('click', () => {
+  const data = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    data[key] = localStorage.getItem(key);
+  }
+  const jsonStr = JSON.stringify(data, null, 2);
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'Pulsar_Site_Data.json';
+  a.click();
+
+  URL.revokeObjectURL(url);
+});
+
+uploadBtn.addEventListener('click', () => {
+  uploadInput.click();
+});
+
+uploadInput.addEventListener('change', (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (typeof data === 'object' && data !== null) {
+        for (const key in data) {
+          localStorage.setItem(key, data[key]);
+        }
+        alert('LocalStorage restored successfully!');
+        location.reload();
+      } else {
+        alert('Invalid file format.');
+      }
+    } catch {
+      alert('Failed to parse JSON.');
+    }
+  };
+  reader.readAsText(file);
+});
+
+  function showCookieConsent() {
+    if (!localStorage.getItem('cookiesAccepted')) {
+      document.getElementById('cookieConsent').style.display = 'flex';
+    }
+  }
+  document.getElementById('acceptCookies').onclick = function() {
+    localStorage.setItem('cookiesAccepted', 'true');
+    document.getElementById('cookieConsent').style.display = 'none';
+  };
+  window.onload = showCookieConsent;
+
+const progress = document.getElementById("progress");
+const loader = document.getElementById("loader");
+const hubControls = document.getElementById("hub-controls");
+
+if (hubControls) {
+  hubControls.style.display = "none";
+}
+
+let width = 0;
+const interval = setInterval(() => {
+  if (width < 90) {
+    width += 2;
+    progress.style.width = width + "%";
+  }
+}, 100);
+
+window.addEventListener("load", () => {
+  clearInterval(interval);
+  progress.style.width = "100%";
+  setTimeout(() => {
+    loader.classList.add("fade-out");
+    if (hubControls) {
+      hubControls.style.display = "";
+    }
+    setTimeout(() => loader.remove(), 600);
+  }, 300);
+});
+
+
+document.querySelectorAll('.open-category-btn').forEach(button => {
+  button.addEventListener('click', () => {
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.style.setProperty("width", "142px", "important");
+    });
+  });
+});
+
+document.querySelectorAll('.toggle-all-btn').forEach(button => {
+  button.addEventListener('click', () => {
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.style.setProperty("width", "142px", "important");
+    });
+  });
+});
+
+document.querySelectorAll('.toggle-categories-btn').forEach(button => {
+  button.addEventListener('click', () => {
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.style.setProperty("width", "142px", "important");
+    });
+  });
+});
+</script>
+
+
+</body>
+</html>
