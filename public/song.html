@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="referrer" content="no-referrer">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#222831">
+    <meta name="googlebot" content="index, follow, snippet">
+    <meta name="robots" content="index, follow">
+    <title>Pulsar</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="Imgs/favicon.ico" type="image/x-icon">
+    <style>
+        body {
+            background: #000000;
+            zoom: 0.8;
+        }
+        #gameSection {
+            display: block;
+        }
+        #gameFrame {
+            display: none;
+            position: fixed;
+            bottom: 5%;
+            left: 4.5%;
+            width: 100vw;
+            height: 100vh;
+            border: none;
+            margin: 0;
+            padding: 0;
+        }
+        .imgg {
+            width: 300px;
+            max-height: 160px; 
+            min-height: 160px;
+            margin-top: 5px; 
+            margin-bottom: 15px; 
+            border-radius: inherit;
+            position: relative;
+        }
+        h3 {
+            color: #ffffff; 
+            position: fixed; 
+            top: -7%; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            font-size: 25px; 
+            font-family: 'Roboto', sans-serif; 
+            z-index: 10; 
+            padding: 10px; 
+        }
+
+        h3#gameNameDisplay {
+    top: 5px;        
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    padding: 5px 15px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 5px;
+    font-size: 25px;
+    color: white;
+    text-align: center;
+    user-select: none;
+    pointer-events: none;
+    max-width: 90vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+        #fullscreenBtn {
+        position: fixed;
+        left: 93.5%;
+        bottom: 1.25%;
+        z-index: 10;
+        display: block; 
+        background: transparent;
+        border: none;
+        padding: 0px;
+        font-size: 1.5vw;
+        width: 2%;
+        height: auto;
+    }
+    #likeBtn {
+        position: fixed;
+        left: 80.5%;
+        bottom: 1.25%;
+        z-index: 10;
+        display: block; 
+        background: transparent;
+        border: none;
+        padding: 0px;
+        font-size: 1.5vw;
+        width: 2%;
+        height: auto;
+    }
+    #dislikeBtn {
+        position: fixed;
+        left: 85.5%;
+        bottom: 1.25%;
+        z-index: 10;
+        display: block; 
+        background: transparent;
+        border: none;
+        padding: 0px;
+        font-size: 1.5vw;
+        width: 2%;
+        height: auto;
+    }
+    #veiwBtn {
+        position: fixed;
+        left: 4%;
+        bottom: 1.25%;
+        z-index: 10;
+        display: block; 
+        background: transparent;
+        border: none;
+        padding: 0px;
+        font-size: 1.5vw;
+        width: 2%;
+        height: auto;
+    }
+    #heartBtn {
+        position: fixed;
+        left: 90%;
+        bottom: 1.25%;
+        z-index: 10;
+        display: block; 
+        background: transparent;
+        border: none;
+        padding: 0px;
+        font-size: 1.5vw;
+        width: 2%;
+        height: auto;
+    }
+    .heart {
+        color: white;
+    }
+
+    .heart.favorited {
+        color: #ff1a1a;
+        text-shadow: 0 0 4px #ff2600;
+    }
+
+#backBtn {
+    position: fixed;
+    left: 0.6%;
+    top: 15px;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: black;
+    border: 0px solid white;
+    border-radius: 50%;
+    font-size: 2.8vw;
+    width: 4vw;
+    height: 4vw;
+}
+
+
+#likeBtn, #dislikeBtn {
+    color: white;  
+}
+
+#likeBtn.liked {
+    color: rgb(0, 255, 0);  
+}
+
+#dislikeBtn.disliked {
+    color: rgb(255, 0, 0);  
+}
+
+#buttonContainer {
+    position: absolute;
+    bottom: 10px; 
+    width: 100%; 
+    display: flex;
+    justify-content: center; 
+    gap: 10px; 
+}
+#nameContainer {
+    position: absolute;
+    top: 0px; 
+    width: 100%; 
+    display: flex;
+    justify-content: center; 
+}
+#viewBtn {
+        position: fixed;
+        left: 4.5%; 
+        bottom: 1.25%; 
+        z-index: 10;
+        display: block;
+        background: transparent;
+        border: none;
+        padding: 0px;
+        font-size: 1.5vw; 
+        width: 2%;
+        height: auto;
+        color: white;
+    }
+
+    #viewBtn i {
+        font-size: 1.5vw; 
+        color: white;
+    }
+
+    #viewBtn span {
+        font-size: 1.5vw; 
+        margin-left: 25%;
+        color: white;
+    }
+
+.audio-wrapper {
+    position: fixed;
+    top: 50%;
+    left: 75%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+audio {
+    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3));
+    border-radius: 6px;
+    background: #f6f6f6;
+    padding: 6px;
+}
+
+audio::-webkit-media-controls-panel {
+    background-color: #ffffff;
+    border-radius: 6px;
+}
+
+audio::-webkit-media-controls-play-button,
+audio::-webkit-media-controls-mute-button {
+    filter: invert(40%);
+    transform: scale(1.1);
+}
+
+audio::-webkit-media-controls-volume-slider {
+    accent-color: #4a8cff;
+}
+
+.splash {
+    margin-top: 6px;
+    font-size: 15px;
+    color: #666;
+    font-family: Arial, sans-serif;
+    opacity: 0.8;
+}
+</style>
+
+<button id="backBtn" onclick="window.location.href='music.html';">
+    <i class="fa fa-chevron-left" style="color: white;"></i>
+</button>
+<div id="nameContainer">
+<h3 id="gameNameDisplay"></h3>
+</div>
+
+<div style="position: relative; z-index: 10; display: flex; justify-content: center; padding: 0 20px;">
+    <iframe id="gameFrame" frameborder="0" marginheight="0" marginwidth="0" sandbox="allow-scripts allow-same-origin"
+        style="width: 50%; height: 90.5%; background-color: white; display: none;"></iframe>
+</div>
+
+<div class="audio-wrapper">
+    <audio controls>
+        <source src="Music/Gibberish.mp3" type="audio/mpeg">
+    </audio>
+    <div class="splash">For now, audio not by a human.</div>
+</div>
+
+
+
+<div id="buttonContainer">
+    <button id="viewBtn" style="display: inline-flex; align-items: center;">
+        <i class="fa fa-eye"></i>
+        <span id="viewCount">0</span>
+    </button>
+
+    <button id="likeBtn" onclick="toggleLike()" style="display: inline-flex; align-items: center;">
+        <i class="fa fa-thumbs-up"></i>
+        <span id="likeCount" style="margin-left: 25%;">0</span>
+    </button>
+    <button id="dislikeBtn" onclick="toggleDislike()" style="display: inline-flex; align-items: center;">
+        <i class="fa fa-thumbs-down"></i>
+        <span id="dislikeCount" style="margin-left: 25%;">0</span>
+    </button>
+    <button id="heartBtn" onclick="toggleHeart()">
+        <i id="heartIcon" class="fa fa-heart heart"></i>
+    </button>
+    <button id="fullscreenBtn" onclick="toggleFullscreen()">
+        <i class="fas fa-expand" style="color: white;"></i>
+    </button>
+</div>
+
+<script>
+
+const savedUrl = localStorage.getItem('lastClickedUrl');
+
+if (savedUrl) {
+    const gameFrame = document.getElementById("gameFrame");
+
+    if (gameFrame) {
+        gameFrame.style.display = "block";
+        gameFrame.src = savedUrl;
+    }
+
+    console.log("Loaded URL from localStorage:", savedUrl);
+}
+
+    function toggleFullscreen() {
+        const iframe = document.getElementById("gameFrame");
+        if (document.fullscreenElement) {
+            document.exitFullscreen();
+        } else if (iframe.requestFullscreen) {
+            iframe.requestFullscreen();
+        } else if (iframe.mozRequestFullScreen) { 
+            iframe.mozRequestFullScreen();
+        } else if (iframe.webkitRequestFullscreen) { 
+            iframe.webkitRequestFullscreen();
+        } else if (iframe.msRequestFullscreen) { 
+            iframe.msRequestFullscreen();
+        }
+    }
+
+        window.onload = function () {
+            const gameUrl = localStorage.getItem('lastClickedUrl'); 
+            const gameName = localStorage.getItem('lastClickedGame'); 
+
+            document.getElementById('gameNameDisplay').textContent = gameName || 'No game selected';
+
+        const likeBtn = document.getElementById("likeBtn");
+        const dislikeBtn = document.getElementById("dislikeBtn");
+        const heartIcon = document.getElementById("heartIcon");
+        const likeCount = document.getElementById("likeCount");
+        const dislikeCount = document.getElementById("dislikeCount");
+
+        const likedGame = localStorage.getItem(gameUrl + '-liked') === 'true';
+        const dislikedGame = localStorage.getItem(gameUrl + '-disliked') === 'true';
+
+        const savedLikeCount = parseInt(localStorage.getItem(gameUrl + '-likeCount')) || 0;
+        const savedDislikeCount = parseInt(localStorage.getItem(gameUrl + '-dislikeCount')) || 0;
+
+        likeBtn.style.color = likedGame ? 'rgb(0, 255, 0)' : ''; 
+        dislikeBtn.style.color = dislikedGame ? 'rgb(255, 0, 0)' : ''; 
+        likeCount.innerText = savedLikeCount;  
+        dislikeCount.innerText = savedDislikeCount;  
+
+        const isFavorited = localStorage.getItem(gameName) === 'true';
+        heartIcon.classList.toggle('favorited', isFavorited);
+
+        const gameFrame = document.getElementById("gameFrame");
+        if (gameUrl && gameFrame) {
+            gameFrame.style.display = "block";
+            gameFrame.src = gameUrl;
+        }
+
+        updateButtonColors();
+    };
+
+    function toggleLike() {
+        const gameUrl = localStorage.getItem('lastClickedUrl');
+        const likeBtn = document.getElementById("likeBtn");
+        const likeCount = document.getElementById("likeCount");
+        const dislikeBtn = document.getElementById("dislikeBtn");
+        const dislikeCount = document.getElementById("dislikeCount");
+
+        const likedGame = localStorage.getItem(gameUrl + '-liked') === 'true';
+        const dislikedGame = localStorage.getItem(gameUrl + '-disliked') === 'true';
+
+        let currentLikeCount = parseInt(likeCount.innerText);
+        let currentDislikeCount = parseInt(dislikeCount.innerText);
+
+        if (likedGame) {
+
+            localStorage.setItem(gameUrl + '-liked', 'false');
+            likeBtn.style.color = '';  
+            likeCount.innerText = currentLikeCount > 0 ? currentLikeCount - 1 : 0;  
+            localStorage.setItem(gameUrl + '-likeCount', likeCount.innerText);  
+        } else {
+
+            localStorage.setItem(gameUrl + '-liked', 'true');
+            likeBtn.style.color = 'rgb(0, 255, 0)';  
+            likeCount.innerText = currentLikeCount + 1;  
+            localStorage.setItem(gameUrl + '-likeCount', likeCount.innerText);  
+        }
+
+        if (dislikedGame) {
+            localStorage.setItem(gameUrl + '-disliked', 'false');
+            dislikeBtn.style.color = '';  
+            dislikeCount.innerText = currentDislikeCount > 0 ? currentDislikeCount - 1 : 0;  
+            localStorage.setItem(gameUrl + '-dislikeCount', dislikeCount.innerText);  
+        }
+    }
+
+    function toggleDislike() {
+        const gameUrl = localStorage.getItem('lastClickedUrl');
+        const dislikeBtn = document.getElementById("dislikeBtn");
+        const dislikeCount = document.getElementById("dislikeCount");
+        const likeBtn = document.getElementById("likeBtn");
+        const likeCount = document.getElementById("likeCount");
+
+        const dislikedGame = localStorage.getItem(gameUrl + '-disliked') === 'true';
+        const likedGame = localStorage.getItem(gameUrl + '-liked') === 'true';
+
+        let currentDislikeCount = parseInt(dislikeCount.innerText);
+        let currentLikeCount = parseInt(likeCount.innerText);
+
+        if (dislikedGame) {
+
+            localStorage.setItem(gameUrl + '-disliked', 'false');
+            dislikeBtn.style.color = '';  
+            dislikeCount.innerText = currentDislikeCount > 0 ? currentDislikeCount - 1 : 0;  
+            localStorage.setItem(gameUrl + '-dislikeCount', dislikeCount.innerText);  
+        } else {
+
+            localStorage.setItem(gameUrl + '-disliked', 'true');
+            dislikeBtn.style.color = 'rgb(255, 0, 0)';  
+            dislikeCount.innerText = currentDislikeCount + 1;  
+            localStorage.setItem(gameUrl + '-dislikeCount', dislikeCount.innerText);  
+        }
+
+        if (likedGame) {
+
+            localStorage.setItem(gameUrl + '-liked', 'false');
+            likeBtn.style.color = '';  
+            likeCount.innerText = currentLikeCount > 0 ? currentLikeCount - 1 : 0;  
+            localStorage.setItem(gameUrl + '-likeCount', likeCount.innerText);  
+        }
+    }
+
+    function updateButtonColors() {
+        const gameUrl = localStorage.getItem('lastClickedUrl');
+        const likeBtn = document.getElementById("likeBtn");
+        const dislikeBtn = document.getElementById("dislikeBtn");
+        const likeCount = document.getElementById("likeCount");
+        const dislikeCount = document.getElementById("dislikeCount");
+
+        if (parseInt(likeCount.innerText) > 0) {
+            likeBtn.style.color = likedGame ? 'rgb(0, 255, 0)' : ''; 
+        } else {
+            likeBtn.style.color = '';  
+        }
+
+        if (parseInt(dislikeCount.innerText) > 0) {
+            dislikeBtn.style.color = 'rgb(255, 0, 0)';  
+        } else {
+            dislikeBtn.style.color = '';  
+        }
+    }
+
+
+        window.addEventListener('load', () => {
+            const gameFrame = document.getElementById("gameFrame");
+
+            if (gameFrame.src) {
+
+                console.log("Game already loaded.");
+            } else {
+
+                const savedUrl = localStorage.getItem('lastClickedUrl');
+                const savedGame = localStorage.getItem('lastClickedGame');
+
+                if (savedUrl && savedGame) {
+                    HBC(savedUrl); 
+                    document.getElementById('gameNameDisplay').textContent = savedGame; 
+                }
+            }
+        });
+
+        function HBC(url) {
+            const gameFrame = document.getElementById("gameFrame");
+            const fullscreenBtn = document.getElementById("fullscreenBtn");
+            const overlay = document.getElementById("overlay");
+
+            gameFrame.style.display = "block"; 
+            gameFrame.src = url;               
+            fullscreenBtn.style.display = "block"; 
+            overlay.style.display = "block"; 
+
+            localStorage.setItem('lastClickedUrl', url);
+        }
+
+        function disableScrolling() {
+            document.body.style.overflow = "hidden"; 
+        }
+
+        function clearGameSelection() {
+            localStorage.removeItem('lastClickedUrl');
+            localStorage.removeItem('lastClickedGame');
+        }
+
+    window.addEventListener("load", () => {
+        const gameUrl = localStorage.getItem('lastClickedUrl');
+        const viewCountElement = document.getElementById("viewCount");
+
+        if (gameUrl) {
+
+            const savedViewCount = parseInt(localStorage.getItem(gameUrl + '-viewCount')) || 0;
+
+            const newViewCount = savedViewCount + 1;
+            localStorage.setItem(gameUrl + '-viewCount', newViewCount);
+
+            if (viewCountElement) {
+                viewCountElement.textContent = newViewCount;
+            }
+        }
+    });
+
+const heartIcon = document.getElementById('heartIcon');
+
+function getGameId() {
+  const url = localStorage.getItem('lastClickedUrl');
+  if (!url) return 'default-game-id';
+  return 'fav-' + url.replace(/[^a-zA-Z0-9]+/g, '-');
+}
+
+const gameId = getGameId();
+
+function updateHeartUI(isFavorited) {
+  if (isFavorited) {
+    heartIcon.classList.add('hearted');
+    heartIcon.style.color = '#ff1a1a';  } else {
+    heartIcon.classList.remove('hearted');
+    heartIcon.style.color = 'white';
+  }
+}
+
+function toggleFavorite() {
+  const key = `heartState-${gameId}`;
+  const isFavorited = localStorage.getItem(key) === 'true';
+
+  if (isFavorited) {
+    localStorage.setItem(key, 'false');
+  } else {
+    localStorage.setItem(key, 'true');
+  }
+  updateHeartUI(!isFavorited);
+}
+
+function syncFromStorage() {
+  const key = `heartState-${gameId}`;
+  const isFavorited = localStorage.getItem(key) === 'true';
+  updateHeartUI(isFavorited);
+}
+
+heartIcon.addEventListener('click', toggleFavorite);
+
+window.addEventListener('storage', (e) => {
+  if (e.key === `heartState-${gameId}`) {
+    syncFromStorage();
+  }
+});
+
+syncFromStorage();
+
+
+</script>
+<script>
+document.addEventListener("contextmenu",e=>e.preventDefault());
+document.addEventListener("keydown",e=>{if(e.key==="F12"||(e.ctrlKey&&e.shiftKey&&(e.key==="I"||e.key==="J"))||(e.ctrlKey&&e.key==="U"))e.preventDefault()});
+setInterval(()=>{if((window.outerWidth-window.innerWidth)>160||(window.outerHeight-window.innerHeight)>160)window.location.href="about:blank"},500);
+</script>
+
+    </body>
+    </html>
